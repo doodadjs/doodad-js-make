@@ -46,8 +46,5 @@
     "doodad-js": "^1.0.0",
     "doodad-js-io": "^0.1.0",
     "doodad-js-minifiers": "^0.1.0"
-  },
-  "publishConfig": {
-    "registry": "http://www.doodad-js.local:5984/"
   }
 }
