@@ -1,26 +1,27 @@
 {
   "name": "doodad-js-make",
-  "version": "0.1.0",
-  "description": "'Make' tool for \"doodad-js\"",
+  "version": "0.1.1",
+  "description": "'Make' tool for \"doodad-js\" (alpha)",
   "homepage": "https://sourceforge.net/projects/doodad-js/",
   "config": {
     "Make": {
-	  "settings": {
+      "settings": {
         "sourceDir": "./src/",
         "buildDir": "./build/",
         "installDir": "./dist/",
         "unix": {
           "dataPath": "/var/lib/",
           "libPath": "/usr/local/lib/"
-		}
+        }
       }
-	}
+    }
   },
   "main": "index.js",
   "files": [
     "index.js",
     "make.js",
     "_Make.js",
+    "README",
     "LICENSE"
   ],
   "scripts": {
@@ -34,18 +35,17 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "svn",
-    "url": "https://svn.code.sf.net/p/doodad-js/code/node_modules/doodad-js-make/"
+    "url": "https://svn.code.sf.net/p/doodad-js/code/trunk/node_modules/doodad-js-make/"
   },
   "bugs": {
-    "url" : "https://sourceforge.net/p/doodad-js/tickets/",
-    "email" : "doodadjs@gmail.com"
+    "url": "https://sourceforge.net/p/doodad-js/tickets/",
+    "email": "doodadjs@gmail.com"
   },
   "dependencies": {
     "npm-package-config": "^0.1.3",
     "doodad-js": "^1.0.0",
     "doodad-js-io": "^0.1.0",
-    "doodad-js-minifiers": "^0.1.0",
-    "doodad-js-make": "^0.1.0"
+    "doodad-js-minifiers": "^0.1.0"
   },
   "publishConfig": {
     "registry": "http://www.doodad-js.local:5984/"
