@@ -1,5 +1,5 @@
 // dOOdad - Object-oriented programming framework
-// File: index.js - Make startup file
+// File: main.js - Module startup file for 'browserify'.
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
 // Author: Claude Petit, Quebec city
@@ -21,39 +21,4 @@
 //	See the License for the specific language governing permissions and
 //	limitations under the License.
 
-(function() {
-	var global = this;
-
-	var exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
-	};
-	
-	var MODULE_NAME = 'doodad-js-make';
-	
-	exports.add = function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES[MODULE_NAME] = {
-			type: null,
-			version: '0b',
-			namespaces: null,
-			dependencies: ['Doodad.Modules'],
-			exports: exports,
-			
-			create: function create(root, /*optional*/_options) {
-				"use strict";
-				
-				var doodad = root.Doodad,
-					modules = doodad.Modules;
-				
-				return modules.load(MODULE_NAME, '_Make.js', _options);
-			},
-		};
-		return DD_MODULES;
-	};
-	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
-	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+throw new Error("This module is server-side only and can't be used with 'browserify'.");
