@@ -29,7 +29,7 @@ module.exports = {
 	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES[/*! TO_SOURCE("name") */] = {
-			type: null,
+			type: 'Package',
 			version: '0a',
 			namespaces: null,
 			dependencies: [/*! TO_SOURCE("namespace") */],
