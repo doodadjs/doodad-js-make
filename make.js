@@ -27,6 +27,9 @@ const DD_MODULES = {};
 
 require('doodad-js-io').add(DD_MODULES);
 require('doodad-js-minifiers').add(DD_MODULES);
+require('doodad-js-safeeval').add(DD_MODULES);
+require('doodad-js-unicode').add(DD_MODULES);
+require('doodad-js-locale').add(DD_MODULES);
 require('doodad-js-make/index.js').add(DD_MODULES);
 
 const root = require('doodad-js').createRoot(DD_MODULES, {startup: {settings: {fromSource: true}}}),
@@ -38,20 +41,24 @@ const root = require('doodad-js').createRoot(DD_MODULES, {startup: {settings: {f
 function startup() {
 	const make = root.Make;
 	
-	let command = (process.argv[2] || '').toLowerCase();
+	let index = 2;
 	
-	if (['make', 'install', 'test', 'custom'].indexOf(command) < 0) {
+	let command = (process.argv[index++] || '').toLowerCase().split('=', 2);
+	
+	if (['make', 'install', 'test', 'custom'].indexOf(command[0]) < 0) {
 		console.error("Invalid command. Available commands are : 'make', 'install', 'test' and 'custom'.");
 		process.exit(1);
 	};
 
-	if (command === 'custom') {
-		const name = process.argv[3];
+	if (command[0] === 'custom') {
+		let name = command[1] || process.argv[index++];
 		if (!name) {
 			console.error("Missing parameter to command 'custom'.");
 			process.exit(1);
 		};
 		command = name;
+	} else {
+		command = command[0];
 	};
 	
 	return make.run(command)
@@ -63,7 +70,7 @@ function startup() {
 
 //process.stdin.on('data', function(){})
 
-namespaces.loadNamespaces(startup, false, null, DD_MODULES)
+namespaces.loadNamespaces(DD_MODULES, startup)
 	['catch'](function(err) {
 		console.error(err.stack);
 		process.exit(1);

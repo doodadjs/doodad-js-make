@@ -32,16 +32,17 @@ module.exports = {
 			type: 'Package',
 			version: '0a',
 			namespaces: null,
-			dependencies: [/*! TO_SOURCE("namespace") */],
+			dependencies: ['Doodad.Tools.Files', /*! TO_SOURCE("namespace") */],
 			exports: module.exports,
 			
 			create: function create(root, /*optional*/_options) {
 				var doodad = root.Doodad,
 					types = doodad.Types,
-					tools = doodad.Tools;
+					tools = doodad.Tools,
+					files = tools.Files;
 					
 					
-				var Promise = tools.getPromise(),
+				var Promise = types.getPromise(),
 					mod = root,
 					ns = /*! TO_SOURCE("namespace") */.split('.'),
 					name;
@@ -58,8 +59,8 @@ module.exports = {
 							locate: function locate(name, /*optional*/options) {
 								try {
 									return Promise.resolve(
-										tools.getOptions().hooks.pathParser(mod.getOptions().settings.resourcesPath)
-											.combine(tools.getOptions().hooks.pathParser(name))
+										files.getOptions().hooks.pathParser(mod.getOptions().settings.resourcesPath)
+											.combine(files.getOptions().hooks.pathParser(name))
 									);
 								} catch(ex) {
 									return Promise.reject(ex);
