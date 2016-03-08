@@ -35,17 +35,18 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Make'] = {
 			type: null,
-			version: '0d',
+			version: '0.3.0d',
 			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify'],
 			dependencies: [
 				'Doodad.Types', 
 				'Doodad.Tools', 
+				'Doodad.Tools.Files', 
 				'Doodad', 
 				'Doodad.NodeJs', 
 				'Doodad.Namespaces', 
 				{
 					name: 'Doodad.IO.Minifiers', 
-					version: '0.2',
+					version: '0.3.0',
 				},
 			],
 			exports: exports,
@@ -69,7 +70,7 @@
 					generate = make.Generate,
 					browserify = make.Browserify,
 					
-					Promise = tools.getPromise(),
+					Promise = types.getPromise(),
 					
 					nodeFs = require('fs'),
 					nodeChildProcess = require('child_process');
@@ -437,7 +438,7 @@
 								};
 								
 								const result = tools.reduce(resources, function(result, resource) {
-									const rp = tools.Path.parse('/', {os: 'linux', dirChar: '/'}),
+									const rp = files.Path.parse('/', {os: 'linux', dirChar: '/'}),
 										sourceAr = rp.combine(resource.source).toArray(),
 										destStr = rp.combine(resource.dest).toString({os: 'linux', dirChar: '/'});
 									 // NOTE: Index "0" is "/"
@@ -449,7 +450,7 @@
 								
 								const jsOp = new file.Javascript();
 								return jsOp.execute(command, {
-									source: tools.Path.parse(module.filename).set({file: 'resources.templ.js'}),
+									source: files.Path.parse(module.filename).set({file: 'resources.templ.js'}),
 									destination: resFile,
 									runDirectives: true,
 								}, {
@@ -498,7 +499,7 @@
 				make.parseVariables = function parseVariables(val, /*optional*/options) {
 					function solvePath(path, /*optional*/os) {
 						if (types.isString(path)) {
-							return tools.Path.parse(path, {
+							return files.Path.parse(path, {
 								os: (os || 'linux'),
 								dirChar: null,
 								shell: 'api',
@@ -515,7 +516,7 @@
 					let path = val,
 						isRelative = true;
 					if (isPath) {
-						if (!(path instanceof tools.Path)) {
+						if (!(path instanceof files.Path)) {
 							path = solvePath(val);
 						};
 						isRelative = path.isRelative;
@@ -607,7 +608,7 @@
 								};
 							};
 							
-							if (value instanceof tools.Path) {
+							if (value instanceof files.Path) {
 								//if (isPath && !isRelative) {
 								//	throw types.Error("Path in '~0~' can't be inserted because the target path is absolute.", [name]);
 								//};
@@ -646,7 +647,7 @@
 					};
 					
 					if (isPath) {
-						return tools.Path.parse(path);
+						return files.Path.parse(path);
 					} else {
 						return path.join('');
 					};
@@ -657,7 +658,7 @@
 				make.run = function run(command, /*optional*/options) {
 					// TODO: Uninstall
 					function combineWithPackageDir(path) {
-						path = tools.Path.parse(path, {noEscapes: true, dirChar: ['/', '\\'], isRelative: null}).set({
+						path = files.Path.parse(path, {noEscapes: true, dirChar: ['/', '\\'], isRelative: null}).set({
 							noEscapes: false,
 							dirChar: null,
 						});
@@ -667,7 +668,7 @@
 						return path;
 					};
 
-					__Internal__.packageDir = root.Doodad.Tools.Path.parse(types.get(options, 'path', process.cwd()));
+					__Internal__.packageDir = root.Doodad.Tools.Files.Path.parse(types.get(options, 'path', process.cwd()));
 					
 					const pack = require(combineWithPackageDir('./package.json').toString());
 					
