@@ -35,18 +35,20 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Make'] = {
 			type: null,
-			version: '0.3.0d',
-			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify'],
+			version: '0.3.2a',
+			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Modules'],
 			dependencies: [
 				'Doodad.Types', 
 				'Doodad.Tools', 
-				'Doodad.Tools.Files', 
+				'Doodad.Tools.Files',
+				'Doodad.Modules',
 				'Doodad', 
 				'Doodad.NodeJs', 
+				'Doodad.NodeJs.IO', 
 				'Doodad.Namespaces', 
 				{
 					name: 'Doodad.IO.Minifiers', 
-					version: '0.3.0',
+					version: '0.4.0',
 				},
 			],
 			exports: exports,
@@ -59,7 +61,10 @@
 					files = tools.Files,
 					config = tools.Config,
 					types = doodad.Types,
+					modules = doodad.Modules,
 					nodejs = doodad.NodeJs,
+					nodejsIO = nodejs.IO,
+					nodejsIOInterfaces = nodejsIO.Interfaces,
 					namespaces = doodad.Namespaces,
 					io = doodad.IO,
 					minifiers = io.Minifiers,
@@ -69,6 +74,7 @@
 					spawn = file.Spawn,
 					generate = make.Generate,
 					browserify = make.Browserify,
+					makeModules = make.Modules,
 					
 					Promise = types.getPromise(),
 					
@@ -97,7 +103,7 @@
 				//__Internal__.oldSetOptions = make.setOptions;
 				//make.setOptions = function setOptions(/*paramarray*/) {
 				//	var options = __Internal__.oldSetOptions.apply(this, arguments),
-				//		settings = types.getDefault(options, 'settings', {});
+				//		settings = types.get(options, 'settings', {});
 				//};
 				
 				make.setOptions({
@@ -123,6 +129,22 @@
 					
 					
 					
+				makeModules.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Load',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						console.info('Loading required modules...');
+						return Promise.all(tools.map(item.names, function(name) {
+							if (types.isArray(name)) {
+								return modules.load.apply(modules, name);
+							} else {
+								return modules.load(name);
+							};
+						}));
+					}),
+				}));
+
 				folder.REGISTER(make.Operation.$extend(
 				{
 					$TYPE_NAME: 'Create',
@@ -214,7 +236,6 @@
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
 								const jsStream = new minifiers.Javascript({autoFlush: false, runDirectives: types.get(item, 'runDirectives')});
-								let destFd = null;
 								if (directives) {
 									tools.forEach(directives, function(directive) {
 										jsStream.runDirective(directive);
@@ -226,62 +247,30 @@
 									});
 								};
 								return new Promise(function(resolve, reject) {
-										nodeFs.readFile(source.toString({shell: 'api'}), {encoding: 'utf8'}, function(ex, content) {
-											if (ex) {
-												reject(ex);
-											} else {
-												try {
-													nodeFs.open(dest.toString({shell: 'api'}), 'w', function(ex, fd) {
-														if (ex) {
-															reject(ex);
-														} else {
-															try {
-																destFd = fd;
-																jsStream.write(content);
-																content = null; // free memory
-																jsStream.write(io.EOF);
-																const read = function read() {
-																	const data = jsStream.read();
-																	if (data) {
-																		nodeFs.write(destFd, data, 'utf8', function(ex) {
-																			if (ex) {
-																				reject(ex);
-																			} else {
-																				read();
-																			};
-																		});
-																	} else {
-																		resolve();
-																	};
-																};
-																read();
-															} catch(ex) {
-																reject(ex);
-															};
-														};
-													});
-												} catch(ex) {
-													reject(ex);
-												};
-											};
-										});
-									})
-									.nodeify(function(ex1, result) {
+									try {
+                                        const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
+										const jsStreamDuplex = jsStream.getInterface(nodejsIOInterfaces.ITransform);
+                                        const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
+										outputStream.on('close', resolve);
+										outputStream.on('error', reject);
+										inputStream
+											.pipe(jsStreamDuplex)
+											.pipe(outputStream);
+									} catch(ex) {
+										reject(ex);
+									};
+								})
+									.nodeify(function(err, result) {
 										try {
 											jsStream.stopListening();
 											jsStream.destroy();
 										} catch(o) {
 										};
-										if (destFd) {
-											return new Promise(function(resolve, reject) {
-												nodeFs.close(destFd, function(ex2) {
-													if (ex1 || ex2) {
-														reject(ex1 || ex2);
-													} else {
-														resolve(result);
-													};
-												});
-											});
+										
+										if (err) {
+											throw err;
+										} else {
+											return result;
 										};
 									});
 							});
@@ -330,7 +319,7 @@
 									.then(function(config) {
 										config = types.extend({}, config, {Make: {settings: make.getOptions().settings}}); // preserve paths
 										return new Promise(function(resolve, reject) {
-											nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(config), {encoding: 'utf8'}, function(ex) {
+											nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(config), {encoding: 'utf-8'}, function(ex) {
 												if (ex) {
 													reject(ex);
 												} else {
@@ -389,7 +378,7 @@
 											source: stats.path,
 											dest: stats.path.set({file: stats.path.file + '.res.js'}),
 										};
-										return files.readFile(source.combine(resource.source), {encoding: (item.encoding || 'utf8'), async: true})
+										return files.readFile(source.combine(resource.source), {encoding: (item.encoding || 'utf-8'), async: true})
 											.then(function(content) {
 												return new Promise(function(resolve, reject) {
 													nodeFs.writeFile(dest.combine(resource.dest).toString(), 
@@ -398,7 +387,7 @@
 																	//	__Internal__.packageName + '\' hosted by the \'npmjs.com\' web site, ' + 
 																	//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' + 
 																	'// When not mentionned otherwise, the following is Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n' + 
-																	'module.exports=' + types.toSource(content), (item.encoding || 'utf8'), function(err) {
+																	'module.exports=' + types.toSource(content), (item.encoding || 'utf-8'), function(err) {
 														if (err) {
 															reject(err);
 														} else {
@@ -483,8 +472,22 @@
 								try {
 									const b = nodeBrowserify();
 									b.add(source.toString());
-									b.bundle().pipe(nodeFs.createWriteStream(dest.toString()));
-									resolve();
+									const outputStream = nodeFs.createWriteStream(dest.toString());
+									let bundleStream = b.bundle();
+									if (item.minify) {
+										const jsStream = new minifiers.Javascript();
+										jsStream.listen();
+										const jsStreamDuplex = jsStream.getInterface(nodejsIOInterfaces.ITransform);
+										bundleStream = bundleStream
+											.pipe(jsStreamDuplex)
+											.pipe(outputStream)
+									} else {
+										bundleStream = bundleStream
+											.pipe(outputStream)
+									};
+									bundleStream
+										.on('finish', resolve)
+										.on('error', reject);
 								} catch(ex) {
 									reject(ex);
 								};

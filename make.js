@@ -43,32 +43,26 @@ function startup() {
 	
 	let index = 2;
 	
-	let command = (process.argv[index++] || '').toLowerCase().split('=', 2);
+	let arg = (process.argv[index++] || '').split('=', 2);
 	
-	if (['make', 'install', 'test', 'custom'].indexOf(command[0]) < 0) {
+	let command = arg[0].toLowerCase();
+	
+	if (['make', 'install', 'test', 'custom'].indexOf(command) < 0) {
 		console.error("Invalid command. Available commands are : 'make', 'install', 'test' and 'custom'.");
 		process.exit(1);
 	};
 
-	if (command[0] === 'custom') {
-		let name = command[1] || process.argv[index++];
+	if (command === 'custom') {
+		let name = arg[1] || process.argv[index++];
 		if (!name) {
-			console.error("Missing parameter to command 'custom'.");
+			console.error("Missing argument to command 'custom'.");
 			process.exit(1);
 		};
 		command = name;
-	} else {
-		command = command[0];
 	};
-	
-	return make.run(command)
-		['catch'](function(ex) {
-			console.error(ex.stack);
-			process.exit(1);
-		});
-};
 
-//process.stdin.on('data', function(){})
+	return make.run(command);
+};
 
 namespaces.loadNamespaces(DD_MODULES, startup)
 	['catch'](function(err) {
