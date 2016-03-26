@@ -1,6 +1,6 @@
 {
   "name": "doodad-js-make",
-  "version": "0.3.2",
+  "version": "1.0.0",
   "description": "'Make' tool for doodad-js (alpha)",
   "homepage": "https://sourceforge.net/projects/doodad-js/",
   "config": {
@@ -18,18 +18,18 @@
   },
   "main": "index.js",
   "files": [
+    "src",
     "index.js",
     "make.js",
-    "_Make.js",
+    "_Make.min.js",
     "README",
     "LICENSE",
 	"browserify.js",
 	"resources.templ.js",
+    "make.json",
+	"config.json",
 	"tonic.js"
   ],
-  "scripts": {
-    "test": "exit 1"
-  },
   "keywords": [
     "doodad-js",
     "make"

@@ -23,21 +23,6 @@
 
 "use strict";
 
-const DD_MODULES = {};
-
-require('doodad-js-io').add(DD_MODULES);
-require('doodad-js-minifiers').add(DD_MODULES);
-require('doodad-js-safeeval').add(DD_MODULES);
-require('doodad-js-unicode').add(DD_MODULES);
-require('doodad-js-locale').add(DD_MODULES);
-require('doodad-js-make/index.js').add(DD_MODULES);
-
-const root = require('doodad-js').createRoot(DD_MODULES, {startup: {settings: {fromSource: true}}}),
-	doodad = root.Doodad,
-	tools = doodad.Tools,
-	types = doodad.Types,
-	namespaces = doodad.Namespaces;
-
 function startup() {
 	const make = root.Make;
 	
@@ -63,6 +48,21 @@ function startup() {
 
 	return make.run(command);
 };
+
+const root = require('doodad-js').createRoot(null, {startup: {settings: {fromSource: true}}}),
+	doodad = root.Doodad,
+	tools = doodad.Tools,
+	types = doodad.Types,
+	namespaces = doodad.Namespaces;
+
+const DD_MODULES = {};
+
+require('doodad-js-io').add(DD_MODULES);
+require('doodad-js-minifiers').add(DD_MODULES);
+require('doodad-js-safeeval').add(DD_MODULES);
+require('doodad-js-unicode').add(DD_MODULES);
+require('doodad-js-locale').add(DD_MODULES);
+require('doodad-js-make').add(DD_MODULES);
 
 namespaces.loadNamespaces(DD_MODULES, startup)
 	['catch'](function(err) {

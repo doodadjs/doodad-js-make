@@ -24,9 +24,9 @@
 //! END_REPLACE()
 
 (function() {
-	var global = this;
+	const global = this;
 
-	var exports = {};
+	const exports = {};
 	if (typeof process === 'object') {
 		module.exports = exports;
 	};
@@ -35,23 +35,9 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Make'] = {
 			type: null,
-			version: '0.3.2a',
-			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Modules'],
-			dependencies: [
-				'Doodad.Types', 
-				'Doodad.Tools', 
-				'Doodad.Tools.Files',
-				'Doodad.Modules',
-				'Doodad', 
-				'Doodad.NodeJs', 
-				'Doodad.NodeJs.IO', 
-				'Doodad.Namespaces', 
-				{
-					name: 'Doodad.IO.Minifiers', 
-					version: '0.4.0',
-				},
-			],
-			exports: exports,
+			//! INSERT("version:'" + VERSION('doodad-js-make') + "',")
+			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Modules', 'Update'],
+			dependencies: null,
 			
 			create: function create(root, /*optional*/_options) {
 				"use strict";
@@ -75,6 +61,7 @@
 					generate = make.Generate,
 					browserify = make.Browserify,
 					makeModules = make.Modules,
+					update = make.Update,
 					
 					Promise = types.getPromise(),
 					
@@ -119,6 +106,17 @@
 				}, _options);
 				
 
+				__Internal__.JsMinifier = doodad.REGISTER(minifiers.Javascript.$extend({
+					$TYPE_NAME: '__JsMinifier',
+					
+					__knownDirectives: {
+						VERSION: function(pkg) {
+							const json = require(pkg + '/package.json');
+							return json.version + (json.stage || 'd');
+						},
+					},
+				})),
+				
 					
 				make.REGISTER(doodad.BASE(doodad.Object.$extend(
 				{
@@ -219,6 +217,79 @@
 				
 				file.REGISTER(make.Operation.$extend(
 				{
+					$TYPE_NAME: 'Merge',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let dest = item.destination;
+						if (types.isString(dest)) {
+							dest = make.parseVariables(dest, { isPath: true });
+						};
+						let source = item.source;
+						if (types.isArrayLike(source)) {
+							source = types.toArray(source);
+						} else {
+							source = [source];
+						};
+						const separator = item.separator;
+						console.info('Merging files to "' + dest + '"...');
+						const createFile = function() {
+							return nodeFs.createWriteStream(dest.toString({shell: 'api'}));
+						};
+						const loopMerge = function(outputStream) {
+							if (source.length) {
+								let src = source.shift();
+								if (types.isString(src)) {
+									src = make.parseVariables(src, { isPath: true });
+								};
+								src = src.toString({shell: 'api'});
+								console.log("    " + src);
+								return new Promise(function(resolve, reject) {
+										const inputStream = nodeFs.createReadStream(src);
+										inputStream
+											.on('error', reject)
+											.on('end', resolve)
+											.pipe(outputStream, {end: false});
+
+									})
+									.then(function() {
+										if (source.length) {
+											return Promise.resolve(outputStream)
+												.then(writeSeparator)
+												.then(loopMerge);
+										} else {
+											return Promise.resolve(outputStream)
+												.then(loopMerge);
+										};
+									});
+							};
+							return outputStream;
+						};
+						const writeSeparator = function(outputStream) {
+							if (separator) {
+								return new Promise(function(resolve, reject) {
+									outputStream.write(separator, function(err, result) {
+										if (err) {
+											reject(err);
+										} else {
+											resolve(outputStream);
+										};
+									});
+								});
+							};
+							return outputStream;
+						};
+						const closeFile = function(outputStream) {
+							outputStream.end();
+						};
+						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
+							.then(createFile)
+							.then(loopMerge)
+							.then(closeFile);
+					}),
+				}));
+				
+				file.REGISTER(make.Operation.$extend(
+				{
 					$TYPE_NAME: 'Javascript',
 					
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
@@ -235,7 +306,7 @@
 						console.info('Minifying file "' + source + '" to "' + dest + '"...');
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
-								const jsStream = new minifiers.Javascript({autoFlush: false, runDirectives: types.get(item, 'runDirectives')});
+								const jsStream = new __Internal__.JsMinifier({autoFlush: false, runDirectives: types.get(item, 'runDirectives')});
 								if (directives) {
 									tools.forEach(directives, function(directive) {
 										jsStream.runDirective(directive);
@@ -317,7 +388,6 @@
 								console.info('Saving configuration to "' + destination + '"...');
 								return require('npm-package-config').list(__Internal__.packageName, {beautify: true, async: true})
 									.then(function(config) {
-										config = types.extend({}, config, {Make: {settings: make.getOptions().settings}}); // preserve paths
 										return new Promise(function(resolve, reject) {
 											nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(config), {encoding: 'utf-8'}, function(ex) {
 												if (ex) {
@@ -332,6 +402,44 @@
 					}),
 				}));
 
+				
+				
+				update.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'PackageJson',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						const DEPS_KEYS = ['dependencies', 'optionalDependencies', 'devDependencies']
+						console.info('Updating "package.json"...');
+						const mod = __Internal__.packageName + '/package.json';
+						const json = require(mod);
+						for (let i = 0; i < DEPS_KEYS.length; i++) {
+							const depKey = DEPS_KEYS[i];
+							let deps = json[depKey];
+							const names = types.keys(deps);
+							for (let j = 0; j < names.length; j++) {
+								const name = names[j];
+								try {
+									deps[name] = deps[name][0] + require(name + '/package.json').version;
+								} catch(ex) {
+									console.warn("    warning: Can't update dependency '" + name + "'.");
+								};
+							};
+						};
+						const path = require.resolve(mod);
+						const content = JSON.stringify(json, null, 4);
+						return new Promise(function(resolve, reject) {
+							nodeFs.writeFile(path, content, {encoding: 'utf-8'}, function(err, result) {
+								if (err) {
+									reject(err);
+								} else {
+									resolve();
+								};
+							});
+						});
+					}),
+				}));
+				
 
 				
 				make.REGISTER(make.Operation.$extend({
@@ -475,7 +583,7 @@
 									const outputStream = nodeFs.createWriteStream(dest.toString());
 									let bundleStream = b.bundle();
 									if (item.minify) {
-										const jsStream = new minifiers.Javascript();
+										const jsStream = new __Internal__.JsMinifier();
 										jsStream.listen();
 										const jsStreamDuplex = jsStream.getInterface(nodejsIOInterfaces.ITransform);
 										bundleStream = bundleStream
