@@ -84,19 +84,18 @@
 					
 				const __Natives__ = {
 					arraySplice: global.Array.prototype.splice,
+					
+					// "getBuiltFileName"
+					stringReplace: String.prototype.replace,
 				}
 					
 					
 				const __Internal__ = {
+					searchJsExtRegExp: /([.]js)$/,
 				};
 					
 					
 					
-				//__Internal__.oldSetOptions = make.setOptions;
-				//make.setOptions = function setOptions(/*paramarray*/) {
-				//	var options = __Internal__.oldSetOptions.apply(this, arguments);
-				//};
-				
 				//make.setOptions({
 				//}, _options);
 				
@@ -725,6 +724,11 @@
 					}),
 				}));
 
+				
+				__Internal__.getBuiltFileName = function getBuiltFileName(fileName) {
+					return __Natives__.stringReplace.call(fileName, __Internal__.searchJsExtRegExp, ".min.js");
+				};
+				
 
 				generate.REGISTER(make.Operation.$extend({
 					$TYPE_NAME: 'Package',
@@ -762,7 +766,7 @@
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
-								destination: '%BUILDDIR%/' + mod.src.replace(/([.]js)$/, ".min.js"),
+								destination: '%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src),
 								runDirectives: true,
 								variables: {
 									serverSide: true,
@@ -790,7 +794,7 @@
 										}),
 										modules: tools.map(modules, function(mod) {
 											return types.extend({}, mod, {
-												dest: taskData.parseVariables('%BUILDDIR%/' + mod.src.replace(/([.]js)$/, ".min.js"), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
 											});
 										}),
 										modulesSrc: tools.map(modules, function(mod) {
@@ -889,7 +893,7 @@
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/' + mod.src.replace(/([.]js)$/, ".min.js"),
+								destination: '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src),
 								runDirectives: true,
 							};
 						}));
@@ -913,7 +917,7 @@
 										}),
 										modules: tools.map(modules, function(mod) {
 											return types.extend({}, mod, {
-												dest: mod.src.replace(/([.]js)$/, ".min.js"),
+												dest: __Internal__.getBuiltFileName(mod.src),
 											});
 										}),
 										modulesSrc: tools.map(modules, function(mod) {
@@ -966,7 +970,7 @@
 							{
 								'class': file.Merge,
 								source: types.append([], bundleSources, tools.map(modules, function(mod) {
-									return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src.replace(/([.]js)$/, ".min.js");
+									return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
 								})),
 								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 								separator: '\n',
@@ -1018,7 +1022,7 @@
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
-								destination: '%BROWSERIFYDIR%/' + mod.src.replace(/([.]js)$/, ".min.js"),
+								destination: '%BROWSERIFYDIR%/' + __Internal__.getBuiltFileName(mod.src),
 								runDirectives: true,
 								variables: {
 									serverSide: true,
@@ -1030,7 +1034,7 @@
 						ops = types.append(ops, tools.map(resources, function(res, i) {
 							return {
 								'class': browserify.Resources,
-								name: '%PACKAGENAME%-res' + i,
+								name: '%PACKAGENAME%/res' + i,
 								namespace: res.namespace,
 								source: '%SOURCEDIR%/' + res.src,
 								destination: "%BROWSERIFYDIR%/" + res.src,
@@ -1058,7 +1062,7 @@
 										}),
 										modules: tools.map(modules, function(mod) {
 											return types.extend({}, mod, {
-												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + mod.src.replace(/([.]js)$/, ".min.js"), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
 											});
 										}),
 										resources: tools.map(resources, function(res) {
