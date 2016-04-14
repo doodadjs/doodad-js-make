@@ -1,4 +1,4 @@
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n")
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
 // File: _Make.js - Make module
 // Project home: https://sourceforge.net/projects/doodad-js/
@@ -27,17 +27,22 @@
 	const global = this;
 
 	const exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
+	
+	//! BEGIN_REMOVE()
+	if ((typeof process === 'object') && (typeof module === 'object')) {
+	//! END_REMOVE()
+		//! IF_DEF("serverSide")
+			module.exports = exports;
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
+	//! END_REMOVE()
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Make'] = {
-			type: null,
-			//! INSERT("version:'" + VERSION('doodad-js-make') + "',")
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
 			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Modules', 'Update'],
-			dependencies: null,
 			
 			create: function create(root, /*optional*/_options) {
 				"use strict";
@@ -52,8 +57,10 @@
 					nodejsIO = nodejs.IO,
 					nodejsIOInterfaces = nodejsIO.Interfaces,
 					namespaces = doodad.Namespaces,
+					extenders = doodad.Extenders,
 					io = doodad.IO,
 					minifiers = io.Minifiers,
+					safeEval = tools.SafeEval,
 					make = root.Make,
 					folder = make.Folder,
 					file = make.File,
@@ -75,44 +82,52 @@
 				};
 					
 					
+				const __Natives__ = {
+					arraySplice: global.Array.prototype.splice,
+				}
+					
+					
 				const __Internal__ = {
-					packageName: null,
-					packageVersion: null,
-					packageDir: null,
-					sourceDir: null,
-					buildDir: null,
-					installDir: null,
-					makeData: null,
 				};
 					
 					
 					
 				//__Internal__.oldSetOptions = make.setOptions;
 				//make.setOptions = function setOptions(/*paramarray*/) {
-				//	var options = __Internal__.oldSetOptions.apply(this, arguments),
-				//		settings = types.get(options, 'settings', {});
+				//	var options = __Internal__.oldSetOptions.apply(this, arguments);
 				//};
 				
-				make.setOptions({
-					settings: {
-						sourceDir: "./src/",
-						buildDir: "./build/",
-						installDir: "./dist/",
-						unix: {
-							dataPath: "/var/lib/",
-							libPath: "/usr/local/lib/",
-						},
-					},
-				}, _options);
+				//make.setOptions({
+				//}, _options);
 				
+				
+				__Internal__.getManifest = function getManifest(pkg) {
+					return require(pkg + '/package.json');
+				};
 
+				__Internal__.getVersion = function getVersion(manifest) {
+					return manifest.version + (manifest.stage || 'd');
+				};
+
+				
 				__Internal__.JsMinifier = doodad.REGISTER(minifiers.Javascript.$extend({
 					$TYPE_NAME: '__JsMinifier',
 					
 					__knownDirectives: {
-						VERSION: function(pkg) {
-							const json = require(pkg + '/package.json');
-							return json.version + (json.stage || 'd');
+						VERSION: function VERSION(pkg) {
+							if (this.memorize <= 0) {
+								return __Internal__.getVersion(__Internal__.getManifest(pkg));
+							};
+						},
+						MANIFEST: function MANIFEST(key) {
+							if (this.memorize <= 0) {
+								return safeEval.eval(key, this.options.taskData.manifest);
+							};
+						},
+						MAKE_MANIFEST: function MAKE_MANIFEST(key) {
+							if (this.memorize <= 0) {
+								return safeEval.eval(key, this.options.taskData.makeManifest);
+							};
 						},
 					},
 				})),
@@ -122,9 +137,291 @@
 				{
 					$TYPE_NAME: 'Operation',
 					
+					taskData: doodad.PUBLIC( null ),
+					
 					execute: doodad.PUBLIC(doodad.MUST_OVERRIDE()), // function execute(command, item, /*optional*/options)
 				})));
 					
+					
+					
+				make.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Task',
+
+					createTaskData: doodad.PROTECTED(function createTaskData() {
+						return {
+							init: function init(item, /*optional*/options) {
+								const extendFn = function(result, val, key, extend) {
+									if (types.isArray(val)) {
+										result[key] = types.unique(result[key], val);
+									} else if (types.isObject(val)) {
+										var resultVal = result[key];
+										if (types.isNothing(resultVal)) {
+											result[key] = extend({}, val);
+										} else if (types.isObjectLike(resultVal)) {
+											extend(resultVal, val);
+										} else {
+											result[key] = val;
+										};
+									} else {
+										result[key] = val;
+									};
+								};
+
+								this.packageDir = files.Path.parse(types.get(item, 'source', process.cwd()));
+							
+								let manifestTemplate = types.get(item, 'manifestTemplate');
+								if (types.isString(manifestTemplate)) {
+									manifestTemplate = this.parseVariables(manifestTemplate, { isPath: true });
+								};
+								if (!manifestTemplate) {
+									manifestTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/package.templ.json', {os: 'linux'});
+								};
+
+								const templ = require(manifestTemplate.toString());
+								this.manifestPath = this.combineWithPackageDir('./package.json').toString();					
+								this.manifest = require(this.manifestPath);
+								this.manifest = types.depthExtend(extendFn, {}, templ, this.manifest);
+								delete this.manifest['//']; // remove comments
+								
+								const makeTempl = require(files.Path.parse(module.filename).set({file: ''}).combine('res/make.templ.json', {os: 'linux'}).toString());
+								this.makeManifest = require(this.combineWithPackageDir('./make.json').toString());
+								this.makeManifest = types.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
+								delete this.makeManifest['//']; // remove comments
+								
+								this.sourceDir = this.combineWithPackageDir(types.get(this.makeManifest, 'sourceDir', './src'));
+								this.buildDir = this.combineWithPackageDir(types.get(this.makeManifest, 'buildDir', './build'));
+								this.installDir = this.combineWithPackageDir(types.get(this.makeManifest, 'installDir', './dist'));
+								this.browserifyDir = this.combineWithPackageDir(types.get(this.makeManifest, 'browserifyDir', './browserify'));
+							},
+							
+							combineWithPackageDir: function combineWithPackageDir(path, options) {
+								path = files.Path.parse(path, {noEscapes: true, dirChar: ['/', '\\'], isRelative: null}).set({
+									noEscapes: false,
+									dirChar: null,
+								});
+								if (path.isRelative) {
+									path = this.packageDir.combine(path);
+								};
+								return path;
+							},
+							
+							parseVariables: function parseVariables(val, /*optional*/options) {
+								function solvePath(path, /*optional*/os) {
+									if (types.isString(path)) {
+										return files.Path.parse(path, {
+											os: (os || 'linux'),
+											dirChar: null,
+											shell: 'api',
+											noEscapes: true,
+											isRelative: null, // auto-detect
+										});
+									} else {
+										return path;
+									};
+								};
+								
+								const isPath = types.get(options, 'isPath', false);
+
+								let path = val,
+									isRelative = true;
+								if (isPath) {
+									if (!(path instanceof files.Path)) {
+										path = solvePath(val);
+									};
+									isRelative = path.isRelative;
+									path = path.toArray();
+								} else {
+									path = [String(path)];
+								};
+								
+								const os = tools.getOS();
+
+								for (var i = 0; i < path.length; ) {
+									let str = path[i],
+										start = str.indexOf('%'),
+										end = str.indexOf('%', start + 1),
+										result = ((start > 0) ? str.slice(0, start) : ''),
+										changed = (start >= 0);
+
+									while ((start >= 0) && (end >= 0)) {
+										const name = str.slice(start, end + 1),
+											nameLc = name.toLowerCase();
+										let value;
+										if (nameLc === '%packagename%') {
+											if (this.manifest && this.manifest.name) {
+												value = this.manifest.name;
+											} else {
+												throw new types.Error("Package name not specified.");
+											};
+										} else if (nameLc === '%packageversion%') {
+											if (this.manifest && this.manifest.version) {
+												value = this.manifest.version;
+											} else {
+												throw new types.Error("Package version not specified.");
+											};
+										} else if (nameLc === '%packagedir%') {
+											if (this.packageDir) {
+												value = solvePath(this.packageDir);
+											} else {
+												throw new types.Error("Package directory not specified.");
+											};
+										} else if (nameLc === '%sourcedir%') {
+											if (this.sourceDir) {
+												value = solvePath(this.sourceDir);
+											} else {
+												throw new types.Error("Source directory not specified.");
+											};
+										} else if (nameLc === '%builddir%') {
+											if (this.buildDir) {
+												value = solvePath(this.buildDir);
+											} else {
+												throw new types.Error("Build directory not specified.");
+											};
+										} else if (nameLc === '%installdir%') {
+											if (this.installDir) {
+												value = solvePath(this.installDir);
+											} else {
+												throw new types.Error("Installation directory not specified.");
+											};
+										} else if (nameLc === '%browserifydir%') {
+											if (this.browserifyDir) {
+												value = solvePath(this.browserifyDir);
+											} else {
+												throw new types.Error("Browserify directory not specified.");
+											};
+										} else if (nameLc === '%programdata%') {
+											if (os.type === 'windows') {
+												value = solvePath(process.env.programdata, os.type);
+											} else {
+												// There is no environment variable for this purpose under Unix-like systems
+												// So I use "package.json"'s "config" section.
+												value = solvePath(make.getOptions().unix.dataPath || "/var/lib/", os.type);
+											};
+										} else if (nameLc === '%programfiles%') {
+											if (os.type === 'windows') {
+												value = solvePath(process.env.programfiles, os.type);
+											} else {
+												// There is no environment variable for this purpose under Unix-like systems
+												// So I use "package.json"'s "config" section.
+												value = solvePath(make.getOptions().unix.libPath || "/usr/local/lib/", os.type);
+											};
+										} else if ((nameLc === '%appdata%') || (nameLc === '%localappdata%')) {
+											if (os.type === 'windows') {
+												value = solvePath(process.env.appdata || process.env.localappdata, os.type);
+											} else {
+												value = solvePath(process.env.HOME, os.type);
+											};
+										//...
+										} else {
+											const tmp = name.slice(1, -1);
+											if (!types.hasKey(process.env, tmp)) {
+												throw new types.Error("Invalid environment variable name: '~0~'.", [tmp]);
+											};
+											value = process.env[tmp];
+											if (value.indexOf(os.dirChar) >= 0) {
+												value = solvePath(value, os.type);
+											};
+										};
+										
+										if (value instanceof files.Path) {
+											//if (isPath && !isRelative) {
+											//	throw types.Error("Path in '~0~' can't be inserted because the target path is absolute.", [name]);
+											//};
+											if ((i > 0) && !value.isRelative) {
+												throw types.Error("Path in '~0~' can't be inserted because it is not relative.", [name]);
+											};
+											result += value.toString({
+												os: os.type,
+												dirChar: os.dirChar,
+												shell: 'api',
+												noEscapes: true,
+											});
+										} else {
+											result += String(value);
+										};
+										
+										start = str.indexOf('%', end + 1);
+										if (start >= 0) {
+											result += str.slice(end + 1, start);
+											end = str.indexOf('%', start + 1);
+										} else {
+											result += str.slice(end + 1);
+											end = -1;
+										};
+									};
+									
+									if (changed) {
+										if (isPath) {
+											path.splice.apply(path, types.append([i, 1], solvePath(result, os.type).toArray()));
+										} else {
+											path[i] = result;
+										};
+									} else {
+										i++;
+									};
+								};
+								
+								if (isPath) {
+									return files.Path.parse(path);
+								} else {
+									return path.join('');
+								};
+							},
+						};
+					}),
+					
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						command = types.get(item, 'name') || command;
+
+						console.info('Starting task "' + command + '"...');
+						
+						if (!this.taskData || types.get(item, 'source')) {
+							this.taskData = this.createTaskData();
+							this.taskData.init(item, options);
+						};
+
+						const task = types.get(this.taskData.makeManifest.tasks, command);
+
+						const self = this;
+						
+						const proceed = function proceed(index) {
+							if (index < task.operations.length) {
+								const op = task.operations[index];
+								
+								let obj = op['class'];
+									
+								if (types.isString(obj)) {
+									obj = namespaces.getNamespace(obj);
+								};
+								
+								if (types.isType(obj)) {
+									if (!types._implements(obj, make.Operation)) {
+										throw new types.Error("Invalid class '~0~'.", [obj]);
+									};
+									obj = new obj();
+								};
+
+								obj.taskData = self.taskData;
+								
+								return obj.execute(command, op, options)
+									.then(function(newOps) {
+										if (!types.isNothing(newOps)) {
+											if (!types.isArray(newOps)) {
+												newOps = [newOps];
+											};
+											__Natives__.arraySplice.apply(task.operations, types.append([index + 1, 0], newOps));
+										};
+										return proceed(++index);
+									});
+							} else {
+								return Promise.resolve();
+							};
+						};
+						
+						return proceed(0);
+					}),
+				}));
 					
 					
 				makeModules.REGISTER(make.Operation.$extend(
@@ -134,12 +431,15 @@
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						console.info('Loading required modules...');
 						return Promise.all(tools.map(item.names, function(name) {
-							if (types.isArray(name)) {
-								return modules.load.apply(modules, name);
-							} else {
-								return modules.load(name);
-							};
-						}));
+								if (types.isArray(name)) {
+									return modules.load.apply(modules, name);
+								} else {
+									return modules.load(name);
+								};
+							}))
+							.then(function() {
+								// Returns nothing
+							});
 					}),
 				}));
 
@@ -150,10 +450,13 @@
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = make.parseVariables(dest, {isPath: true});
+							dest = this.taskData.parseVariables(dest, {isPath: true});
 						};
 						console.info('Creating folder "' + dest + '"...');
-						return files.mkdir(dest, {async: true});
+						return files.mkdir(dest, {async: true})
+							.then(function() {
+								// Returns nothing
+							});
 					}),
 				}));
 
@@ -164,16 +467,19 @@
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = make.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = make.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true });
 						};
 						console.info('Copying folder "' + source + '" to "' + dest + '"...');
 						return files.mkdir(dest, {makeParents: true, async: true})
 							.then(function() {
 								return files.copy(source, dest, {recursive: true, override: true, async: true});
+							})
+							.then(function() {
+								// Returns nothing
 							});
 					}),
 				}));
@@ -185,10 +491,13 @@
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = make.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true });
 						};
 						console.info('Deleting folder "' + dest + '"...');
-						return files.rmdir(dest, {force: true, async: true});
+						return files.rmdir(dest, {force: true, async: true})
+							.then(function() {
+								// Returns nothing
+							});
 					}),
 				}));
 
@@ -201,16 +510,19 @@
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = make.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = make.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true });
 						};
 						console.info('Copying file "' + source + '" to "' + dest + '"...');
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
 								return files.copy(source, dest, {override: true, async: true});
+							})
+							.then(function() {
+								// Returns nothing
 							});
 					}),
 				}));
@@ -220,9 +532,10 @@
 					$TYPE_NAME: 'Merge',
 
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						const taskData = this.taskData;
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = make.parseVariables(dest, { isPath: true });
+							dest = taskData.parseVariables(dest, { isPath: true });
 						};
 						let source = item.source;
 						if (types.isArrayLike(source)) {
@@ -239,10 +552,10 @@
 							if (source.length) {
 								let src = source.shift();
 								if (types.isString(src)) {
-									src = make.parseVariables(src, { isPath: true });
+									src = taskData.parseVariables(src, { isPath: true });
 								};
 								src = src.toString({shell: 'api'});
-								console.log("    " + src);
+								console.info("    " + src);
 								return new Promise(function(resolve, reject) {
 										const inputStream = nodeFs.createReadStream(src);
 										inputStream
@@ -284,7 +597,10 @@
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(createFile)
 							.then(loopMerge)
-							.then(closeFile);
+							.then(closeFile)
+							.then(function() {
+								// Returns nothing
+							});
 					}),
 				}));
 				
@@ -295,42 +611,38 @@
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = make.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = make.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true });
 						};
-						const directives = types.get(options, 'directives'),
-							variables = types.get(options, 'variables');
 						console.info('Minifying file "' + source + '" to "' + dest + '"...');
+						const variables = types.extend({}, types.get(item, 'variables'), types.get(options, 'variables'));
+						variables.task = command;
+						const taskData = this.taskData;
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
-								const jsStream = new __Internal__.JsMinifier({autoFlush: false, runDirectives: types.get(item, 'runDirectives')});
-								if (directives) {
-									tools.forEach(directives, function(directive) {
-										jsStream.runDirective(directive);
-									});
-								};
+								const jsStream = new __Internal__.JsMinifier({taskData: taskData, autoFlush: false, runDirectives: types.get(item, 'runDirectives')});
 								if (variables) {
 									tools.forEach(variables, function(value, name) {
 										jsStream.define(name, value);
 									});
 								};
 								return new Promise(function(resolve, reject) {
-									try {
-                                        const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
-										const jsStreamDuplex = jsStream.getInterface(nodejsIOInterfaces.ITransform);
-                                        const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
-										outputStream.on('close', resolve);
-										outputStream.on('error', reject);
-										inputStream
-											.pipe(jsStreamDuplex)
-											.pipe(outputStream);
-									} catch(ex) {
-										reject(ex);
-									};
-								})
+										try {
+											const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
+											const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.ITransform);
+											const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
+											outputStream.on('close', resolve);
+											outputStream.on('error', reject);
+											inputStream
+												.pipe(jsStreamTransform)
+												.pipe(outputStream);
+										} catch(ex) {
+											reject(ex);
+										};
+									})
 									.nodeify(function(err, result) {
 										try {
 											jsStream.stopListening();
@@ -344,6 +656,9 @@
 											return result;
 										};
 									});
+							})
+							.then(function() {
+								// Returns nothing
 							});
 					}),
 				}));
@@ -357,18 +672,21 @@
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = make.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true });
 						};
 						return new Promise(function(resolve, reject) {
-							const cp = nodejs.fork(source, item.args, {stdio: ['pipe', 1, 2]});
-							cp.on('close', function(status) {
-								if (status) {
-									reject(new types.Error("Process exited with code '~0~'.", [result.status]));
-								} else {
-									resolve();
-								};
+								const cp = nodejs.fork(source, item.args, {stdio: ['pipe', 1, 2]});
+								cp.on('close', function(status) {
+									if (status) {
+										reject(new types.Error("Process exited with code '~0~'.", [result.status]));
+									} else {
+										resolve();
+									};
+								});
+							})
+							.then(function() {
+								// Returns nothing
 							});
-						});
 					}),
 				}));
 
@@ -381,13 +699,15 @@
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let destination = item.destination;
 						if (types.isString(destination)) {
-							destination = make.parseVariables(destination, { isPath: true });
+							destination = this.taskData.parseVariables(destination, { isPath: true });
 						};
+						const self = this;
 						return files.mkdir(destination.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
 								console.info('Saving configuration to "' + destination + '"...');
-								return require('npm-package-config').list(__Internal__.packageName, {beautify: true, async: true})
+								return require('npm-package-config').list(self.taskData.manifest.name, {beautify: true, async: true})
 									.then(function(config) {
+										delete config['package'];
 										return new Promise(function(resolve, reject) {
 											nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(config), {encoding: 'utf-8'}, function(ex) {
 												if (ex) {
@@ -398,61 +718,415 @@
 											});
 										});
 									});
+							})
+							.then(function() {
+								// Returns nothing
 							});
 					}),
 				}));
 
-				
-				
-				update.REGISTER(make.Operation.$extend(
-				{
-					$TYPE_NAME: 'PackageJson',
 
-					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-						const DEPS_KEYS = ['dependencies', 'optionalDependencies', 'devDependencies']
-						console.info('Updating "package.json"...');
-						const mod = __Internal__.packageName + '/package.json';
-						const json = require(mod);
-						for (let i = 0; i < DEPS_KEYS.length; i++) {
-							const depKey = DEPS_KEYS[i];
-							let deps = json[depKey];
-							const names = types.keys(deps);
-							for (let j = 0; j < names.length; j++) {
-								const name = names[j];
-								try {
-									deps[name] = deps[name][0] + require(name + '/package.json').version;
-								} catch(ex) {
-									console.warn("    warning: Can't update dependency '" + name + "'.");
-								};
-							};
+				generate.REGISTER(make.Operation.$extend({
+					$TYPE_NAME: 'Package',
+
+					execute_make: doodad.PROTECTED(function execute_make(command, item, /*optional*/options) {
+						let ops = [];
+						
+						const taskData = this.taskData;
+						
+						let indexTemplate = types.get(item, 'indexTemplate');
+						if (types.isString(indexTemplate)) {
+							indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
 						};
-						const path = require.resolve(mod);
-						const content = JSON.stringify(json, null, 4);
+						if (!indexTemplate) {
+							indexTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/index.templ.js', {os: 'linux'});
+						};
+						
+						// Get server dependencies
+						const dependencies = tools.filter(taskData.makeManifest.dependencies, function(dep) {
+							return dep.server;
+						});
+						
+						// Get server modules
+						const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
+							return mod.server;
+						});
+						
+						// Get server resources
+						const resources = tools.filter(taskData.makeManifest.resources, function(mod) {
+							return mod.server;
+						});
+						
+						// Build modules
+						ops = types.append(ops, tools.map(modules, function(mod) {
+							return {
+								'class': file.Javascript,
+								source: '%SOURCEDIR%/' + mod.src,
+								destination: '%BUILDDIR%/' + mod.src.replace(/([.]js)$/, ".min.js"),
+								runDirectives: true,
+								variables: {
+									serverSide: true,
+								},
+							};
+						}));
+						
+						// Build index
+						if (!types.get(item, 'noIndex', false)) {
+							ops.push(
+								{
+									'class': file.Javascript,
+									source: indexTemplate,
+									destination: '%PACKAGEDIR%/index.js',
+									runDirectives: true,
+									variables: {
+										serverSide: true,
+										dependencies: tools.map(dependencies, function(dep) {
+											const manifest = __Internal__.getManifest(dep.name);
+											return {
+												name: manifest.name,
+												version: __Internal__.getVersion(manifest),
+												optional: dep.optional || false,
+											};
+										}),
+										modules: tools.map(modules, function(mod) {
+											return types.extend({}, mod, {
+												dest: taskData.parseVariables('%BUILDDIR%/' + mod.src.replace(/([.]js)$/, ".min.js"), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+											});
+										}),
+										modulesSrc: tools.map(modules, function(mod) {
+											return types.extend({}, mod, {
+												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+											});
+										}),
+									},
+								}
+							);
+						};
+						
+						// Copy resources
+						ops = types.append(ops, tools.map(resources, function(res) {
+							return {
+								'class': folder.Copy,
+								source: '%SOURCEDIR%/' + res.src,
+								destination: '%BUILDDIR%/' + res.src,
+							};
+						}));
+						
+						// Copy license
+						ops.push( 
+							{
+								'class': file.Copy,
+								source: '%SOURCEDIR%/LICENSE',
+								destination: '%PACKAGEDIR%/LICENSE',
+							}
+						);
+
+						ops.push( 
+							{
+								'class': file.Copy,
+								source: '%SOURCEDIR%/LICENSE',
+								destination: '%BUILDDIR%/LICENSE',
+							}
+						);
+
+						// Generate config file
+						ops.push( 
+							{
+								'class': generate.Configuration,
+								destination: '%PACKAGEDIR%/config.json',
+							}
+						);
+
+						// Update manifest
+						ops.push( 
+							{
+								'class': update.Manifest,
+							}
+						);
+
+						return ops;
+					}),
+					
+					execute_install: doodad.PROTECTED(function execute_install(command, item, /*optional*/options) {
+						let ops = [];
+
+						const taskData = this.taskData;
+						
+						let indexTemplate = types.get(item, 'indexTemplate');
+						if (types.isString(indexTemplate)) {
+							indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
+						};
+						if (!indexTemplate) {
+							indexTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/index.templ.js', {os: 'linux'});
+						};
+						
+						// Get client dependencies
+						const dependencies = tools.filter(taskData.makeManifest.dependencies, function(dep) {
+							return dep.client;
+						});
+						
+						// Get client modules
+						const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
+							return mod.client;
+						});
+						
+						// Get client resources
+						const resources = tools.filter(taskData.makeManifest.resources, function(mod) {
+							return mod.client;
+						});
+						
+						// Copy modules source
+						ops = types.append(ops, tools.map(modules, function(mod) {
+							return {
+								'class': file.Copy,
+								source: '%SOURCEDIR%/' + mod.src,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/' + mod.src,
+							};
+						}));
+						
+						// Build modules
+						ops = types.append(ops, tools.map(modules, function(mod) {
+							return {
+								'class': file.Javascript,
+								source: '%SOURCEDIR%/' + mod.src,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/' + mod.src.replace(/([.]js)$/, ".min.js"),
+								runDirectives: true,
+							};
+						}));
+						
+						// Build index
+						if (!types.get(item, 'noIndex', false)) {
+							ops.push(
+								{
+									'class': file.Javascript,
+									source: indexTemplate,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/index.js',
+									runDirectives: true,
+									variables: {
+										dependencies: tools.map(dependencies, function(dep) {
+											const manifest = __Internal__.getManifest(dep.name);
+											return {
+												name: manifest.name,
+												version: __Internal__.getVersion(manifest),
+												optional: dep.optional || false,
+											};
+										}),
+										modules: tools.map(modules, function(mod) {
+											return types.extend({}, mod, {
+												dest: mod.src.replace(/([.]js)$/, ".min.js"),
+											});
+										}),
+										modulesSrc: tools.map(modules, function(mod) {
+											return types.extend({}, mod, {
+												dest: mod.src,
+											});
+										}),
+									},
+								}
+							);
+						};
+						
+						// Copy resources
+						ops = types.append(ops, tools.map(resources, function(res) {
+							return {
+								'class': folder.Copy,
+								source: '%SOURCEDIR%/' + res.src,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.src,
+							};
+						}));
+						
+						// Generate ocnfig file
+						ops.push( 
+							{
+								'class': generate.Configuration,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+							}
+						);
+
+						// Creating bundles...
+						const bundleSources = [];
+						if (!types.get(item, 'noIndex', false)) {
+							bundleSources.push('%INSTALLDIR%/%PACKAGENAME%/index.js');
+						};
+						
+						// Create bundle from source
+						ops.push( 
+							{
+								'class': file.Merge,
+								source: types.append([], bundleSources, tools.map(modules, function(mod) {
+									return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
+								})),
+								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
+								separator: '\n',
+							}
+						);
+						
+						// Create bundle from build
+						ops.push( 
+							{
+								'class': file.Merge,
+								source: types.append([], bundleSources, tools.map(modules, function(mod) {
+									return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src.replace(/([.]js)$/, ".min.js");
+								})),
+								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+								separator: '\n',
+							}
+						);
+						
+						// Copy license file
+						ops.push( 
+							{
+								'class': file.Copy,
+								source: '%SOURCEDIR%/LICENSE',
+								destination: '%INSTALLDIR%/%PACKAGENAME%/LICENSE',
+							}
+						);
+
+						return ops;
+					}),
+					
+					execute_browserify: doodad.PROTECTED(function execute_browserify(command, item, /*optional*/options) {
+						let ops = [];
+						
+						const taskData = this.taskData;
+						
+						let indexTemplate = types.get(item, 'indexTemplate');
+						if (types.isString(indexTemplate)) {
+							indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
+						};
+						if (!indexTemplate) {
+							indexTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/browserify.templ.js', {os: 'linux'});
+						};
+						
+						// Get browserify dependencies
+						const dependencies = tools.filter(taskData.makeManifest.dependencies, function(dep) {
+							return dep.browserify;
+						});
+						
+						// Get browserify modules
+						const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
+							return mod.browserify;
+						});
+						
+						// Get browserify resources
+						const resources = tools.filter(taskData.makeManifest.resources, function(mod) {
+							return mod.browserify;
+						});
+						
+						// Build modules
+						ops = types.append(ops, tools.map(modules, function(mod) {
+							return {
+								'class': file.Javascript,
+								source: '%SOURCEDIR%/' + mod.src,
+								destination: '%BROWSERIFYDIR%/' + mod.src.replace(/([.]js)$/, ".min.js"),
+								runDirectives: true,
+								variables: {
+									serverSide: true,
+								},
+							};
+						}));
+						
+						// Generate resources files for browserify
+						ops = types.append(ops, tools.map(resources, function(res, i) {
+							return {
+								'class': browserify.Resources,
+								name: '%PACKAGENAME%-res' + i,
+								namespace: res.namespace,
+								source: '%SOURCEDIR%/' + res.src,
+								destination: "%BROWSERIFYDIR%/" + res.src,
+								resourcesFile: 'resources.js',
+							}
+						}));
+						
+						// Build main file
+						if (!types.get(item, 'noIndex', false)) {
+							ops.push( 
+								{
+									'class': file.Javascript,
+									source: indexTemplate,
+									destination: '%PACKAGEDIR%/browserify.js',
+									runDirectives: true,
+									variables: {
+										serverSide: true,
+										dependencies: tools.map(dependencies, function(dep) {
+											const manifest = __Internal__.getManifest(dep.name);
+											return {
+												name: manifest.name,
+												version: __Internal__.getVersion(manifest),
+												optional: dep.optional || false,
+											};
+										}),
+										modules: tools.map(modules, function(mod) {
+											return types.extend({}, mod, {
+												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + mod.src.replace(/([.]js)$/, ".min.js"), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+											});
+										}),
+										resources: tools.map(resources, function(res) {
+											return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'});
+										}),
+									},
+								}
+							);
+						};
+						
+						// Build main file (debug)
+						if (!types.get(item, 'noIndex', false)) {
+							ops.push( 
+								{
+									'class': file.Javascript,
+									source: indexTemplate,
+									destination: '%PACKAGEDIR%/browserify_debug.js',
+									runDirectives: true,
+									variables: {
+										serverSide: true,
+										debug: true,
+										dependencies: tools.map(dependencies, function(dep) {
+											const manifest = __Internal__.getManifest(dep.name);
+											return {
+												name: manifest.name,
+												version: __Internal__.getVersion(manifest),
+												optional: dep.optional || false,
+											};
+										}),
+										modules: tools.map(modules, function(mod) {
+											return taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'});
+										}),
+										resources: tools.map(resources, function(res) {
+											return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'});
+										}),
+									},
+								}
+							);
+						};
+						
+						// Copy license
+						ops.push( 
+							{
+								'class': file.Copy,
+								source: '%SOURCEDIR%/LICENSE',
+								destination: "%BROWSERIFYDIR%/LICENSE",
+							}
+						);
+
+						return ops;
+					}),
+					
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						const self = this;
 						return new Promise(function(resolve, reject) {
-							nodeFs.writeFile(path, content, {encoding: 'utf-8'}, function(err, result) {
-								if (err) {
-									reject(err);
-								} else {
-									resolve();
-								};
-							});
+							const method = 'execute_' + command;
+							if (types.isImplemented(self, method)) {
+								console.info('Generating package for "' + command + "'.");
+								resolve(self[method](command, item, options));
+							} else {
+								reject(new types.Error("Command '~0~' not supported by '~1~'.", [command, types.getTypeName(self)]));
+							};
 						});
 					}),
 				}));
-				
 
 				
-				make.REGISTER(make.Operation.$extend({
-					$TYPE_NAME: 'Task',
-					
-					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-						console.info('Starting task "' + item.name + '"...');
-						return make.run(item.name, options);
-					}),
-				}));
 				
-				
-
 				browserify.REGISTER(make.Operation.$extend(
 				{
 					$TYPE_NAME: 'Resources',
@@ -460,55 +1134,69 @@
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = make.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = make.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true });
 						};
+						dest = dest.pushFile();
 						let resFile = item.resourcesFile;
 						if (types.isString(resFile)) {
-							resFile = make.parseVariables(resFile, { isPath: true });
+							resFile = this.taskData.parseVariables(resFile, { isPath: true });
 						};
 						resFile = dest.combine(resFile);
-						const resources = [];
 						console.info('Preparing resources for \'browserify\' from "' + source + '" to "' + dest + '"...');
+						const self = this;
+						function processDir(dir, index, resources) {
+							if (index < dir.length) {
+								const stats = dir[index];
+								if (stats.isFile) {
+									const resource = {
+										source: stats.path,
+										dest: stats.path.set({file: stats.path.file + '.res.js'}),
+									};
+									return files.mkdir(dest.combine(stats.path).set({file: ''}), {async: true, makeParents: true})
+										.then(function() {
+											return files.readFile(source.combine(resource.source), {encoding: (item.encoding || 'utf-8'), async: true});
+										})
+										.then(function(content) {
+											return new Promise(function(resolve, reject) {
+												nodeFs.writeFile(dest.combine(resource.dest).toString(), 
+																// TODO: See how I can write this
+																//'// This file is built from the file \'' + resource.source.file + '\' from the project package named \'' + 
+																//	this.taskData.manifest.name + '\' hosted by the \'npmjs.com\' web site, ' + 
+																//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' + 
+																'// When not mentionned otherwise, the following is Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n' + 
+																'module.exports=' + types.toSource(content), (item.encoding || 'utf-8'), function(err) {
+													if (err) {
+														reject(err);
+													} else {
+														resources.push(resource);
+														resolve();
+													};
+												});
+											});
+										})
+										.then(function() {
+											return processDir(dir, index + 1, resources);
+										});
+								} else {
+									return processDir(dir, index + 1, resources);
+								};
+							} else {
+								// Done
+								return Promise.resolve(resources);
+							};
+						};
 						return files.mkdir(dest, {makeParents: true, async: true})
 							.then(function() {
 								return files.readdir(source, {async: true, depth: Infinity, relative: true});
 							})
 							.then(function(dir) {
-								return Promise.all(tools.map(dir, function(stats) {
-									if (stats.isFolder) {
-										return files.mkdir(dest.combine(stats.path), {async: true});
-									} else if (stats.isFile) {
-										const resource = {
-											source: stats.path,
-											dest: stats.path.set({file: stats.path.file + '.res.js'}),
-										};
-										return files.readFile(source.combine(resource.source), {encoding: (item.encoding || 'utf-8'), async: true})
-											.then(function(content) {
-												return new Promise(function(resolve, reject) {
-													nodeFs.writeFile(dest.combine(resource.dest).toString(), 
-																	// TODO: See how I can write this
-																	//'// This file is built from the file \'' + resource.source.file + '\' from the project package named \'' + 
-																	//	__Internal__.packageName + '\' hosted by the \'npmjs.com\' web site, ' + 
-																	//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' + 
-																	'// When not mentionned otherwise, the following is Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n' + 
-																	'module.exports=' + types.toSource(content), (item.encoding || 'utf-8'), function(err) {
-														if (err) {
-															reject(err);
-														} else {
-															resources.push(resource);
-															resolve();
-														};
-													});
-												});
-											});
-									};
-								}));
+								return processDir(dir, 0, []);
 							})
-							.then(function() {
+							.then(function(resources) {
 								function buildPatterns(index, sourceAr, destStr, result) {
 									const name = sourceAr[index];
 									if (index < sourceAr.length - 1) {
@@ -545,18 +1233,19 @@
 								
 								const resBody = reducePatterns(0, result);
 								
-								const jsOp = new file.Javascript();
-								return jsOp.execute(command, {
-									source: files.Path.parse(module.filename).set({file: 'resources.templ.js'}),
+								// Returns new operation
+								return {
+									'class': file.Javascript,
+									source: files.Path.parse(module.filename).set({file: ''}).combine('res/resources.templ.js', {os: 'linux'}),
 									destination: resFile,
 									runDirectives: true,
-								}, {
 									variables: {
-										name: make.parseVariables(item.name),
-										namespace: make.parseVariables(item.namespace),
+										'serverSide': true,
+										name: self.taskData.parseVariables(item.name),
+										namespace: self.taskData.parseVariables(item.namespace),
 										resources: resBody,
 									},
-								});
+								};
 							});
 					}),
 				}));
@@ -568,264 +1257,107 @@
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = make.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = make.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true });
 						};
+						console.info('Browserifying "' + source + '" to "' + dest + '"...');
 						if (nodeBrowserify) {
-							console.info('Browserifying "' + source + '" to "' + dest + '"...');
+							const taskData = this.taskData;
 							return new Promise(function(resolve, reject) {
-								try {
-									const b = nodeBrowserify();
-									b.add(source.toString());
-									const outputStream = nodeFs.createWriteStream(dest.toString());
-									let bundleStream = b.bundle();
-									if (item.minify) {
-										const jsStream = new __Internal__.JsMinifier();
-										jsStream.listen();
-										const jsStreamDuplex = jsStream.getInterface(nodejsIOInterfaces.ITransform);
-										bundleStream = bundleStream
-											.pipe(jsStreamDuplex)
-											.pipe(outputStream)
-									} else {
-										bundleStream = bundleStream
-											.pipe(outputStream)
+									try {
+										const b = nodeBrowserify();
+										b.add(source.toString());
+										const outputStream = nodeFs.createWriteStream(dest.toString());
+										let bundleStream = b.bundle();
+										if (item.minify) {
+											const jsStream = new __Internal__.JsMinifier({taskData: taskData});
+											jsStream.listen();
+											const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.ITransform);
+											bundleStream = bundleStream
+												.pipe(jsStreamTransform)
+												.pipe(outputStream)
+										} else {
+											bundleStream = bundleStream
+												.pipe(outputStream)
+										};
+										bundleStream
+											.on('finish', resolve)
+											.on('error', reject);
+									} catch(ex) {
+										reject(ex);
 									};
-									bundleStream
-										.on('finish', resolve)
-										.on('error', reject);
-								} catch(ex) {
-									reject(ex);
-								};
-							});
+								})
+								.then(function() {
+									// Returns nothing
+								});
 						} else {
-							console.warn('Can\'t browserify "' + source + '" to "' + dest + '"...');
-							return Promise.resolve();
+							return Promise.reject(new types.Error('Can\'t browserify "' + source + '" to "' + dest + '" because "browserify" is not installed.'));
 						};
 					}),
 				}));
 
-				make.parseVariables = function parseVariables(val, /*optional*/options) {
-					function solvePath(path, /*optional*/os) {
-						if (types.isString(path)) {
-							return files.Path.parse(path, {
-								os: (os || 'linux'),
-								dirChar: null,
-								shell: 'api',
-								noEscapes: true,
-								isRelative: null, // auto-detect
-							});
-						} else {
-							return path;
-						};
-					};
-					
-					const isPath = types.get(options, 'isPath', false);
+				
+				update.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Manifest',
 
-					let path = val,
-						isRelative = true;
-					if (isPath) {
-						if (!(path instanceof files.Path)) {
-							path = solvePath(val);
-						};
-						isRelative = path.isRelative;
-						path = path.toArray();
-					} else {
-						path = [String(path)];
-					};
-					
-					const os = tools.getOS();
+					DEPS_KEYS: doodad.PROTECTED(doodad.ATTRIBUTE(['dependencies', 'optionalDependencies', 'devDependencies'], extenders.UniqueArray)),
 
-					for (var i = 0; i < path.length; ) {
-						let str = path[i],
-							start = str.indexOf('%'),
-							end = str.indexOf('%', start + 1),
-							result = ((start > 0) ? str.slice(0, start) : ''),
-							changed = (start >= 0);
-
-						while ((start >= 0) && (end >= 0)) {
-							const name = str.slice(start, end + 1),
-								nameLc = name.toLowerCase();
-							let value;
-							if (nameLc === '%packagename%') {
-								if (__Internal__.packageName) {
-									value = __Internal__.packageName;
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						console.info('Updating manifest...');
+						
+						const taskData = this.taskData;
+						
+						const manifest = types.depthExtend(15, {}, taskData.manifest, {
+							dependencies: tools.reduce(taskData.makeManifest.dependencies, function(result, dep) {result[dep.name] = '^0.0.0'; return result;}, {}),
+						});
+						
+						manifest.files = types.unique(manifest.files || [],
+							(taskData.makeManifest.sourceDir.isRelative ? [taskData.makeManifest.sourceDir.toString()] : undefined),
+							(taskData.makeManifest.buildDir.isRelative ? [taskData.makeManifest.buildDir.toString()] : undefined),
+							(taskData.makeManifest.browserifyDir.isRelative ? [taskData.makeManifest.browserifyDir.toString()] : undefined),
+							(taskData.makeManifest.installDir.isRelative ? [taskData.makeManifest.installDir.toString()] : undefined)
+						);
+						
+						for (let i = 0; i < this.DEPS_KEYS.length; i++) {
+							const depKey = this.DEPS_KEYS[i];
+							let deps = manifest[depKey];
+							const names = types.keys(deps);
+							for (let j = 0; j < names.length; j++) {
+								const name = names[j];
+								if (name === taskData.manifest.name) {
+									delete deps[name];
 								} else {
-									throw new types.Error("Package name not specified.");
+									deps[name] = deps[name][0] + __Internal__.getManifest(name).version;
 								};
-							} else if (nameLc === '%packageversion%') {
-								if (__Internal__.packageVersion) {
-									value = __Internal__.packageVersion;
-								} else {
-									throw new types.Error("Package version not specified.");
-								};
-							} else if (nameLc === '%packagedir%') {
-								if (__Internal__.packageDir) {
-									value = solvePath(__Internal__.packageDir);
-								} else {
-									throw new types.Error("Package directory not specified.");
-								};
-							} else if (nameLc === '%sourcedir%') {
-								if (__Internal__.sourceDir) {
-									value = solvePath(__Internal__.sourceDir);
-								} else {
-									throw new types.Error("Source directory not specified.");
-								};
-							} else if (nameLc === '%builddir%') {
-								if (__Internal__.buildDir) {
-									value = solvePath(__Internal__.buildDir);
-								} else {
-									throw new types.Error("Build directory not specified.");
-								};
-							} else if (nameLc === '%installdir%') {
-								if (__Internal__.installDir) {
-									value = solvePath(__Internal__.installDir);
-								} else {
-									throw new types.Error("Installation directory not specified.");
-								};
-							} else if (nameLc === '%programdata%') {
-								if (os.type === 'windows') {
-									value = solvePath(process.env.programdata, os.type);
-								} else {
-									// There is no environment variable for this purpose under Unix-like systems
-									// So I use "package.json"'s "config" section.
-									value = solvePath(make.getOptions().settings.unix.dataPath || "/var/lib/", os.type);
-								};
-							} else if (nameLc === '%programfiles%') {
-								if (os.type === 'windows') {
-									value = solvePath(process.env.programfiles, os.type);
-								} else {
-									// There is no environment variable for this purpose under Unix-like systems
-									// So I use "package.json"'s "config" section.
-									value = solvePath(make.getOptions().settings.unix.libPath || "/usr/local/lib/", os.type);
-								};
-							} else if ((nameLc === '%appdata%') || (nameLc === '%localappdata%')) {
-								if (os.type === 'windows') {
-									value = solvePath(process.env.appdata || process.env.localappdata, os.type);
-								} else {
-									value = solvePath(process.env.HOME, os.type);
-								};
-							//...
-							} else {
-								const tmp = name.slice(1, -1);
-								if (!types.hasKey(process.env, tmp)) {
-									throw new types.Error("Invalid environment variable name: '~0~'.", [tmp]);
-								};
-								value = process.env[tmp];
-								if (value.indexOf(os.dirChar) >= 0) {
-									value = solvePath(value, os.type);
-								};
-							};
-							
-							if (value instanceof files.Path) {
-								//if (isPath && !isRelative) {
-								//	throw types.Error("Path in '~0~' can't be inserted because the target path is absolute.", [name]);
-								//};
-								if ((i > 0) && !value.isRelative) {
-									throw types.Error("Path in '~0~' can't be inserted because it is not relative.", [name]);
-								};
-								result += value.toString({
-									os: os.type,
-									dirChar: os.dirChar,
-									shell: 'api',
-									noEscapes: true,
-								});
-							} else {
-								result += String(value);
-							};
-							
-							start = str.indexOf('%', end + 1);
-							if (start >= 0) {
-								result += str.slice(end + 1, start);
-								end = str.indexOf('%', start + 1);
-							} else {
-								result += str.slice(end + 1);
-								end = -1;
 							};
 						};
 						
-						if (changed) {
-							if (isPath) {
-								path.splice.apply(path, types.append([i, 1], solvePath(result, os.type).toArray()));
-							} else {
-								path[i] = result;
-							};
-						} else {
-							i++;
-						};
-					};
-					
-					if (isPath) {
-						return files.Path.parse(path);
-					} else {
-						return path.join('');
-					};
-				};
+						const content = JSON.stringify(manifest, null, 4);
+						
+						return new Promise(function(resolve, reject) {
+								nodeFs.writeFile(taskData.manifestPath, content, {encoding: 'utf-8'}, function(err, result) {
+									if (err) {
+										reject(err);
+									} else {
+										resolve();
+									};
+								});
+							})
+							.then(function() {
+								// Returns nothing
+							});
+					}),
+				}));
 				
-				
+
 				
 				make.run = function run(command, /*optional*/options) {
-					// TODO: Uninstall
-					function combineWithPackageDir(path) {
-						path = files.Path.parse(path, {noEscapes: true, dirChar: ['/', '\\'], isRelative: null}).set({
-							noEscapes: false,
-							dirChar: null,
-						});
-						if (path.isRelative) {
-							path = __Internal__.packageDir.combine(path);
-						};
-						return path;
-					};
-
-					__Internal__.packageDir = root.Doodad.Tools.Files.Path.parse(types.get(options, 'path', process.cwd()));
-					
-					const pack = require(combineWithPackageDir('./package.json').toString());
-					
-					__Internal__.packageName = pack.name;
-					__Internal__.packageVersion = pack.version;
-					__Internal__.sourceDir = combineWithPackageDir(types.get(options, 'sourceDir', make.getOptions().settings.sourceDir) || './src');
-					__Internal__.buildDir = combineWithPackageDir(types.get(options, 'buildDir', make.getOptions().settings.buildDir) || './build');
-					__Internal__.installDir = combineWithPackageDir(types.get(options, 'installDir', make.getOptions().settings.installDir) || './dist');
-					
-					let data = require(combineWithPackageDir('./make.json').toString());
-					data = types.get(data.makeData.tasks, command);
-					
-					const objs = {};
-					
-					var proceed = function proceed(index) {
-						if (index < data.operations.length) {
-							const item = data.operations[index];
-							
-							let obj = item['class'];
-								
-							if (types.isString(obj)) {
-								if (types.hasKey(objs, obj)) {
-									obj = objs[obj];
-								} else {
-									const cls = namespaces.getNamespace(obj);
-									if (!types._implements(cls, make.Operation)) {
-										throw new types.Error("Invalid class '~0~'.", [obj]);
-									};
-									objs[obj] = obj = new cls();
-								};
-								
-								item['class'] = obj;
-							};
-							
-							let result = obj.execute(command, item, options);
-							
-							return result
-								.then(function() {
-									return proceed(++index);
-								});
-						} else {
-							return Promise.resolve();
-						};
-					};
-					
-					return proceed(0);
+					const obj = new make.Task();
+					return obj.execute(command, {}, options);
 				};
 			},
 		};
@@ -833,8 +1365,24 @@
 		return DD_MODULES;
 	};
 	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
+	//! BEGIN_REMOVE()
+	if ((typeof process !== 'object') || (typeof module !== 'object')) {
+	//! END_REMOVE()
+		//! IF_UNDEF("serverSide")
+			// <PRB> export/import are not yet supported in browsers
+			global.DD_MODULES = exports.add(global.DD_MODULES);
+		//! END_IF()
+	//! BEGIN_REMOVE()
 	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+	//! END_REMOVE()
+	
+}).call(
+	//! BEGIN_REMOVE()
+	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
+	//! END_REMOVE()
+	//! IF_DEF("serverSide")
+	//! 	INJECT("global")
+	//! ELSE()
+	//! 	INJECT("window")
+	//! END_IF()
+);

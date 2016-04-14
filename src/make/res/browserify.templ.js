@@ -1,5 +1,6 @@
+//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // dOOdad - Object-oriented programming framework
-// File: index.js - Make startup file
+// File: browserify.js - Module startup file for 'browserify'.
 // Project home: https://sourceforge.net/projects/doodad-js/
 // Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
 // Author: Claude Petit, Quebec city
@@ -20,57 +21,54 @@
 //	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //	See the License for the specific language governing permissions and
 //	limitations under the License.
+//! END_REPLACE()
 
-(function() {
-	var global = this;
+//! IF_UNDEF("debug")
+	//! DEFINE("debug", false)
+//! END_IF()
 
-	var exports = {};
-	if (typeof process === 'object') {
-		module.exports = exports;
-	};
-	
-	var MODULE_NAME = 'doodad-js-make';
-	
-	exports.add = function add(DD_MODULES) {
+"use strict";
+
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES[MODULE_NAME] = {
-			type: 'Package',
-			//! INSERT("version:'" + VERSION('doodad-js-make') + "',")
-			namespaces: null,
-			dependencies: [
-				{
-					name: 'doodad-js',
-					//! INSERT("version:'" + VERSION('doodad-js') + "',")
-				},
-				{
-					name: 'doodad-js-io',
-					//! INSERT("version:'" + VERSION('doodad-js-io') + "',")
-				},
-				{
-					name: 'doodad-js-minifiers',
-					//! INSERT("version:'" + VERSION('doodad-js-minifiers') + "',")
-				},
-			],
+		DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
+			type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
+			version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
+			dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 			
 			create: function create(root, /*optional*/_options) {
 				"use strict";
 				
 				var doodad = root.Doodad,
-					modules = doodad.Modules;
+					namespaces = doodad.Namespaces,
+					types = doodad.Types,
+					tools = doodad.Tools;
 				
-				var fromSource = root.getOptions().settings.fromSource;
-
-				return modules.load(MODULE_NAME, (fromSource ? 'src/make/_Make.js' : '_Make.min.js'), _options)
+				var config = null;
+				try {
+					config = require('./config.json');
+				} catch(ex) {
+				};
+				
+				var DD_MODULES = {};
+				
+				//! FOR_EACH(VAR("resources"), "res")
+					require(/*! INJECT(TO_SOURCE(VAR("res"))) */).add(DD_MODULES);
+				//! END_FOR()
+				
+				//! FOR_EACH(VAR("modules"), "mod")
+					//! IF(!VAR("mod.manual"))
+						require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
+					//! END_IF()
+				//! END_FOR()
+				
+				return namespaces.load(DD_MODULES, null, config, false)
 					.then(function() {
 						// Returns nothing
 					});
 			},
 		};
 		return DD_MODULES;
-	};
-	
-	if (typeof process !== 'object') {
-		// <PRB> export/import are not yet supported in browsers
-		global.DD_MODULES = exports.add(global.DD_MODULES);
-	};
-}).call((typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this));
+	},
+};
