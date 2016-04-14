@@ -31,23 +31,18 @@ module.exports = {
 		DD_MODULES[/*! TO_SOURCE(VAR("name")) */] = {
 			type: 'Package',
 			version: '0a',
-			dependencies: ['Doodad.Tools.Files', /*! TO_SOURCE(VAR("namespace")) */],
+			dependencies: ['Doodad.Tools.Files', 'Doodad.Namespaces'],
 			exports: module.exports,
 			
 			create: function create(root, /*optional*/_options) {
 				var doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
-					files = tools.Files;
-					
+					files = tools.Files,
+					namespaces = doodad.Namespaces;
 					
 				var Promise = types.getPromise(),
-					mod = root,
-					ns = /*! TO_SOURCE(VAR("namespace")) */.split('.'),
-					name;
-				while (name = ns.shift()) {
-					mod = mod[name];
-				};
+					mod = namespaces.getNamespace(/*! TO_SOURCE(VAR("namespace")) */);
 				
 				mod.setOptions({
 					resourcesPath: '/',
