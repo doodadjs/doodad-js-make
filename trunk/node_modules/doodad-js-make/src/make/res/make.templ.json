@@ -24,59 +24,17 @@
 	"//": "    See the License for the specific language governing permissions and",
 	"//": "    limitations under the License.",
 	"//": "",
+	"sourceDir": "./src",
+	"buildDir": "./build",
+	"installDir": "./dist",
+	"browserifyDir": "./browserify",
+	"type": "Package",
 	"dependencies": [
-		{
-			"name": "doodad-js",
-			"optional": false,
-			"client": false,
-			"server": true,
-			"browserify": false
-		},
-		{
-			"name": "doodad-js-io",
-			"optional": false,
-			"client": false,
-			"server": true,
-			"browserify": false
-		},
-		{
-			"name": "doodad-js-minifiers",
-			"optional": false,
-			"client": false,
-			"server": true,
-			"browserify": false
-		},
-		{
-			"name": "doodad-js-safeeval",
-			"optional": false,
-			"client": false,
-			"server": true,
-			"browserify": false
-		}
 	],
 	"modules": [
-		{
-			"src": "make/_Make.js",
-			"client": false,
-			"server": true,
-			"browserify": false
-		}
 	],
 	"resources": [
-		{
-			"src": "make/res",
-			"client": false,
-			"server": true,
-			"browserify": false
-		}
 	],
 	"tasks": {
-		"make": {
-			"operations": [
-				{
-					"class": "Make.Generate.Package"
-				}
-			]
-		}
 	}
 }

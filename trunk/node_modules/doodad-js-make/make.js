@@ -49,22 +49,39 @@ function startup() {
 	return make.run(command);
 };
 
-const root = require('doodad-js').createRoot(null, {startup: {settings: {fromSource: true}}}),
-	doodad = root.Doodad,
+const root = require('doodad-js').createRoot(null, {startup: {fromSource: true}});
+
+const doodad = root.Doodad,
 	tools = doodad.Tools,
 	types = doodad.Types,
-	namespaces = doodad.Namespaces;
+	modules = doodad.Modules,
+	namespaces = doodad.Namespaces,
+	
+	Promise = types.getPromise();
 
-const DD_MODULES = {};
-
-require('doodad-js-io').add(DD_MODULES);
-require('doodad-js-minifiers').add(DD_MODULES);
-require('doodad-js-safeeval').add(DD_MODULES);
-require('doodad-js-unicode').add(DD_MODULES);
-require('doodad-js-locale').add(DD_MODULES);
-require('doodad-js-make').add(DD_MODULES);
-
-namespaces.loadNamespaces(DD_MODULES, startup)
+function loadModule(name) {
+	return function(DD_MODULES) { 
+		return modules.loadManifest(name)
+			.then(function(mod) {
+				return mod.add(DD_MODULES)
+			}); 
+	};
+};
+	
+function endLoading() {
+	return function(DD_MODULES) { 
+		return namespaces.load(DD_MODULES, startup); 
+	};
+};
+	
+return Promise.resolve( {} )
+	.then(loadModule('doodad-js-io'))
+	.then(loadModule('doodad-js-minifiers'))
+	.then(loadModule('doodad-js-safeeval'))
+	.then(loadModule('doodad-js-unicode'))
+	.then(loadModule('doodad-js-locale'))
+	.then(loadModule('doodad-js-make'))
+	.then(endLoading())
 	['catch'](function(err) {
 		console.error(err.stack);
 		process.exit(1);
