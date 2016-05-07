@@ -51,6 +51,8 @@ module.exports = {
 				} catch(ex) {
 				};
 				
+				var options = types.extend({}, config, _options);
+				
 				var DD_MODULES = {};
 				
 				//! FOR_EACH(VAR("resources"), "res")

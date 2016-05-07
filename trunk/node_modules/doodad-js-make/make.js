@@ -23,65 +23,87 @@
 
 "use strict";
 
-function startup() {
-	const make = root.Make;
-	
-	let index = 2;
-	
-	let arg = (process.argv[index++] || '').split('=', 2);
-	
-	let command = arg[0].toLowerCase();
-	
-	if (['make', 'install', 'test', 'custom'].indexOf(command) < 0) {
-		console.error("Invalid command. Available commands are : 'make', 'install', 'test' and 'custom'.");
-		process.exit(1);
-	};
+function run() {
+	const root = require('doodad-js').createRoot(null, {startup: {fromSource: true}});
 
-	if (command === 'custom') {
-		let name = arg[1] || process.argv[index++];
-		if (!name) {
-			console.error("Missing argument to command 'custom'.");
-			process.exit(1);
+	const doodad = root.Doodad,
+		tools = doodad.Tools,
+		types = doodad.Types,
+		modules = doodad.Modules,
+		namespaces = doodad.Namespaces,
+		
+		Promise = types.getPromise();
+
+	const options = {
+		Make: {
+		},
+	};
+	
+	let command = '',
+		index = 2;
+
+	while (index < process.argv.length) {
+		let arg = (process.argv[index++] || '').split('=', 2);
+		
+		if (arg[0][0] === '-') {
+			let name = arg[0],
+				val = (arg.length > 1 ? arg[1] : true);
+			//if (name === ...) {
+			//	options.Make..... = val;
+			//} else {
+				console.error("Invalid options.");
+				process.exit(1);
+			//};
+		} else {
+			command = arg[0].toLowerCase();
+			
+			if (['make', 'install', 'test', 'custom'].indexOf(command) < 0) {
+				throw new types.Error("Invalid command. Available commands are : 'make', 'install', 'test' and 'custom'.");
+			};
+
+			if (command === 'custom') {
+				let name = arg[1] || process.argv[index++];
+				if (!name) {
+					throw new types.Error("Missing argument to command 'custom'.");
+				};
+				command = name;
+			};
 		};
-		command = name;
+	};
+	
+	if (!command) {
+		throw new types.Error("Missing command.");
+	};
+	
+	function startup() {
+		const make = root.Make;
+		return make.run(command);
 	};
 
-	return make.run(command);
-};
-
-const root = require('doodad-js').createRoot(null, {startup: {fromSource: true}});
-
-const doodad = root.Doodad,
-	tools = doodad.Tools,
-	types = doodad.Types,
-	modules = doodad.Modules,
-	namespaces = doodad.Namespaces,
-	
-	Promise = types.getPromise();
-
-function loadModule(name) {
-	return function(DD_MODULES) { 
-		return modules.loadManifest(name)
-			.then(function(mod) {
-				return mod.add(DD_MODULES)
-			}); 
+	function loadModule(name) {
+		return function(DD_MODULES) { 
+			return modules.loadManifest(name)
+				.then(function(mod) {
+					return mod.add(DD_MODULES)
+				}); 
+		};
 	};
-};
-	
-function endLoading() {
-	return function(DD_MODULES) { 
-		return namespaces.load(DD_MODULES, startup); 
+
+	function loadNamespaces(DD_MODULES) {
+		return namespaces.load(DD_MODULES, startup, options); 
 	};
+
+	return Promise.resolve( {} )
+		.then(loadModule('doodad-js-io'))
+		.then(loadModule('doodad-js-minifiers'))
+		.then(loadModule('doodad-js-safeeval'))
+		.then(loadModule('doodad-js-unicode'))
+		.then(loadModule('doodad-js-locale'))
+		.then(loadModule('doodad-js-make'))
+		.then(loadNamespaces);
 };
-	
-return Promise.resolve( {} )
-	.then(loadModule('doodad-js-io'))
-	.then(loadModule('doodad-js-minifiers'))
-	.then(loadModule('doodad-js-safeeval'))
-	.then(loadModule('doodad-js-unicode'))
-	.then(loadModule('doodad-js-locale'))
-	.then(loadModule('doodad-js-make'))
-	.then(endLoading())
+
+run()
 	['catch'](function(err) {
 		console.error(err.stack);
 		process.exit(1);
