@@ -63,6 +63,11 @@ module.exports = {
 								try {
 									var callback = types.get(options, 'callback'),
 										result;
+										
+									if (callback) {
+										var cbObj = types.get(options, 'callbackObj');
+										callback = new doodad.Callback(cbObj, callback);
+									};
 //! VAR("resources")
 //! BEGIN_REMOVE()
 				Exemple:

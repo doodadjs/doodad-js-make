@@ -44,6 +44,16 @@
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
 			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Modules', 'Update'],
 			
+			//proto: function(root) {
+			//	var types = root.Doodad.Types;
+			//	return {
+			//		setOptions: types.SUPER(function setOptions(/*paramarray*/) {
+			//			options = this._super.apply(this, arguments);
+			//			return options;
+			//		}),
+			//	};
+			//},
+			
 			create: function create(root, /*optional*/_options) {
 				"use strict";
 
@@ -96,12 +106,16 @@
 					
 					
 					
-				//make.setOptions({
-				//}, _options);
+				make.setOptions({
+					unix: {
+					  dataPath: "/var/lib/",
+					  libPath: "/usr/local/lib/",
+					},
+				}, _options);
 				
 				
 				__Internal__.getManifest = function getManifest(pkg) {
-					return require(pkg + '/package.json');
+					return require(pkg.split('/', 2)[0] + '/package.json');
 				};
 
 				__Internal__.getVersion = function getVersion(manifest) {
@@ -617,8 +631,9 @@
 							dest = this.taskData.parseVariables(dest, { isPath: true });
 						};
 						console.info('Minifying file "' + source + '" to "' + dest + '"...');
-						const variables = types.extend({}, types.get(item, 'variables'), types.get(options, 'variables'));
-						variables.task = command;
+						const variables = types.extend({
+							task: command,
+						}, types.get(item, 'variables'), types.get(options, 'variables'));
 						const taskData = this.taskData;
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
@@ -746,6 +761,14 @@
 							indexTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/index.templ.js', {os: 'linux'});
 						};
 						
+						let testsTemplate = types.get(item, 'testsTemplate');
+						if (types.isString(testsTemplate)) {
+							testsTemplate = taskData.parseVariables(testsTemplate, { isPath: true });
+						};
+						if (!testsTemplate) {
+							testsTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/tests.templ.js', {os: 'linux'});
+						};
+						
 						// Get server dependencies
 						const dependencies = tools.filter(taskData.makeManifest.dependencies, function(dep) {
 							return dep.server;
@@ -757,8 +780,8 @@
 						});
 						
 						// Get server resources
-						const resources = tools.filter(taskData.makeManifest.resources, function(mod) {
-							return mod.server;
+						const resources = tools.filter(taskData.makeManifest.resources, function(res) {
+							return res.server;
 						});
 						
 						// Build modules
@@ -784,28 +807,70 @@
 									runDirectives: true,
 									variables: {
 										serverSide: true,
-										dependencies: tools.map(dependencies, function(dep) {
-											const manifest = __Internal__.getManifest(dep.name);
-											return {
-												name: manifest.name,
-												version: __Internal__.getVersion(manifest),
-												optional: dep.optional || false,
-											};
-										}),
-										modules: tools.map(modules, function(mod) {
-											return types.extend({}, mod, {
-												dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-											});
-										}),
-										modulesSrc: tools.map(modules, function(mod) {
-											return types.extend({}, mod, {
-												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-											});
-										}),
+										dependencies: tools.map(tools.filter(dependencies, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(manifest),
+													optional: dep.optional || false,
+												};
+											}),
+										modules: tools.map(tools.filter(modules, function(mod) {
+												return !mod.test;
+											}), function(mod) {
+												return types.extend({}, mod, {
+													dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												});
+											}),
+										modulesSrc: tools.map(tools.filter(modules, function(mod) {
+												return !mod.test;
+											}), function(mod) {
+												return types.extend({}, mod, {
+													dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												});
+											}),
 									},
 								}
 							);
 						};
+
+						ops.push(
+							{
+								'class': file.Javascript,
+								source: testsTemplate,
+								destination: '%PACKAGEDIR%/tests.js',
+								runDirectives: true,
+								variables: {
+									serverSide: true,
+									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
+											return dep.test;
+										}), [{name: 'doodad-js-test'}]), function(dep) {
+											const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(manifest),
+												optional: dep.optional || false,
+											};
+										}),
+									modules: tools.map(tools.filter(modules, function(mod) {
+											return mod.test;
+										}), function(mod) {
+											return types.extend({}, mod, {
+												dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+											});
+										}),
+									modulesSrc: tools.map(tools.filter(modules, function(mod) {
+											return mod.test;
+										}), function(mod) {
+											return types.extend({}, mod, {
+												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+											});
+										}),
+								},
+							}
+						);
 						
 						// Copy resources
 						ops = types.append(ops, tools.map(resources, function(res) {
@@ -864,6 +929,14 @@
 							indexTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/index.templ.js', {os: 'linux'});
 						};
 						
+						let testsTemplate = types.get(item, 'testsTemplate');
+						if (types.isString(testsTemplate)) {
+							testsTemplate = taskData.parseVariables(testsTemplate, { isPath: true });
+						};
+						if (!testsTemplate) {
+							testsTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/tests.templ.js', {os: 'linux'});
+						};
+						
 						// Get client dependencies
 						const dependencies = tools.filter(taskData.makeManifest.dependencies, function(dep) {
 							return dep.client;
@@ -875,8 +948,8 @@
 						});
 						
 						// Get client resources
-						const resources = tools.filter(taskData.makeManifest.resources, function(mod) {
-							return mod.client;
+						const resources = tools.filter(taskData.makeManifest.resources, function(res) {
+							return res.client;
 						});
 						
 						// Copy modules source
@@ -907,28 +980,69 @@
 									destination: '%INSTALLDIR%/%PACKAGENAME%/index.js',
 									runDirectives: true,
 									variables: {
-										dependencies: tools.map(dependencies, function(dep) {
-											const manifest = __Internal__.getManifest(dep.name);
-											return {
-												name: manifest.name,
-												version: __Internal__.getVersion(manifest),
-												optional: dep.optional || false,
-											};
-										}),
-										modules: tools.map(modules, function(mod) {
-											return types.extend({}, mod, {
-												dest: __Internal__.getBuiltFileName(mod.src),
-											});
-										}),
-										modulesSrc: tools.map(modules, function(mod) {
-											return types.extend({}, mod, {
-												dest: mod.src,
-											});
-										}),
+										dependencies: tools.map(tools.filter(dependencies, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(manifest),
+													optional: dep.optional || false,
+												};
+											}),
+										modules: tools.map(tools.filter(modules, function(mod) {
+												return !mod.test;
+											}), function(mod) {
+												return types.extend({}, mod, {
+													dest: __Internal__.getBuiltFileName(mod.src),
+												});
+											}),
+										modulesSrc: tools.map(tools.filter(modules, function(mod) {
+												return !mod.test;
+											}), function(mod) {
+												return types.extend({}, mod, {
+													dest: mod.src,
+												});
+											}),
 									},
 								}
 							);
 						};
+
+						ops.push(
+							{
+								'class': file.Javascript,
+								source: testsTemplate,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/tests.js',
+								runDirectives: true,
+								variables: {
+									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
+											return dep.test;
+										}), [{name: 'doodad-js-test'}]), function(dep) {
+											const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(manifest),
+												optional: dep.optional || false,
+											};
+										}),
+									modules: tools.map(tools.filter(modules, function(mod) {
+											return mod.test;
+										}), function(mod) {
+											return types.extend({}, mod, {
+												dest: __Internal__.getBuiltFileName(mod.src),
+											});
+										}),
+									modulesSrc: tools.map(tools.filter(modules, function(mod) {
+											return mod.test;
+										}), function(mod) {
+											return types.extend({}, mod, {
+												dest: mod.src,
+											});
+										}),
+								},
+							}
+						);
 						
 						// Copy resources
 						ops = types.append(ops, tools.map(resources, function(res) {
@@ -957,9 +1071,11 @@
 						ops.push( 
 							{
 								'class': file.Merge,
-								source: types.append([], bundleSources, tools.map(modules, function(mod) {
-									return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
-								})),
+								source: types.append([], bundleSources, tools.map(tools.filter(modules, function(mod) {
+										return !mod.test;
+									}), function(mod) {
+										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
+									})),
 								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
 								separator: '\n',
 							}
@@ -969,9 +1085,11 @@
 						ops.push( 
 							{
 								'class': file.Merge,
-								source: types.append([], bundleSources, tools.map(modules, function(mod) {
-									return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
-								})),
+								source: types.append([], bundleSources, tools.map(tools.filter(modules, function(mod) {
+										return !mod.test;
+									}), function(mod) {
+										return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
+									})),
 								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 								separator: '\n',
 							}
@@ -1003,18 +1121,25 @@
 						};
 						
 						// Get browserify dependencies
-						const dependencies = tools.filter(taskData.makeManifest.dependencies, function(dep) {
-							return dep.browserify;
+						const dependencies = tools.map(tools.filter(taskData.makeManifest.dependencies, function(dep) {
+								return dep.browserify && !dep.test;
+							}), function(dep) {
+							const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
+							return {
+								name: dep.name,
+								version: __Internal__.getVersion(manifest),
+								optional: dep.optional || false,
+							};
 						});
 						
 						// Get browserify modules
 						const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
-							return mod.browserify;
+							return mod.browserify && !mod.test;
 						});
 						
 						// Get browserify resources
-						const resources = tools.filter(taskData.makeManifest.resources, function(mod) {
-							return mod.browserify;
+						const resources = tools.filter(taskData.makeManifest.resources, function(res) {
+							return res.browserify;
 						});
 						
 						// Build modules
@@ -1039,6 +1164,7 @@
 								source: '%SOURCEDIR%/' + res.src,
 								destination: "%BROWSERIFYDIR%/" + res.src,
 								resourcesFile: 'resources.js',
+								resourcesTemplate: types.get(item, 'resourcesTemplate'),
 							}
 						}));
 						
@@ -1052,14 +1178,7 @@
 									runDirectives: true,
 									variables: {
 										serverSide: true,
-										dependencies: tools.map(dependencies, function(dep) {
-											const manifest = __Internal__.getManifest(dep.name);
-											return {
-												name: manifest.name,
-												version: __Internal__.getVersion(manifest),
-												optional: dep.optional || false,
-											};
-										}),
+										dependencies: dependencies,
 										modules: tools.map(modules, function(mod) {
 											return types.extend({}, mod, {
 												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
@@ -1084,14 +1203,7 @@
 									variables: {
 										serverSide: true,
 										debug: true,
-										dependencies: tools.map(dependencies, function(dep) {
-											const manifest = __Internal__.getManifest(dep.name);
-											return {
-												name: manifest.name,
-												version: __Internal__.getVersion(manifest),
-												optional: dep.optional || false,
-											};
-										}),
+										dependencies: dependencies,
 										modules: tools.map(modules, function(mod) {
 											return taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'});
 										}),
@@ -1149,6 +1261,15 @@
 						if (types.isString(resFile)) {
 							resFile = this.taskData.parseVariables(resFile, { isPath: true });
 						};
+						
+						let resourcesTemplate = types.get(item, 'resourcesTemplate');
+						if (types.isString(resourcesTemplate)) {
+							resourcesTemplate = taskData.parseVariables(resourcesTemplate, { isPath: true });
+						};
+						if (!resourcesTemplate) {
+							resourcesTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/resources.templ.js', {os: 'linux'});
+						};
+						
 						resFile = dest.combine(resFile);
 						console.info('Preparing resources for \'browserify\' from "' + source + '" to "' + dest + '"...');
 						const self = this;
@@ -1167,7 +1288,7 @@
 										.then(function(content) {
 											return new Promise(function(resolve, reject) {
 												nodeFs.writeFile(dest.combine(resource.dest).toString(), 
-																// TODO: See how I can write this
+																// TODO: See how I can formulate this
 																//'// This file is built from the file \'' + resource.source.file + '\' from the project package named \'' + 
 																//	this.taskData.manifest.name + '\' hosted by the \'npmjs.com\' web site, ' + 
 																//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' + 
@@ -1240,7 +1361,7 @@
 								// Returns new operation
 								return {
 									'class': file.Javascript,
-									source: files.Path.parse(module.filename).set({file: ''}).combine('res/resources.templ.js', {os: 'linux'}),
+									source: resourcesTemplate,
 									destination: resFile,
 									runDirectives: true,
 									variables: {
@@ -1316,7 +1437,11 @@
 						const taskData = this.taskData;
 						
 						const manifest = types.depthExtend(15, {}, taskData.manifest, {
-							dependencies: tools.reduce(taskData.makeManifest.dependencies, function(result, dep) {result[dep.name] = '^0.0.0'; return result;}, {}),
+							dependencies: tools.reduce(tools.filter(taskData.makeManifest.dependencies, function(dep) {
+									return !dep.test;
+								}), function(result, dep) {
+									result[dep.name] = '^0.0.0'; return result;
+								}, {}),
 						});
 						
 						manifest.files = types.unique(manifest.files || [],
@@ -1335,7 +1460,7 @@
 								if (name === taskData.manifest.name) {
 									delete deps[name];
 								} else {
-									deps[name] = deps[name][0] + __Internal__.getManifest(name).version;
+									deps[name] = deps[name][0] + __Internal__.getManifest(name.split('/', 2)[0]).version;
 								};
 							};
 						};

@@ -8,6 +8,7 @@
 		"dist",
 		"browserify",
 		"index.js",
+		"tests.js",
 		"browserify.js",
 		"browserify_debug.js",
 		"config.json",

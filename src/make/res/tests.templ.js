@@ -44,8 +44,8 @@
 	
 	exports.add = function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
-			type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
+		DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name") + "/tests")) */] = {
+			type: 'TestPackage',
 			version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 			dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 			
@@ -53,12 +53,9 @@
 				"use strict";
 				
 				var doodad = root.Doodad,
-					types = doodad.Types,
 					modules = doodad.Modules,
 					fromSource = root.getOptions().fromSource;
 				
-				//var options = types.extend({}, config, _options);
-
 				return modules.load(/*! INJECT(TO_SOURCE(MANIFEST("name"))) */, (fromSource ? [ 
 							//! MAP(VAR("modulesSrc"), "mod")
 								//! IF(!VAR("mod.manual"))
