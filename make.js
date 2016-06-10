@@ -46,8 +46,8 @@ function run() {
 		let arg = (process.argv[index++] || '').split('=', 2);
 		
 		if (arg[0][0] === '-') {
-			let name = arg[0],
-				val = (arg.length > 1 ? arg[1] : true);
+			//let name = arg[0],
+			//	val = (arg.length > 1 ? arg[1] : true);
 			//if (name === ...) {
 			//	options.Make..... = val;
 			//} else {

@@ -328,7 +328,7 @@
 										//...
 										} else {
 											const tmp = name.slice(1, -1);
-											if (!types.hasKey(process.env, tmp)) {
+											if (!types.has(process.env, tmp)) {
 												throw new types.Error("Invalid environment variable name: '~0~'.", [tmp]);
 											};
 											value = process.env[tmp];
