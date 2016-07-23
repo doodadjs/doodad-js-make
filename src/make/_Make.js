@@ -42,19 +42,9 @@
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Make'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
-			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Modules', 'Update'],
+			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update'],
 			
-			//proto: function(root) {
-			//	var types = root.Doodad.Types;
-			//	return {
-			//		setOptions: types.SUPER(function setOptions(/*paramarray*/) {
-			//			options = this._super.apply(this, arguments);
-			//			return options;
-			//		}),
-			//	};
-			//},
-			
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
 				const doodad = root.Doodad,
@@ -77,6 +67,7 @@
 					spawn = file.Spawn,
 					generate = make.Generate,
 					browserify = make.Browserify,
+					webpack = make.Webpack,
 					makeModules = make.Modules,
 					update = make.Update,
 					
@@ -90,14 +81,19 @@
 					nodeBrowserify = require('browserify');
 				} catch(ex) {
 				};
+				
+				let nodeWebpack = null;
+				try {
+					nodeWebpack = require('webpack');
+				} catch(ex) {
+				};
 					
-					
-				const __Natives__ = {
+				types.complete(_shared.Natives, {
 					arraySplice: global.Array.prototype.splice,
 					
 					// "getBuiltFileName"
 					stringReplace: String.prototype.replace,
-				}
+				});
 					
 					
 				const __Internal__ = {
@@ -106,12 +102,18 @@
 					
 					
 					
-				make.setOptions({
-					unix: {
-					  dataPath: "/var/lib/",
-					  libPath: "/usr/local/lib/",
-					},
+				const __options__ = types.extend({
+				  unixDataPath: "/var/lib/",
+				  unixLibPath: "/usr/local/lib/",
 				}, _options);
+
+				//__options__. = types.to....(__options__.);
+
+				types.freezeObject(__options__);
+
+				make.getOptions = function() {
+					return __options__;
+				};
 				
 				
 				__Internal__.getManifest = function getManifest(pkg) {
@@ -152,7 +154,7 @@
 					
 					taskData: doodad.PUBLIC( null ),
 					
-					execute: doodad.PUBLIC(doodad.MUST_OVERRIDE()), // function execute(command, item, /*optional*/options)
+					execute: doodad.PUBLIC(doodad.ASYNC(doodad.MUST_OVERRIDE())), // function execute(command, item, /*optional*/options)
 				})));
 					
 					
@@ -245,7 +247,7 @@
 									isRelative = path.isRelative;
 									path = path.toArray();
 								} else {
-									path = [String(path)];
+									path = [types.toString(path)];
 								};
 								
 								const os = tools.getOS();
@@ -309,7 +311,7 @@
 											} else {
 												// There is no environment variable for this purpose under Unix-like systems
 												// So I use "package.json"'s "config" section.
-												value = solvePath(make.getOptions().unix.dataPath || "/var/lib/", os.type);
+												value = solvePath(__options__.unixDataPath || "/var/lib/", os.type);
 											};
 										} else if (nameLc === '%programfiles%') {
 											if (os.type === 'windows') {
@@ -317,7 +319,7 @@
 											} else {
 												// There is no environment variable for this purpose under Unix-like systems
 												// So I use "package.json"'s "config" section.
-												value = solvePath(make.getOptions().unix.libPath || "/usr/local/lib/", os.type);
+												value = solvePath(__options__.unixLibPath || "/usr/local/lib/", os.type);
 											};
 										} else if ((nameLc === '%appdata%') || (nameLc === '%localappdata%')) {
 											if (os.type === 'windows') {
@@ -351,7 +353,7 @@
 												noEscapes: true,
 											});
 										} else {
-											result += String(value);
+											result += types.toString(value);
 										};
 										
 										start = str.indexOf('%', end + 1);
@@ -405,7 +407,7 @@
 								let obj = op['class'];
 									
 								if (types.isString(obj)) {
-									obj = namespaces.getNamespace(obj);
+									obj = namespaces.get(obj);
 								};
 								
 								if (types.isType(obj)) {
@@ -417,18 +419,22 @@
 
 								obj.taskData = self.taskData;
 								
-								return obj.execute(command, op, options)
+								let promise = obj.execute(command, op, options);
+								
+								if (!types.isPromise(promise)) {
+									promise = Promise.resolve(promise);
+								};
+								
+								return promise
 									.then(function(newOps) {
 										if (!types.isNothing(newOps)) {
 											if (!types.isArray(newOps)) {
 												newOps = [newOps];
 											};
-											__Natives__.arraySplice.apply(task.operations, types.append([index + 1, 0], newOps));
+											_shared.Natives.arraySplice.apply(task.operations, types.append([index + 1, 0], newOps));
 										};
 										return proceed(++index);
 									});
-							} else {
-								return Promise.resolve();
 							};
 						};
 						
@@ -569,13 +575,12 @@
 								};
 								src = src.toString({shell: 'api'});
 								console.info("    " + src);
-								return new Promise(function(resolve, reject) {
+								return Promise.create(function pipeInputPromise(resolve, reject) {
 										const inputStream = nodeFs.createReadStream(src);
 										inputStream
 											.on('error', reject)
 											.on('end', resolve)
 											.pipe(outputStream, {end: false});
-
 									})
 									.then(function() {
 										if (source.length) {
@@ -592,7 +597,7 @@
 						};
 						const writeSeparator = function(outputStream) {
 							if (separator) {
-								return new Promise(function(resolve, reject) {
+								return Promise.create(function writePromise(resolve, reject) {
 									outputStream.write(separator, function(err, result) {
 										if (err) {
 											reject(err);
@@ -643,7 +648,7 @@
 										jsStream.define(name, value);
 									});
 								};
-								return new Promise(function(resolve, reject) {
+								return Promise.create(function pipePromise(resolve, reject) {
 										try {
 											const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
 											const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.ITransform);
@@ -688,7 +693,7 @@
 						if (types.isString(source)) {
 							source = this.taskData.parseVariables(source, { isPath: true });
 						};
-						return new Promise(function(resolve, reject) {
+						return Promise.create(function nodeJsForkPromise(resolve, reject) {
 								const cp = nodejs.fork(source, item.args, {stdio: ['pipe', 1, 2]});
 								cp.on('close', function(status) {
 									if (status) {
@@ -722,7 +727,7 @@
 								return require('npm-package-config').list(self.taskData.manifest.name, {beautify: true, async: true})
 									.then(function(config) {
 										delete config['package'];
-										return new Promise(function(resolve, reject) {
+										return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
 											nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(config), {encoding: 'utf-8'}, function(ex) {
 												if (ex) {
 													reject(ex);
@@ -741,7 +746,7 @@
 
 				
 				__Internal__.getBuiltFileName = function getBuiltFileName(fileName) {
-					return __Natives__.stringReplace.call(fileName, __Internal__.searchJsExtRegExp, ".min.js");
+					return _shared.Natives.stringReplace.call(fileName, __Internal__.searchJsExtRegExp, ".min.js");
 				};
 				
 
@@ -1227,17 +1232,39 @@
 						return ops;
 					}),
 					
+					execute_webpack: doodad.PROTECTED(function execute_webpack(command, item, /*optional*/options) {
+						let configTemplate = types.get(item, 'configTemplate');
+						if (types.isString(configTemplate)) {
+							configTemplate = this.parseVariables(configTemplate, { isPath: true });
+						};
+						if (!configTemplate) {
+							configTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/webpack.config.templ.js', {os: 'linux'});
+						};
+						const configDest = this.taskData.parseVariables("%PACKAGEDIR%/webpack.config.js", { isPath: true });
+						const entryFile = this.taskData.parseVariables("%PACKAGEDIR%/browserify.js", { isPath: true });
+						console.info('Preparing webpack config file "' + configDest + '"...');
+						const ops = [
+							{
+								'class': file.Javascript,
+								source: configTemplate,
+								destination: configDest,
+								runDirectives: true,
+								variables: {
+									entry: entryFile.relative(this.taskData.packageDir).toString({os: 'linux'}),
+								},
+							}
+						];
+						return ops;
+					}),
+
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-						const self = this;
-						return new Promise(function(resolve, reject) {
-							const method = 'execute_' + command;
-							if (types.isImplemented(self, method)) {
-								console.info('Generating package for "' + command + "'.");
-								resolve(self[method](command, item, options));
-							} else {
-								reject(new types.Error("Command '~0~' not supported by '~1~'.", [command, types.getTypeName(self)]));
-							};
-						});
+						const method = 'execute_' + command;
+						if (types.isImplemented(this, method)) {
+							console.info('Generating package for "' + command + "'.");
+							return this[method](command, item, options);
+						} else {
+							throw new types.Error("Command '~0~' not supported by '~1~'.", [command, types.getTypeName(this)]);
+						};
 					}),
 				}));
 
@@ -1286,7 +1313,7 @@
 											return files.readFile(source.combine(resource.source), {encoding: (item.encoding || 'utf-8'), async: true});
 										})
 										.then(function(content) {
-											return new Promise(function(resolve, reject) {
+											return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
 												nodeFs.writeFile(dest.combine(resource.dest).toString(), 
 																// TODO: See how I can formulate this
 																//'// This file is built from the file \'' + resource.source.file + '\' from the project package named \'' + 
@@ -1333,7 +1360,7 @@
 								};
 								
 								function reducePatterns(level, pattern) {
-									let code = "switch(tmp[" + String(level + 1) + "]) {";
+									let code = "switch(tmp[" + types.toString(level + 1) + "]) {";
 									tools.forEach(pattern, function(val, key) {
 										code += "case " + types.toSource(key) + ": ";
 										if (types.isString(val)) {
@@ -1389,38 +1416,81 @@
 							dest = this.taskData.parseVariables(dest, { isPath: true });
 						};
 						console.info('Browserifying "' + source + '" to "' + dest + '"...');
-						if (nodeBrowserify) {
-							const taskData = this.taskData;
-							return new Promise(function(resolve, reject) {
-									try {
-										const b = nodeBrowserify();
-										b.add(source.toString());
-										const outputStream = nodeFs.createWriteStream(dest.toString());
-										let bundleStream = b.bundle();
-										if (item.minify) {
-											const jsStream = new __Internal__.JsMinifier({taskData: taskData});
-											jsStream.listen();
-											const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.ITransform);
-											bundleStream = bundleStream
-												.pipe(jsStreamTransform)
-												.pipe(outputStream)
-										} else {
-											bundleStream = bundleStream
-												.pipe(outputStream)
-										};
-										bundleStream
-											.on('finish', resolve)
-											.on('error', reject);
-									} catch(ex) {
-										reject(ex);
+						const taskData = this.taskData;
+						return Promise.create(function browserifyPromise(resolve, reject) {
+								if (nodeBrowserify) {
+									const b = nodeBrowserify();
+									b.add(source.toString());
+									const outputStream = nodeFs.createWriteStream(dest.toString());
+									let bundleStream = b.bundle();
+									if (item.minify) {
+										const jsStream = new __Internal__.JsMinifier({taskData: taskData});
+										jsStream.listen();
+										const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.ITransform);
+										bundleStream = bundleStream
+											.pipe(jsStreamTransform)
+											.pipe(outputStream)
+									} else {
+										bundleStream = bundleStream
+											.pipe(outputStream)
 									};
-								})
-								.then(function() {
-									// Returns nothing
-								});
-						} else {
-							return Promise.reject(new types.Error('Can\'t browserify "' + source + '" to "' + dest + '" because "browserify" is not installed.'));
+									bundleStream
+										.on('finish', resolve)
+										.on('error', reject);
+								} else {
+									throw new types.Error('Can\'t browserify "' + source + '" to "' + dest + '" because "browserify" is not installed.');
+								};
+							})
+							.then(function() {
+								// Returns nothing
+							});
+					}),
+				}));
+
+				
+				webpack.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Bundle',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = types.get(item, 'source');
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
 						};
+						let dest = types.get(item, 'destination');
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, { isPath: true });
+						};
+						console.info('Making webpack bundle from "' + source + '" to "' + dest + '"...');
+						return Promise.create(function webpackPromise(resolve, reject) {
+								if (nodeWebpack) {
+									const config = {
+										entry: source.toString(),
+										output: {
+											path: dest.set({file: null}).toString(),
+											filename: dest.file,
+										},
+										module: {
+											loaders: [
+												{ test: /\.json$/, loader: "json" }
+											],
+										},
+									};
+									nodeWebpack(config, function(err, stats) {
+										if (err) {
+											reject(err);
+										} else {
+											resolve(stats);
+										};
+									});
+								} else {
+									throw new types.Error('Can\'t bundle "' + source + '" because "webpack" is not installed.');
+								};
+							})
+							.then(function(stats) {
+								//console.log(require('util').inspect(stats));
+								// Returns nothing
+							});
 					}),
 				}));
 
@@ -1467,7 +1537,7 @@
 						
 						const content = JSON.stringify(manifest, null, 4);
 						
-						return new Promise(function(resolve, reject) {
+						return Promise.create(function writeManifestPromise(resolve, reject) {
 								nodeFs.writeFile(taskData.manifestPath, content, {encoding: 'utf-8'}, function(err, result) {
 									if (err) {
 										reject(err);

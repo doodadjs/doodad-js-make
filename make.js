@@ -52,7 +52,7 @@ function run() {
 			//	options.Make..... = val;
 			//} else {
 				console.error("Invalid options.");
-				process.exit(1);
+				tools.abortScript(1);
 			//};
 		} else {
 			command = arg[0].toLowerCase();
@@ -105,6 +105,8 @@ function run() {
 
 run()
 	['catch'](function(err) {
-		console.error(err.stack);
-		process.exit(1);
+		err && !err.trapped && console.error(err.stack);
+		if (!process.exitCode) {
+			process.exitCode = 1;
+		};
 	});
