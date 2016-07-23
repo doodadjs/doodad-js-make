@@ -34,7 +34,7 @@ module.exports = {
 			dependencies: ['Doodad.Tools.Files', 'Doodad.Namespaces'],
 			exports: module.exports,
 			
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				var doodad = root.Doodad,
 					types = doodad.Types,
 					tools = doodad.Tools,
@@ -42,71 +42,61 @@ module.exports = {
 					namespaces = doodad.Namespaces;
 					
 				var Promise = types.getPromise(),
-					mod = namespaces.getNamespace(/*! TO_SOURCE(VAR("namespace")) */);
+					mod = namespaces.get(/*! TO_SOURCE(VAR("namespace")) */);
 				
-				mod.setOptions({
-					resourcesPath: '/',
-					hooks: {
-						resourcesLoader: {
-							locate: function locate(name, /*optional*/options) {
-								try {
-									return Promise.resolve(
-										files.getOptions().hooks.pathParser(mod.getOptions().resourcesPath)
-											.combine(files.getOptions().hooks.pathParser(name))
-									);
-								} catch(ex) {
-									return Promise.reject(ex);
-								};
-							},
-							load: function load(path, /*optional*/options) {
-								var tmp = path.toArray();
-								try {
-									var callback = types.get(options, 'callback'),
-										result;
-										
-									if (callback) {
-										var cbObj = types.get(options, 'callbackObj');
-										callback = new doodad.Callback(cbObj, callback);
-									};
+				mod.setResourcesLoader({
+					locate: function locate(name, /*optional*/options) {
+						return Promise['try'](function tryLocate() {
+							return _shared.pathParser(name);
+						});
+					},
+					load: function load(path, /*optional*/options) {
+						var tmp = path.toArray();
+						try {
+							var callback = types.get(options, 'callback'),
+								result;
+								
+							if (callback) {
+								var cbObj = types.get(options, 'callbackObj');
+								callback = new doodad.Callback(cbObj, callback);
+							};
 //! VAR("resources")
 //! BEGIN_REMOVE()
-				Exemple:
-									switch(tmp[1]) {
-										case "locales":
-											switch(tmp[2]) {
-												case "en_US":
-													result = require("./locales/en_US.res.js");
-													break;
-												case "fr_FR":
-													result = require("./locales/fr_FR.res.js");
-													break;
-												case "fr_CA":
-													result = require("./locales/fr_CA.res.js");
-													break;
-												...
-												default:
-													throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
-											};
+		Exemple:
+							switch(tmp[1]) {
+								case "locales":
+									switch(tmp[2]) {
+										case "en_US":
+											result = require("./locales/en_US.res.js");
+											break;
+										case "fr_FR":
+											result = require("./locales/fr_FR.res.js");
+											break;
+										case "fr_CA":
+											result = require("./locales/fr_CA.res.js");
+											break;
 										...
 										default:
 											throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
 									};
+								...
+								default:
+									throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
+							};
 //! END_REMOVE()
-									if (callback) {
-										callback(null, result);
-									};
-									
-									return Promise.resolve(result);
-									
-								} catch(ex) {
-									if (callback) {
-										callback(ex, null);
-									};
+							if (callback) {
+								callback(null, result);
+							};
+							
+							return Promise.resolve(result);
+							
+						} catch(ex) {
+							if (callback) {
+								callback(ex, null);
+							};
 
-									return Promise.reject(ex);
-								};
-							},
-						},
+							return Promise.reject(ex);
+						};
 					},
 				});
 			},

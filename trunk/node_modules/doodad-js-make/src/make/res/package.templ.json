@@ -11,6 +11,7 @@
 		"tests.js",
 		"browserify.js",
 		"browserify_debug.js",
+		"webpack.config.js",
 		"config.json",
 		"make.json",
 		"LICENSE",
