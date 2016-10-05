@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: browserify.js - Module startup file for 'browserify'.
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,25 +24,22 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-//! IF_UNDEF("debug")
-	//! DEFINE("debug", false)
-//! END_IF()
-
 "use strict";
 
 module.exports = {
 	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
+		DD_MODULES = DD_MODULES || {};
 		DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
-			type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
 			version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
+			type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
 			dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 			
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 				
 				var doodad = root.Doodad,
 					namespaces = doodad.Namespaces,
+					nodejs = doodad.NodeJs,
 					types = doodad.Types,
 					tools = doodad.Tools;
 				
@@ -51,7 +49,7 @@ module.exports = {
 				} catch(ex) {
 				};
 				
-				var options = types.extend({}, config, _options);
+				var options = types.extend({}, config, _options, {secret: _shared.SECRET});
 				
 				var DD_MODULES = {};
 				
@@ -65,7 +63,7 @@ module.exports = {
 					//! END_IF()
 				//! END_FOR()
 				
-				return namespaces.load(DD_MODULES, null, config, false)
+				return namespaces.load(DD_MODULES, null, config)
 					.then(function() {
 						// Returns nothing
 					});
@@ -74,3 +72,4 @@ module.exports = {
 		return DD_MODULES;
 	},
 };
+//! END_MODULE()

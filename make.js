@@ -1,7 +1,6 @@
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: make.js - Make command
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -43,7 +42,7 @@ function run() {
 		index = 2;
 
 	while (index < process.argv.length) {
-		let arg = (process.argv[index++] || '').split('=', 2);
+		let arg = tools.split((process.argv[index++] || ''), '=', 2);
 		
 		if (arg[0][0] === '-') {
 			//let name = arg[0],
@@ -84,7 +83,7 @@ function run() {
 		return function(DD_MODULES) { 
 			return modules.loadManifest(name)
 				.then(function(mod) {
-					return mod.add(DD_MODULES)
+					return mod.add(DD_MODULES);
 				}); 
 		};
 	};

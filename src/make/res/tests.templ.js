@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: tests.js - Test module startup file
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,77 +24,48 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-//! IF_UNDEF("debug")
-	//! DEFINE("debug", false)
-//! END_IF()
-
-(function() {
-	var global = this;
-
-	var exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
+module.exports = {
+	add: function add(DD_MODULES) {
+		DD_MODULES = DD_MODULES || {};
 		DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name") + "/tests")) */] = {
-			type: 'TestPackage',
 			version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
+			type: 'TestPackage',
 			dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 			
-			create: function create(root, /*optional*/_options) {
+			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 				
 				var doodad = root.Doodad,
+					types = doodad.Types,
 					modules = doodad.Modules,
 					fromSource = root.getOptions().fromSource;
 				
-				return modules.load(/*! INJECT(TO_SOURCE(MANIFEST("name"))) */, (fromSource ? [ 
-							//! MAP(VAR("modulesSrc"), "mod")
-								//! IF(!VAR("mod.manual"))
-									//! INJECT(TO_SOURCE(VAR("mod.dest")))
-								//! END_IF()
-							//! END_MAP()
-						] : [ 
-							//! MAP(VAR("modules"), "mod")
-								//! IF(!VAR("mod.manual"))
-									//! INJECT(TO_SOURCE(VAR("mod.dest")))
-								//! END_IF()
-							//! END_MAP()
-						]), _options)
+				var files = {};
+				if (fromSource) { 
+					//! MAP(VAR("modulesSrc"), "mod")
+						//! IF(!VAR("mod.manual"))
+							files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
+						//! END_IF()
+					//! END_MAP()
+				} else { 
+					//! MAP(VAR("modules"), "mod")
+						//! IF(!VAR("mod.manual"))
+							files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
+						//! END_IF()
+					//! END_MAP()
+				};
+
+				var _modules = {};
+				_modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = files;
+
+				return modules.load(_modules, types.extend({}, _options, {secret: _shared.SECRET}))
 					.then(function() {
 						// Returns nothing
 					});
+
 			},
 		};
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

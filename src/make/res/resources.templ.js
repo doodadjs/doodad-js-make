@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: resources.js - Resources index file for 'browserify'.
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -27,15 +28,15 @@
 
 module.exports = {
 	add: function add(DD_MODULES) {
-		DD_MODULES = (DD_MODULES || {});
-		DD_MODULES[/*! TO_SOURCE(VAR("name")) */] = {
+		DD_MODULES = DD_MODULES || {};
+		DD_MODULES[/*! INJECT(TO_SOURCE(VAR("name"))) */] = {
+			version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 			type: 'Package',
-			version: '0a',
 			dependencies: ['Doodad.Tools.Files', 'Doodad.Namespaces'],
-			exports: module.exports,
 			
 			create: function create(root, /*optional*/_options, _shared) {
 				var doodad = root.Doodad,
+					nodejs = doodad.NodeJs,
 					types = doodad.Types,
 					tools = doodad.Tools,
 					files = tools.Files,
@@ -56,12 +57,8 @@ module.exports = {
 							var callback = types.get(options, 'callback'),
 								result;
 								
-							if (callback) {
-								var cbObj = types.get(options, 'callbackObj');
-								callback = new doodad.Callback(cbObj, callback);
-							};
-//! VAR("resources")
-//! BEGIN_REMOVE()
+		//! INJECT(VAR("resources"))
+		//! BEGIN_REMOVE()
 		Exemple:
 							switch(tmp[1]) {
 								case "locales":
@@ -83,7 +80,7 @@ module.exports = {
 								default:
 									throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
 							};
-//! END_REMOVE()
+		//! END_REMOVE()
 							if (callback) {
 								callback(null, result);
 							};
@@ -104,3 +101,4 @@ module.exports = {
 		return DD_MODULES;
 	},
 };
+//! END_MODULE()

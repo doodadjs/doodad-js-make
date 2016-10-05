@@ -1,8 +1,9 @@
+//! BEGIN_MODULE()
+
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
-// dOOdad - Object-oriented programming framework
+// doodad-js - Object-oriented programming framework
 // File: _Make.js - Make module
-// Project home: https://sourceforge.net/projects/doodad-js/
-// Trunk: svn checkout svn://svn.code.sf.net/p/doodad-js/code/trunk doodad-js-code
+// Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
@@ -23,25 +24,11 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-(function() {
-	const global = this;
-
-	const exports = {};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process === 'object') && (typeof module === 'object')) {
-	//! END_REMOVE()
-		//! IF_DEF("serverSide")
-			module.exports = exports;
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-	exports.add = function add(DD_MODULES) {
+module.exports = {
+	add: function add(DD_MODULES) {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Make'] = {
-			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE() */,
+			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update'],
 			
 			create: function create(root, /*optional*/_options, _shared) {
@@ -142,6 +129,46 @@
 						MAKE_MANIFEST: function MAKE_MANIFEST(key) {
 							if (this.memorize <= 0) {
 								return safeEval.eval(key, this.options.taskData.makeManifest);
+							};
+						},
+						BEGIN_MODULE: function() {
+							this.pushDirective({
+								name: 'MODULE',
+							});
+							if (this.memorize <= 0) {
+								if (!types.has(this.variables, 'serverSide')) {
+									this.directives.INJECT("; " +
+										"(function(global, module, DD_MODULES) {"
+									);
+								};
+							};
+						},
+						END_MODULE: function() {
+							const block = this.popDirective();
+							if (!block || (block.name !== 'MODULE')) {
+								throw new types.Error("Invalid 'END_MODULE' directive.");
+							};
+							if (this.memorize <= 0) {
+								if (!types.has(this.variables, 'serverSide')) {
+									this.directives.INJECT("; " +
+											"module.exports.add(DD_MODULES)" + "; " +
+										"}).call(window, window, {exports: {}}, (typeof DD_MODULES === 'undefined' ? window.DD_MODULES = {} : DD_MODULES))" + "; "
+									);
+								};
+							};
+						},
+						INCLUDE: function(file, /*optional*/encoding, /*optional*/raw) {
+							const block = this.getDirective();
+							if (!block.remove && (this.memorize <= 0)) {
+								// TODO: Read file async (if possible !)
+								if (types.isString(file)) {
+									file = this.options.taskData.parseVariables(file, { isPath: true });
+								};
+								const content = nodeFs.readFileSync(file.toString(), encoding || this.options.encoding);
+								if (raw) {
+									this.directives.INJECT(";", true); // add a separator
+								};
+								this.directives.INJECT(content, raw);
 							};
 						},
 					},
@@ -398,8 +425,6 @@
 
 						const task = types.get(this.taskData.makeManifest.tasks, command);
 
-						const self = this;
-						
 						const proceed = function proceed(index) {
 							if (index < task.operations.length) {
 								const op = task.operations[index];
@@ -410,14 +435,15 @@
 									obj = namespaces.get(obj);
 								};
 								
+								if (!types._implements(obj, make.Operation)) {
+									throw new types.Error("Invalid class '~0~'.", [obj]);
+								};
+
 								if (types.isType(obj)) {
-									if (!types._implements(obj, make.Operation)) {
-										throw new types.Error("Invalid class '~0~'.", [obj]);
-									};
 									obj = new obj();
 								};
 
-								obj.taskData = self.taskData;
+								obj.taskData = this.taskData;
 								
 								let promise = obj.execute(command, op, options);
 								
@@ -433,12 +459,12 @@
 											};
 											_shared.Natives.arraySplice.apply(task.operations, types.append([index + 1, 0], newOps));
 										};
-										return proceed(++index);
-									});
+										return proceed.call(this, ++index);
+									}, null, this);
 							};
 						};
 						
-						return proceed(0);
+						return proceed.call(this, 0);
 					}),
 				}));
 					
@@ -449,14 +475,8 @@
 
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						console.info('Loading required modules...');
-						return Promise.all(tools.map(item.names, function(name) {
-								if (types.isArray(name)) {
-									return modules.load.apply(modules, name);
-								} else {
-									return modules.load(name);
-								};
-							}))
-							.then(function() {
+						return modules.load(types.get(item, 'modules'), options)
+							.then(function(result) {
 								// Returns nothing
 							});
 					}),
@@ -642,7 +662,7 @@
 						const taskData = this.taskData;
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
-								const jsStream = new __Internal__.JsMinifier({taskData: taskData, autoFlush: false, runDirectives: types.get(item, 'runDirectives')});
+								const jsStream = new __Internal__.JsMinifier({taskData: taskData, autoFlush: false, runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
 								if (variables) {
 									tools.forEach(variables, function(value, name) {
 										jsStream.define(name, value);
@@ -827,6 +847,7 @@
 											}), function(mod) {
 												return types.extend({}, mod, {
 													dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+													optional: types.get(mod, 'optional', false),
 												});
 											}),
 										modulesSrc: tools.map(tools.filter(modules, function(mod) {
@@ -834,6 +855,7 @@
 											}), function(mod) {
 												return types.extend({}, mod, {
 													dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+													optional: types.get(mod, 'optional', false),
 												});
 											}),
 									},
@@ -849,6 +871,7 @@
 								runDirectives: true,
 								variables: {
 									serverSide: true,
+									debug: true,
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test'}]), function(dep) {
@@ -864,6 +887,7 @@
 										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												optional: types.get(mod, 'optional', false),
 											});
 										}),
 									modulesSrc: tools.map(tools.filter(modules, function(mod) {
@@ -871,6 +895,7 @@
 										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												optional: types.get(mod, 'optional', false),
 											});
 										}),
 								},
@@ -890,15 +915,7 @@
 						ops.push( 
 							{
 								'class': file.Copy,
-								source: '%SOURCEDIR%/LICENSE',
-								destination: '%PACKAGEDIR%/LICENSE',
-							}
-						);
-
-						ops.push( 
-							{
-								'class': file.Copy,
-								source: '%SOURCEDIR%/LICENSE',
+								source: '%PACKAGEDIR%/LICENSE',
 								destination: '%BUILDDIR%/LICENSE',
 							}
 						);
@@ -957,12 +974,18 @@
 							return res.client;
 						});
 						
-						// Copy modules source
+						// Build modules source
 						ops = types.append(ops, tools.map(modules, function(mod) {
 							return {
-								'class': file.Copy,
+								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
 								destination: '%INSTALLDIR%/%PACKAGENAME%/' + mod.src,
+								runDirectives: true,
+								keepComments: true,
+								keepSpaces: true,
+								variables: {
+									debug: true,
+								},
 							};
 						}));
 						
@@ -1021,6 +1044,7 @@
 								destination: '%INSTALLDIR%/%PACKAGENAME%/tests.js',
 								runDirectives: true,
 								variables: {
+									debug: true,
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test'}]), function(dep) {
@@ -1066,45 +1090,85 @@
 							}
 						);
 
-						// Creating bundles...
-						const bundleSources = [];
-						if (!types.get(item, 'noIndex', false)) {
-							bundleSources.push('%INSTALLDIR%/%PACKAGENAME%/index.js');
-						};
-						
 						// Create bundle from source
 						ops.push( 
 							{
 								'class': file.Merge,
-								source: types.append([], bundleSources, tools.map(tools.filter(modules, function(mod) {
+								source: tools.map(tools.filter(modules, function(mod) {
 										return !mod.test;
 									}), function(mod) {
 										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
-									})),
+									}),
 								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
-								separator: '\n',
+								separator: ';',
 							}
 						);
+						if (!types.get(item, 'noIndex', false)) {
+							ops.push(
+								{
+									'class': file.Javascript,
+									source: indexTemplate,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%_debug.js',
+									runDirectives: true,
+									variables: {
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
+										dependencies: tools.map(tools.filter(dependencies, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(manifest),
+													optional: dep.optional || false,
+												};
+											}),
+									},
+								}
+							);
+						};
 						
 						// Create bundle from build
 						ops.push( 
 							{
 								'class': file.Merge,
-								source: types.append([], bundleSources, tools.map(tools.filter(modules, function(mod) {
+								source: tools.map(tools.filter(modules, function(mod) {
 										return !mod.test;
 									}), function(mod) {
 										return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
-									})),
+									}),
 								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
-								separator: '\n',
+								separator: ';',
 							}
 						);
+						if (!types.get(item, 'noIndex', false)) {
+							ops.push( 
+								{
+									'class': file.Javascript,
+									source: indexTemplate,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.js',
+									runDirectives: true,
+									variables: {
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+										dependencies: tools.map(tools.filter(dependencies, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(manifest),
+													optional: dep.optional || false,
+												};
+											}),
+									},
+								}
+							);
+						};
 						
 						// Copy license file
 						ops.push( 
 							{
 								'class': file.Copy,
-								source: '%SOURCEDIR%/LICENSE',
+								source: '%PACKAGEDIR%/LICENSE',
 								destination: '%INSTALLDIR%/%PACKAGENAME%/LICENSE',
 							}
 						);
@@ -1224,7 +1288,7 @@
 						ops.push( 
 							{
 								'class': file.Copy,
-								source: '%SOURCEDIR%/LICENSE',
+								source: '%PACKAGEDIR%/LICENSE',
 								destination: "%BROWSERIFYDIR%/LICENSE",
 							}
 						);
@@ -1560,28 +1624,7 @@
 				};
 			},
 		};
-		
 		return DD_MODULES;
-	};
-	
-	//! BEGIN_REMOVE()
-	if ((typeof process !== 'object') || (typeof module !== 'object')) {
-	//! END_REMOVE()
-		//! IF_UNDEF("serverSide")
-			// <PRB> export/import are not yet supported in browsers
-			global.DD_MODULES = exports.add(global.DD_MODULES);
-		//! END_IF()
-	//! BEGIN_REMOVE()
-	};
-	//! END_REMOVE()
-	
-}).call(
-	//! BEGIN_REMOVE()
-	(typeof window !== 'undefined') ? window : ((typeof global !== 'undefined') ? global : this)
-	//! END_REMOVE()
-	//! IF_DEF("serverSide")
-	//! 	INJECT("global")
-	//! ELSE()
-	//! 	INJECT("window")
-	//! END_IF()
-);
+	},
+};
+//! END_MODULE()

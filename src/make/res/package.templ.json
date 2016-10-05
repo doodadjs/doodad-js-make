@@ -1,9 +1,10 @@
 {
-	"homepage": "https://sourceforge.net/projects/doodad-js/",
-	"author": "Claude Petit <doodadjs@gmail.com> (https://sourceforge.net/projects/doodad-js/)",
+	"homepage": "https://github.com/doodadjs/",
+	"author": "Claude Petit <doodadjs@gmail.com> (https://github.com/doodadjs/)",
 	"license": "Apache-2.0",
 	"files": [
 		"src",
+		"lib",
 		"build",
 		"dist",
 		"browserify",
@@ -15,16 +16,8 @@
 		"config.json",
 		"make.json",
 		"LICENSE",
-		"README"
+		"README.md"
 	],
-	"repository": {
-		"type": "svn",
-		"url": "https://svn.code.sf.net/p/doodad-js/code/trunk/node_modules/"
-	},
-	"bugs": {
-		"url": "https://sourceforge.net/p/doodad-js/tickets/",
-		"email": "doodadjs@gmail.com"
-	},
 	"scripts": {
 		"build": "node -r \"doodad-js-make/make.js\" . make",
 		"dist": "node -r \"doodad-js-make/make.js\" . install",
