@@ -1578,6 +1578,15 @@ module.exports = {
 								}, {}),
 						});
 						
+						const stage = manifest.stage && tools.Version.parse(manifest.stage, {identifiers: namespaces.VersionIdentifiers});
+						delete manifest.stage;
+						if (stage) {
+							const prelease = (stage.data[0] <= -3 ? 'alpha' : stage.data[0] === -2 ? 'beta' : '');
+							if (prelease) {
+								manifest.version += "-" + prelease + '.' + (stage.data[3] || "0");
+							};
+						};
+ 
 						manifest.files = types.unique(manifest.files || [],
 							(taskData.makeManifest.sourceDir.isRelative ? [taskData.makeManifest.sourceDir.toString()] : undefined),
 							(taskData.makeManifest.buildDir.isRelative ? [taskData.makeManifest.buildDir.toString()] : undefined),
