@@ -107,6 +107,10 @@ module.exports = {
 					return require(pkg.split('/', 2)[0] + '/package.json');
 				};
 
+				__Internal__.getMakeManifest = function getMakeManifest(pkg) {
+					return require(pkg.split('/', 2)[0] + '/make.json');
+				};
+
 				__Internal__.getVersion = function getVersion(manifest) {
 					return manifest.version + (manifest.stage || 'd');
 				};
@@ -1578,14 +1582,19 @@ module.exports = {
 								}, {}),
 						});
 						
-						const stage = manifest.stage && tools.Version.parse(manifest.stage, {identifiers: namespaces.VersionIdentifiers});
-						delete manifest.stage;
-						if (stage) {
-							const prelease = (stage.data[0] <= -3 ? 'alpha' : stage.data[0] === -2 ? 'beta' : '');
-							if (prelease) {
-								manifest.version += "-" + prelease + '.' + (stage.data[3] || "0");
+						const getVersion = function getVersion(version, stage) {
+							stage = stage && tools.Version.parse(stage, {identifiers: namespaces.VersionIdentifiers});
+							if (stage) {
+								const prelease = (stage.data[0] <= -3 ? 'alpha' : stage.data[0] === -2 ? 'beta' : '');
+								if (prelease) {
+									version += "-" + prelease + '.' + (stage.data[3] || "0");
+								};
 							};
+							return version;
 						};
+
+						manifest.version = getVersion(manifest.version, manifest.stage);
+						delete manifest.stage;
  
 						manifest.files = types.unique(manifest.files || [],
 							(taskData.makeManifest.sourceDir.isRelative ? [taskData.makeManifest.sourceDir.toString()] : undefined),
@@ -1603,7 +1612,9 @@ module.exports = {
 								if (name === taskData.manifest.name) {
 									delete deps[name];
 								} else {
-									deps[name] = deps[name][0] + __Internal__.getManifest(name.split('/', 2)[0]).version;
+									const pkg = name.split('/', 2)[0];
+									const manifest = __Internal__.getManifest(pkg);
+									deps[name] = deps[name][0] + getVersion(manifest.version, manifest.stage);
 								};
 							};
 						};
