@@ -1131,6 +1131,41 @@ module.exports = {
 							);
 						};
 						
+						// Create tests bundle from source
+						ops.push( 
+							{
+								'class': file.Merge,
+								source: tools.map(tools.filter(modules, function(mod) {
+										return mod.test;
+									}), function(mod) {
+										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
+									}),
+								destination: '%INSTALLDIR%/%PACKAGENAME%/tests_bundle.js',
+								separator: ';',
+							}
+						);
+						ops.push(
+							{
+								'class': file.Javascript,
+								source: testsTemplate,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%_tests.js',
+								runDirectives: true,
+								variables: {
+									bundle: '%INSTALLDIR%/%PACKAGENAME%/tests_bundle.js',
+									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
+											return dep.test;
+										}), [{name: 'doodad-js-test'}]), function(dep) {
+											const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(manifest),
+												optional: dep.optional || false,
+											};
+										}),
+								},
+							}
+						);
+						
 						// Create bundle from build
 						ops.push( 
 							{

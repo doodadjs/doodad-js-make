@@ -35,34 +35,47 @@ module.exports = {
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 				
-				var doodad = root.Doodad,
-					types = doodad.Types,
-					modules = doodad.Modules,
-					fromSource = root.getOptions().fromSource;
+				//! IF_DEF("modules")
+
+					var doodad = root.Doodad,
+						types = doodad.Types,
+						modules = doodad.Modules,
+						fromSource = root.getOptions().fromSource;
 				
-				var files = {};
-				if (fromSource) { 
-					//! MAP(VAR("modulesSrc"), "mod")
-						//! IF(!VAR("mod.manual"))
-							files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
-						//! END_IF()
-					//! END_MAP()
-				} else { 
-					//! MAP(VAR("modules"), "mod")
-						//! IF(!VAR("mod.manual"))
-							files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
-						//! END_IF()
-					//! END_MAP()
-				};
+					var files = {};
+					if (fromSource) { 
+						//! MAP(VAR("modulesSrc"), "mod")
+							//! IF(!VAR("mod.manual"))
+								files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
+							//! END_IF()
+						//! END_MAP()
+					} else { 
+						//! MAP(VAR("modules"), "mod")
+							//! IF(!VAR("mod.manual"))
+								files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
+							//! END_IF()
+						//! END_MAP()
+					};
 
-				var _modules = {};
-				_modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = files;
+					var _modules = {};
+					_modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = files;
 
-				return modules.load(_modules, types.extend({}, _options, {secret: _shared.SECRET}))
-					.then(function() {
-						// Returns nothing
-					});
+					return modules.load(_modules, types.extend({}, _options, {secret: _shared.SECRET}))
+						.then(function() {
+							// Returns nothing
+						});
 
+				//! ELSE()
+					var DD_MODULES = {};
+				
+					//! INCLUDE(VAR("bundle"), null, true)
+						
+					return root.Doodad.Namespaces.load(DD_MODULES, null, root.Doodad.Types.extend({}, _options, {secret: _shared.SECRET}))
+						.then(function() {
+							// Returns nothing
+						});
+					
+				//! END_IF()
 			},
 		};
 		return DD_MODULES;
