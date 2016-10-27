@@ -111,7 +111,13 @@ module.exports = {
 					return require(pkg.split('/', 2)[0] + '/make.json');
 				};
 
-				__Internal__.getVersion = function getVersion(manifest) {
+				__Internal__.getVersion = function getVersion(pkg) {
+					let manifest = null;
+					try {
+						manifest = __Internal__.getMakeManifest(pkg);
+					} catch(ex) {
+						manifest = __Internal__.getManifest(pkg);
+					};
 					return manifest.version + (manifest.stage || 'd');
 				};
 
@@ -122,7 +128,7 @@ module.exports = {
 					__knownDirectives: {
 						VERSION: function VERSION(pkg) {
 							if (this.memorize <= 0) {
-								return __Internal__.getVersion(__Internal__.getManifest(pkg));
+								return __Internal__.getVersion(pkg);
 							};
 						},
 						MANIFEST: function MANIFEST(key) {
@@ -839,10 +845,9 @@ module.exports = {
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;
 											}), function(dep) {
-												const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
 												return {
 													name: dep.name,
-													version: __Internal__.getVersion(manifest),
+													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 													optional: dep.optional || false,
 												};
 											}),
@@ -879,10 +884,9 @@ module.exports = {
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test'}]), function(dep) {
-											const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
 											return {
 												name: dep.name,
-												version: __Internal__.getVersion(manifest),
+												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 												optional: dep.optional || false,
 											};
 										}),
@@ -1015,10 +1019,9 @@ module.exports = {
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;
 											}), function(dep) {
-												const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
 												return {
 													name: dep.name,
-													version: __Internal__.getVersion(manifest),
+													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 													optional: dep.optional || false,
 												};
 											}),
@@ -1052,10 +1055,9 @@ module.exports = {
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test'}]), function(dep) {
-											const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
 											return {
 												name: dep.name,
-												version: __Internal__.getVersion(manifest),
+												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 												optional: dep.optional || false,
 											};
 										}),
@@ -1119,10 +1121,9 @@ module.exports = {
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;
 											}), function(dep) {
-												const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
 												return {
 													name: dep.name,
-													version: __Internal__.getVersion(manifest),
+													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 													optional: dep.optional || false,
 												};
 											}),
@@ -1155,10 +1156,9 @@ module.exports = {
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test'}]), function(dep) {
-											const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
 											return {
 												name: dep.name,
-												version: __Internal__.getVersion(manifest),
+												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 												optional: dep.optional || false,
 											};
 										}),
@@ -1191,10 +1191,9 @@ module.exports = {
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;
 											}), function(dep) {
-												const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
 												return {
 													name: dep.name,
-													version: __Internal__.getVersion(manifest),
+													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 													optional: dep.optional || false,
 												};
 											}),
@@ -1232,10 +1231,9 @@ module.exports = {
 						const dependencies = tools.map(tools.filter(taskData.makeManifest.dependencies, function(dep) {
 								return dep.browserify && !dep.test;
 							}), function(dep) {
-							const manifest = __Internal__.getManifest(dep.name.split('/', 2)[0]);
 							return {
 								name: dep.name,
-								version: __Internal__.getVersion(manifest),
+								version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 								optional: dep.optional || false,
 							};
 						});
@@ -1617,7 +1615,15 @@ module.exports = {
 								}, {}),
 						});
 						
-						const getVersion = function getVersion(version, stage) {
+						const getNodeVersion = function getVersion(pkg) {
+							let manifest = null;
+							try {
+								manifest = __Internal__.getMakeManifest(pkg);
+							} catch(ex) {
+								manifest = __Internal__.getManifest(pkg);
+							};
+							let version = manifest.version;
+							let stage = manifest.stage;
 							stage = stage && tools.Version.parse(stage, {identifiers: namespaces.VersionIdentifiers});
 							if (stage) {
 								const prelease = (stage.data[0] <= -3 ? 'alpha' : stage.data[0] === -2 ? 'beta' : '');
@@ -1628,8 +1634,7 @@ module.exports = {
 							return version;
 						};
 
-						manifest.version = getVersion(manifest.version, manifest.stage);
-						delete manifest.stage;
+						manifest.version = getNodeVersion(manifest.name);
  
 						manifest.files = types.unique(manifest.files || [],
 							(taskData.makeManifest.sourceDir.isRelative ? [taskData.makeManifest.sourceDir.toString()] : undefined),
@@ -1647,9 +1652,7 @@ module.exports = {
 								if (name === taskData.manifest.name) {
 									delete deps[name];
 								} else {
-									const pkg = name.split('/', 2)[0];
-									const manifest = __Internal__.getManifest(pkg);
-									deps[name] = deps[name][0] + getVersion(manifest.version, manifest.stage);
+									deps[name] = deps[name][0] + getNodeVersion(name.split('/', 2)[0]);
 								};
 							};
 						};
