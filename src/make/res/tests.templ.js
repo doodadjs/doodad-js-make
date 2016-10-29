@@ -60,7 +60,7 @@ module.exports = {
 					var _modules = {};
 					_modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = files;
 
-					return modules.load(_modules, types.extend({}, _options, {secret: _shared.SECRET}))
+					return modules.load(_modules, [_options, {startup: {secret: _shared.SECRET}}])
 						.then(function() {
 							// Returns nothing
 						});
@@ -70,7 +70,7 @@ module.exports = {
 				
 					//! INCLUDE(VAR("bundle"), null, true)
 						
-					return root.Doodad.Namespaces.load(DD_MODULES, null, root.Doodad.Types.extend({}, _options, {secret: _shared.SECRET}))
+					return root.Doodad.Namespaces.load(DD_MODULES, [_options, {startup: {secret: _shared.SECRET}}])
 						.then(function() {
 							// Returns nothing
 						});

@@ -2,7 +2,7 @@
 
 //! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
 // doodad-js - Object-oriented programming framework
-// File: index.js - Module startup file
+// File: index.js - Module startup file (server-side)
 // Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
@@ -35,49 +35,37 @@ module.exports = {
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 						
-				//! IF_DEF("modules")
-				
-					var doodad = root.Doodad,
-						types = doodad.Types,
-						modules = doodad.Modules,
-						fromSource = root.getOptions().fromSource;
+				const doodad = root.Doodad,
+					types = doodad.Types;
 							
-					//var options = types.extend({}, config, _options);
+				const options = [_options, {secret: _shared.SECRET}];
 						
-					var files = {};
-					if (fromSource) { 
-						//! MAP(VAR("modulesSrc"), "mod")
-							//! IF(!VAR("mod.manual"))
-								files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
-							//! END_IF()
-						//! END_MAP()
-					} else { 
-						//! MAP(VAR("modules"), "mod")
-							//! IF(!VAR("mod.manual"))
-								files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
-							//! END_IF()
-						//! END_MAP()
-					};
+				const files = {
+					'config.json': {optional: true, isConfig: true, configOptions: options},
+				};
 
-					var _modules = {};
-					_modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = files;
+				const fromSource = root.getOptions().fromSource;
+				if (fromSource) { 
+					//! MAP(VAR("modulesSrc"), "mod")
+						//! IF(!VAR("mod.manual"))
+							files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
+						//! END_IF()
+					//! END_MAP()
+				} else { 
+					//! MAP(VAR("modules"), "mod")
+						//! IF(!VAR("mod.manual"))
+							files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
+						//! END_IF()
+					//! END_MAP()
+				};
 
-					return modules.load(_modules, types.extend({}, _options, {secret: _shared.SECRET}))
-						.then(function() {
-							// Returns nothing
-						});
-						
-				//! ELSE()
-					var DD_MODULES = {};
-				
-					//! INCLUDE(VAR("bundle"), null, true)
-						
-					return root.Doodad.Namespaces.load(DD_MODULES, null, root.Doodad.Types.extend({}, _options, {secret: _shared.SECRET}))
-						.then(function() {
-							// Returns nothing
-						});
-					
-				//! END_IF()
+				const _modules = {};
+				_modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = files;
+
+				return doodad.Modules.load(_modules, options)
+					.then(function() {
+						// Returns nothing
+					});
 			},
 		};
 		return DD_MODULES;

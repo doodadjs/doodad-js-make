@@ -63,7 +63,7 @@ module.exports = {
 					//! END_IF()
 				//! END_FOR()
 				
-				return namespaces.load(DD_MODULES, null, config)
+				return namespaces.load(DD_MODULES, config)
 					.then(function() {
 						// Returns nothing
 					});

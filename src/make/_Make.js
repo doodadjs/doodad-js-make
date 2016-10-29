@@ -174,8 +174,11 @@ module.exports = {
 								if (types.isString(file)) {
 									file = this.options.taskData.parseVariables(file, { isPath: true });
 								};
-								const content = nodeFs.readFileSync(file.toString(), encoding || this.options.encoding);
-								if (raw) {
+								let content = nodeFs.readFileSync(file.toString(), encoding || this.options.encoding);
+								if (file.extension === 'json') {
+									content = this.directives.TO_SOURCE(JSON.parse(content), Infinity);
+									raw = true;
+								} else if (raw) {
 									this.directives.INJECT(";", true); // add a separator
 								};
 								this.directives.INJECT(content, raw);
@@ -956,7 +959,7 @@ module.exports = {
 							indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
 						};
 						if (!indexTemplate) {
-							indexTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/index.templ.js', {os: 'linux'});
+							indexTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/package.templ.js', {os: 'linux'});
 						};
 						
 						let testsTemplate = types.get(item, 'testsTemplate');
@@ -1007,43 +1010,7 @@ module.exports = {
 							};
 						}));
 						
-						// Build index
-						if (!types.get(item, 'noIndex', false)) {
-							ops.push(
-								{
-									'class': file.Javascript,
-									source: indexTemplate,
-									destination: '%INSTALLDIR%/%PACKAGENAME%/index.js',
-									runDirectives: true,
-									variables: {
-										dependencies: tools.map(tools.filter(dependencies, function(dep) {
-												return !dep.test;
-											}), function(dep) {
-												return {
-													name: dep.name,
-													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-													optional: dep.optional || false,
-												};
-											}),
-										modules: tools.map(tools.filter(modules, function(mod) {
-												return !mod.test;
-											}), function(mod) {
-												return types.extend({}, mod, {
-													dest: __Internal__.getBuiltFileName(mod.src),
-												});
-											}),
-										modulesSrc: tools.map(tools.filter(modules, function(mod) {
-												return !mod.test;
-											}), function(mod) {
-												return types.extend({}, mod, {
-													dest: mod.src,
-												});
-											}),
-									},
-								}
-							);
-						};
-
+						// Build tests
 						ops.push(
 							{
 								'class': file.Javascript,
@@ -1109,6 +1076,8 @@ module.exports = {
 								separator: ';',
 							}
 						);
+
+						// Build index (debug)
 						if (!types.get(item, 'noIndex', false)) {
 							ops.push(
 								{
@@ -1117,6 +1086,7 @@ module.exports = {
 									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%_debug.js',
 									runDirectives: true,
 									variables: {
+										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;
@@ -1179,6 +1149,8 @@ module.exports = {
 								separator: ';',
 							}
 						);
+
+						// Build index (build)
 						if (!types.get(item, 'noIndex', false)) {
 							ops.push( 
 								{
@@ -1187,6 +1159,7 @@ module.exports = {
 									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.js',
 									runDirectives: true,
 									variables: {
+										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;

@@ -22,9 +22,7 @@
 
 "use strict";
 
-function run() {
-	const root = require('doodad-js').createRoot(null, {startup: {fromSource: true}});
-
+function run(root) {
 	const doodad = root.Doodad,
 		tools = doodad.Tools,
 		types = doodad.Types,
@@ -74,11 +72,6 @@ function run() {
 		throw new types.Error("Missing command.");
 	};
 	
-	function startup() {
-		const make = root.Make;
-		return make.run(command);
-	};
-
 	function loadModule(name) {
 		return function(DD_MODULES) { 
 			return modules.loadManifest(name)
@@ -89,7 +82,12 @@ function run() {
 	};
 
 	function loadNamespaces(DD_MODULES) {
-		return namespaces.load(DD_MODULES, startup, options); 
+		return namespaces.load(DD_MODULES, options); 
+	};
+
+	function startup(root) {
+		const make = root.Make;
+		return make.run(command);
 	};
 
 	return Promise.resolve( {} )
@@ -99,11 +97,13 @@ function run() {
 		.then(loadModule('doodad-js-unicode'))
 		.then(loadModule('doodad-js-locale'))
 		.then(loadModule('doodad-js-make'))
-		.then(loadNamespaces);
+		.then(loadNamespaces)
+		.then(startup);
 };
 
-run()
-	['catch'](function(err) {
+require('doodad-js').createRoot(null, {startup: {fromSource: true}})
+	.then(run)
+	.catch(function(err) {
 		err && !err.trapped && console.error(err.stack);
 		if (!process.exitCode) {
 			process.exitCode = 1;
