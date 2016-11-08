@@ -675,25 +675,21 @@ module.exports = {
 						const taskData = this.taskData;
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
-								const jsStream = new __Internal__.JsMinifier({taskData: taskData, autoFlush: false, runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
+								const jsStream = new __Internal__.JsMinifier({taskData: taskData, flushMode: 'half', runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
 								if (variables) {
 									tools.forEach(variables, function(value, name) {
 										jsStream.define(name, value);
 									});
 								};
 								return Promise.create(function pipePromise(resolve, reject) {
-										try {
-											const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
-											const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.ITransform);
-											const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
-											outputStream.on('close', resolve);
-											outputStream.on('error', reject);
-											inputStream
-												.pipe(jsStreamTransform)
-												.pipe(outputStream);
-										} catch(ex) {
-											reject(ex);
-										};
+										const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
+										const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.ITransform);
+										const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
+										outputStream.on('close', resolve);
+										outputStream.on('error', reject);
+										inputStream
+											.pipe(jsStreamTransform)
+											.pipe(outputStream);
 									})
 									.nodeify(function(err, result) {
 										try {
