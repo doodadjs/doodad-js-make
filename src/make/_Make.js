@@ -1490,11 +1490,15 @@ module.exports = {
 						return Promise.create(function browserifyPromise(resolve, reject) {
 								if (nodeBrowserify) {
 									const b = nodeBrowserify();
-									b.add(source.toString());
+									if (item.fromOutside) {
+										b.require(source.toString());
+									} else {
+										b.add(source.toString());
+									};
 									const outputStream = nodeFs.createWriteStream(dest.toString());
 									let bundleStream = b.bundle();
 									if (item.minify) {
-										const jsStream = new __Internal__.JsMinifier({taskData: taskData});
+										const jsStream = new __Internal__.JsMinifier({taskData: taskData, flushMode: 'half'});
 										jsStream.listen();
 										const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.ITransform);
 										bundleStream = bundleStream
