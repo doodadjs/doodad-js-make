@@ -21,7 +21,8 @@
 	"scripts": {
 		"build": "node -r \"doodad-js-make/make.js\" . make",
 		"dist": "node -r \"doodad-js-make/make.js\" . install",
-		"browserify": "node -r \"doodad-js-make/make.js\" . custom=browserify"
+		"browserify": "node -r \"doodad-js-make/make.js\" . custom=browserify",
+		"test": "echo Please install and start package 'doodad-js-test'."
 	},
 	"devDependencies": {
 		"doodad-js-make": "^0.0.0"
