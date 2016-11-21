@@ -98,9 +98,9 @@ module.exports = {
 
 				types.freezeObject(__options__);
 
-				make.getOptions = function() {
+				make.ADD('getOptions', function() {
 					return __options__;
-				};
+				});
 				
 				
 				__Internal__.getManifest = function getManifest(pkg) {
@@ -1649,10 +1649,10 @@ module.exports = {
 				
 
 				
-				make.run = function run(command, /*optional*/options) {
+				make.ADD('run', function run(command, /*optional*/options) {
 					const obj = new make.Task();
 					return obj.execute(command, {}, options);
-				};
+				});
 			},
 		};
 		return DD_MODULES;
