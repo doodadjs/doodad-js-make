@@ -1228,6 +1228,7 @@ module.exports = {
 								runDirectives: true,
 								variables: {
 									serverSide: true,
+									browserify: true,
 								},
 							};
 						}));
@@ -1257,6 +1258,7 @@ module.exports = {
 									runDirectives: true,
 									variables: {
 										serverSide: true,
+										browserify: true,
 										dependencies: dependencies,
 										modules: tools.map(modules, function(mod) {
 											return types.extend({}, mod, {
@@ -1281,6 +1283,7 @@ module.exports = {
 									runDirectives: true,
 									variables: {
 										serverSide: true,
+										browserify: true,
 										debug: true,
 										dependencies: dependencies,
 										modules: tools.map(modules, function(mod) {
@@ -1466,7 +1469,8 @@ module.exports = {
 									destination: resFile,
 									runDirectives: true,
 									variables: {
-										'serverSide': true,
+										serverSide: true,
+										browserify: true,
 										name: self.taskData.parseVariables(item.name),
 										namespace: self.taskData.parseVariables(item.namespace),
 										resources: resBody,
