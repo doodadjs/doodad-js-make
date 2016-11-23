@@ -61,7 +61,8 @@ module.exports = {
 					Promise = types.getPromise(),
 					
 					nodeFs = require('fs'),
-					nodeChildProcess = require('child_process');
+					nodeChildProcess = require('child_process'),
+					Module = require('module').Module;
 					
 				let nodeBrowserify = null;
 				try {
@@ -278,19 +279,23 @@ module.exports = {
 								
 								const isPath = types.get(options, 'isPath', false);
 
-								let path = val,
-									isRelative = true;
+								let path = val;
 								if (isPath) {
 									if (!(path instanceof files.Path)) {
 										path = solvePath(val);
 									};
-									isRelative = path.isRelative;
 									path = path.toArray();
 								} else {
 									path = [types.toString(path)];
 								};
 								
 								const os = tools.getOS();
+
+								if (path.length && (path[0][0] === '~')) {
+									const resolved = Module._resolveFilename(path[0].slice(1) + '/package.json', (require.main || module.parent), true);
+									path = solvePath(resolved, os.type).set({file: null}).combine(null, {file: path.slice(1)});
+									path = path.toArray();
+								};
 
 								for (var i = 0; i < path.length; ) {
 									let str = path[i],
@@ -380,11 +385,8 @@ module.exports = {
 										};
 										
 										if (value instanceof files.Path) {
-											//if (isPath && !isRelative) {
-											//	throw types.Error("Path in '~0~' can't be inserted because the target path is absolute.", [name]);
-											//};
 											if ((i > 0) && !value.isRelative) {
-												throw types.Error("Path in '~0~' can't be inserted because it is not relative.", [name]);
+												throw types.Error("Path in '~0~' can't be inserted because it is an absolute path.", [name]);
 											};
 											result += value.toString({
 												os: os.type,
@@ -875,7 +877,7 @@ module.exports = {
 							{
 								'class': file.Javascript,
 								source: testsTemplate,
-								destination: '%PACKAGEDIR%/tests.js',
+								destination: '%PACKAGEDIR%/test/tests.js',
 								runDirectives: true,
 								variables: {
 									serverSide: true,
@@ -1243,24 +1245,26 @@ module.exports = {
 							}
 						}));
 						
+						const browserifyDest = taskData.parseVariables('%BROWSERIFYDIR%', {isPath: true});
+
 						// Build main file
 						if (!types.get(item, 'noIndex', false)) {
 							ops.push( 
 								{
 									'class': file.Javascript,
 									source: indexTemplate,
-									destination: '%PACKAGEDIR%/browserify.js',
+									destination: '%BROWSERIFYDIR%/browserify.js',
 									runDirectives: true,
 									variables: {
 										serverSide: true,
 										dependencies: dependencies,
 										modules: tools.map(modules, function(mod) {
 											return types.extend({}, mod, {
-												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 											});
 										}),
 										resources: tools.map(resources, function(res) {
-											return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'});
+											return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
 										}),
 									},
 								}
@@ -1273,17 +1277,17 @@ module.exports = {
 								{
 									'class': file.Javascript,
 									source: indexTemplate,
-									destination: '%PACKAGEDIR%/browserify_debug.js',
+									destination: '%BROWSERIFYDIR%/browserify_debug.js',
 									runDirectives: true,
 									variables: {
 										serverSide: true,
 										debug: true,
 										dependencies: dependencies,
 										modules: tools.map(modules, function(mod) {
-											return taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'});
+											return taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
 										}),
 										resources: tools.map(resources, function(res) {
-											return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'});
+											return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
 										}),
 									},
 								}
@@ -1311,7 +1315,7 @@ module.exports = {
 							configTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/webpack.config.templ.js', {os: 'linux'});
 						};
 						const configDest = this.taskData.parseVariables("%PACKAGEDIR%/webpack.config.js", { isPath: true });
-						const entryFile = this.taskData.parseVariables("%PACKAGEDIR%/browserify.js", { isPath: true });
+						const entryFile = this.taskData.parseVariables("%BROWSERIFYDIR%/browserify.js", { isPath: true });
 						console.info('Preparing webpack config file "' + configDest + '"...');
 						const ops = [
 							{

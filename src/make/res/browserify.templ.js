@@ -45,7 +45,7 @@ module.exports = {
 				
 				var config = null;
 				try {
-					config = require('./config.json');
+					config = require('../config.json');
 				} catch(ex) {
 				};
 				

@@ -8,10 +8,8 @@
 		"build",
 		"dist",
 		"browserify",
+		"test",
 		"index.js",
-		"tests.js",
-		"browserify.js",
-		"browserify_debug.js",
 		"webpack.config.js",
 		"config.json",
 		"make.json",
@@ -28,7 +26,7 @@
 		"doodad-js-make": "^0.0.0"
 	},
 	"main": "index.js",
-	"browser": "browserify.js",
+	"browser": "browserify/browserify.js",
 	"engines": {
 		"node": ">=4.2.0"
 	}
