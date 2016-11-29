@@ -23,7 +23,8 @@
   },
   "optionalDependencies": {
 	"browserify": "^13.0.0",
-	"webpack": "^1.13.1"
+	"webpack": "^1.13.1",
+	"json-loader": "^0.5.4"
   },
   "repository": {
     "type": "git",
