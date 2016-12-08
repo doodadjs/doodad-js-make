@@ -10,6 +10,9 @@
 		}
     }
   },
+  "bin": {
+    "ddmake": "./make.js"
+  },
   "files": [
     "make.js",
 	"tonic.js"

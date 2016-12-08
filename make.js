@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // doodad-js - Object-oriented programming framework
 // File: make.js - Make command
 // Project home: https://github.com/doodadjs/
