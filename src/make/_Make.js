@@ -86,6 +86,8 @@ module.exports = {
 					
 				const __Internal__ = {
 					searchJsExtRegExp: /([.]js)$/,
+					uuids: types.nullObject(),
+					uuidKeys: types.nullObject(),
 				};
 					
 					
@@ -183,6 +185,33 @@ module.exports = {
 									this.directives.INJECT(";", true); // add a separator
 								};
 								this.directives.INJECT(content, raw);
+							};
+						},
+						UUID: function(/*optional*/key) {
+							key = types.toString(key);
+							if (key) {
+								if (key in __Internal__.uuids) {
+									return __Internal__.uuids[key];
+								} else {
+									var count = 5,
+										ok = false,
+										uuid;
+									while (count-- > 0) {
+										uuid = tools.generateUUID();
+										if (!(uuid in __Internal__.uuidKeys) || (__Internal__.uuidKeys[uuid] === key)) {
+											ok = true;
+											break;
+										};
+									};
+									if (!ok) {
+										throw new types.Error("Failed to generate a new unique UUID for key '~0~'.", [key]);
+									};
+									__Internal__.uuids[key] = uuid;
+									__Internal__.uuidKeys[uuid] = key;
+									return uuid;
+								};
+							} else {
+								return tools.generateUUID();
 							};
 						},
 					},
