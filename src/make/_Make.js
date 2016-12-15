@@ -130,30 +130,22 @@ module.exports = {
 					
 					__knownDirectives: {
 						VERSION: function VERSION(pkg) {
-							if (this.memorize <= 0) {
-								return __Internal__.getVersion(pkg);
-							};
+							return __Internal__.getVersion(pkg);
 						},
 						MANIFEST: function MANIFEST(key) {
-							if (this.memorize <= 0) {
-								return safeEval.eval(key, this.options.taskData.manifest);
-							};
+							return safeEval.eval(key, this.options.taskData.manifest);
 						},
 						MAKE_MANIFEST: function MAKE_MANIFEST(key) {
-							if (this.memorize <= 0) {
-								return safeEval.eval(key, this.options.taskData.makeManifest);
-							};
+							return safeEval.eval(key, this.options.taskData.makeManifest);
 						},
 						BEGIN_MODULE: function() {
 							this.pushDirective({
 								name: 'MODULE',
 							});
-							if (this.memorize <= 0) {
-								if (!types.has(this.variables, 'serverSide')) {
-									this.directives.INJECT("; " +
-										"(function(global, module, DD_MODULES) {"
-									);
-								};
+							if (!types.has(this.variables, 'serverSide')) {
+								this.directives.INJECT("; " +
+									"(function(global, module, DD_MODULES) {"
+								);
 							};
 						},
 						END_MODULE: function() {
@@ -161,18 +153,16 @@ module.exports = {
 							if (!block || (block.name !== 'MODULE')) {
 								throw new types.Error("Invalid 'END_MODULE' directive.");
 							};
-							if (this.memorize <= 0) {
-								if (!types.has(this.variables, 'serverSide')) {
-									this.directives.INJECT("; " +
-											"module.exports.add(DD_MODULES)" + "; " +
-										"}).call(window, window, {exports: {}}, (typeof DD_MODULES === 'undefined' ? window.DD_MODULES = {} : DD_MODULES))" + "; "
-									);
-								};
+							if (!types.has(this.variables, 'serverSide')) {
+								this.directives.INJECT("; " +
+										"module.exports.add(DD_MODULES)" + "; " +
+									"}).call(window, window, {exports: {}}, (typeof DD_MODULES === 'undefined' ? window.DD_MODULES = {} : DD_MODULES))" + "; "
+								);
 							};
 						},
 						INCLUDE: function(file, /*optional*/encoding, /*optional*/raw) {
 							const block = this.getDirective();
-							if (!block.remove && (this.memorize <= 0)) {
+							if (!block.remove) {
 								// TODO: Read file async (if possible !)
 								if (types.isString(file)) {
 									file = this.options.taskData.parseVariables(file, { isPath: true });
