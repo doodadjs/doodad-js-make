@@ -46,17 +46,17 @@ module.exports = {
 
 				const fromSource = root.getOptions().fromSource;
 				if (fromSource) { 
-					//! MAP(VAR("modulesSrc"), "mod")
+					//! FOR_EACH(VAR("modulesSrc"), "mod")
 						//! IF(!VAR("mod.manual"))
 							files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
 						//! END_IF()
-					//! END_MAP()
+					//! END_FOR()
 				} else { 
-					//! MAP(VAR("modules"), "mod")
+					//! FOR_EACH(VAR("modules"), "mod")
 						//! IF(!VAR("mod.manual"))
 							files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
 						//! END_IF()
-					//! END_MAP()
+					//! END_FOR()
 				};
 
 				const _modules = {};
