@@ -868,7 +868,7 @@ module.exports = {
 												return {
 													name: dep.name,
 													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-													optional: dep.optional || false,
+													optional: !!types.get(dep, 'optional', false),
 												};
 											}),
 										modules: tools.map(tools.filter(modules, function(mod) {
@@ -876,7 +876,7 @@ module.exports = {
 											}), function(mod) {
 												return types.extend({}, mod, {
 													dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-													optional: types.get(mod, 'optional', false),
+													optional: !!types.get(mod, 'optional', false),
 												});
 											}),
 										modulesSrc: tools.map(tools.filter(modules, function(mod) {
@@ -884,7 +884,7 @@ module.exports = {
 											}), function(mod) {
 												return types.extend({}, mod, {
 													dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-													optional: types.get(mod, 'optional', false),
+													optional: !!types.get(mod, 'optional', false),
 												});
 											}),
 									},
@@ -907,7 +907,7 @@ module.exports = {
 											return {
 												name: dep.name,
 												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-												optional: dep.optional || false,
+												optional: !!types.get(dep, 'optional', false),
 											};
 										}),
 									modules: tools.map(tools.filter(modules, function(mod) {
@@ -915,7 +915,7 @@ module.exports = {
 										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-												optional: types.get(mod, 'optional', false),
+												optional: !!types.get(mod, 'optional', false),
 											});
 										}),
 									modulesSrc: tools.map(tools.filter(modules, function(mod) {
@@ -923,7 +923,7 @@ module.exports = {
 										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-												optional: types.get(mod, 'optional', false),
+												optional: !!types.get(mod, 'optional', false),
 											});
 										}),
 								},
@@ -1042,7 +1042,7 @@ module.exports = {
 											return {
 												name: dep.name,
 												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-												optional: dep.optional || false,
+												optional: !!types.get(dep, 'optional', false),
 											};
 										}),
 									modules: tools.map(tools.filter(modules, function(mod) {
@@ -1050,6 +1050,7 @@ module.exports = {
 										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: __Internal__.getBuiltFileName(mod.src),
+												optional: !!types.get(mod, 'optional', false),
 											});
 										}),
 									modulesSrc: tools.map(tools.filter(modules, function(mod) {
@@ -1057,6 +1058,7 @@ module.exports = {
 										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: mod.src,
+												optional: !!types.get(mod, 'optional', false),
 											});
 										}),
 								},
@@ -1111,7 +1113,7 @@ module.exports = {
 												return {
 													name: dep.name,
 													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-													optional: dep.optional || false,
+													optional: !!types.get(dep, 'optional', false),
 												};
 											}),
 									},
@@ -1146,7 +1148,7 @@ module.exports = {
 											return {
 												name: dep.name,
 												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-												optional: dep.optional || false,
+												optional: !!types.get(dep, 'optional', false),
 											};
 										}),
 								},
@@ -1184,7 +1186,7 @@ module.exports = {
 												return {
 													name: dep.name,
 													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-													optional: dep.optional || false,
+													optional: !!types.get(dep, 'optional', false),
 												};
 											}),
 									},
@@ -1224,7 +1226,7 @@ module.exports = {
 							return {
 								name: dep.name,
 								version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-								optional: dep.optional || false,
+								optional: !!types.get(dep, 'optional', false),
 							};
 						});
 						
