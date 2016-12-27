@@ -1074,7 +1074,7 @@ module.exports = {
 							};
 						}));
 						
-						// Generate ocnfig file
+						// Generate config file
 						ops.push( 
 							{
 								'class': generate.Configuration,
@@ -1087,7 +1087,7 @@ module.exports = {
 							{
 								'class': file.Merge,
 								source: tools.map(tools.filter(modules, function(mod) {
-										return !mod.test;
+										return !mod.test && !mod.exclude;
 									}), function(mod) {
 										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
 									}),
@@ -1126,7 +1126,7 @@ module.exports = {
 							{
 								'class': file.Merge,
 								source: tools.map(tools.filter(modules, function(mod) {
-										return mod.test;
+										return mod.test && !mod.exclude;
 									}), function(mod) {
 										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
 									}),
@@ -1160,7 +1160,7 @@ module.exports = {
 							{
 								'class': file.Merge,
 								source: tools.map(tools.filter(modules, function(mod) {
-										return !mod.test;
+										return !mod.test && !mod.exclude;
 									}), function(mod) {
 										return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
 									}),
