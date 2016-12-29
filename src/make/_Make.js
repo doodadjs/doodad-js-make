@@ -1,6 +1,6 @@
 //! BEGIN_MODULE()
 
-//! REPLACE_BY("// Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n", true)
+//! REPLACE_BY("// Copyright 2015-2017 Claude Petit, licensed under Apache License version 2.0\n", true)
 // doodad-js - Object-oriented programming framework
 // File: _Make.js - Make module
 // Project home: https://github.com/doodadjs/
@@ -9,7 +9,7 @@
 // Note: I'm still in alpha-beta stage, so expect to find some bugs or incomplete parts !
 // License: Apache V2
 //
-//	Copyright 2016 Claude Petit
+//	Copyright 2015-2017 Claude Petit
 //
 //	Licensed under the Apache License, Version 2.0 (the "License");
 //	you may not use this file except in compliance with the License.
@@ -1417,7 +1417,7 @@ module.exports = {
 																//'// This file is built from the file \'' + resource.source.file + '\' from the project package named \'' + 
 																//	this.taskData.manifest.name + '\' hosted by the \'npmjs.com\' web site, ' + 
 																//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' + 
-																'// When not mentionned otherwise, the following is Copyright 2016 Claude Petit, licensed under Apache License version 2.0\n' + 
+																'// When not mentionned otherwise, the following is Copyright 2015-2017 Claude Petit, licensed under Apache License version 2.0\n' + 
 																'module.exports=' + types.toSource(content), (item.encoding || 'utf-8'), function(err) {
 													if (err) {
 														reject(err);
