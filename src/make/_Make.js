@@ -179,12 +179,14 @@ module.exports = {
 							};
 						},
 						UUID: function(/*optional*/key) {
-							key = types.toString(key);
 							if (key) {
+								key = types.toString(key);
 								if (key in __Internal__.pkgUUIDS) {
-									return __Internal__.pkgUUIDS[key];
+									const uuid = __Internal__.pkgUUIDS[key];
+									__Internal__.uuids[uuid].hits++;
+									return uuid;
 								} else {
-									var count = 5,
+									let count = 5,
 										ok = false,
 										uuid;
 									while (count-- > 0) {
@@ -201,11 +203,30 @@ module.exports = {
 									__Internal__.uuids[uuid] = {
 										packageName: this.options.taskData.manifest.name,
 										name: key,
+										hits: 1,
 									};
 									return uuid;
 								};
 							} else {
-								return tools.generateUUID();
+								let count = 5,
+									ok = false,
+									uuid;
+								while (count-- > 0) {
+									uuid = tools.generateUUID();
+									if (!(uuid in __Internal__.uuids)) {
+										ok = true;
+										break;
+									};
+								};
+								if (!ok) {
+									throw new types.Error("Failed to generate a new unique UUID.");
+								};
+								__Internal__.uuids[uuid] = {
+									packageName: this.options.taskData.manifest.name,
+									name: null,
+									hits: 0,  // Will not get saved
+								};
+								return uuid;
 							};
 						},
 					},
@@ -1695,18 +1716,23 @@ module.exports = {
 						if (types.isString(source)) {
 							source = this.taskData.parseVariables(source, { isPath: true });
 						};
+						const pkgName = this.taskData.manifest.name;
 						if (types.get(item, 'global', false)) {
 							console.info("Loading global UUIDs from file '" + source + "'...");
 							return files.readFile(source, {async: true, encoding: 'utf-8'})
 								.then(function(uuids) {
-									__Internal__.uuids = JSON.parse(uuids);
+									__Internal__.uuids = types.nullObject(JSON.parse(uuids));
+									tools.forEach(__Internal__.uuids, function(data, uuid) {
+										if (data.packageName === pkgName) {
+											data.hits = 0; // Reset number of hits
+										};
+									});
 									console.info("\t" + types.keys(__Internal__.uuids).length + " UUID(s) loaded.");
 								})
 								.catch({code: 'ENOENT'}, function(ex) {
 									console.warn("\tNo UUID loaded because file is missing.");
 								});
 						} else {
-							const pkgName = this.taskData.manifest.name;
 							console.info("Loading package UUIDs from file '" + source + "'...");
 							return files.readFile(source, {async: true, encoding: 'utf-8'})
 								.then(function(uuids) {
@@ -1718,12 +1744,14 @@ module.exports = {
 											if ((key.packageName !== pkgName) || (key.name !== name)) {
 												throw new types.Error("Duplicated UUID : '~0~'.", [uuid]);
 											};
+										} else {
+											__Internal__.uuids[uuid] = {
+												packageName: pkgName,
+												name: name,
+												hits: 0,
+											};
 										};
 										__Internal__.pkgUUIDS[name] = uuid;
-										__Internal__.uuids[uuid] = {
-											packageName: pkgName,
-											name: name,
-										};
 										count++;
 									});
 									console.info("\t" + count + " UUID(s) loaded.");
@@ -1746,9 +1774,12 @@ module.exports = {
 						};
 						if (types.get(item, 'global', false)) {
 							console.info("Saving global UUIDs to file '" + dest + "'...");
-							return files.writeFile(dest, JSON.stringify(__Internal__.uuids), {async: true, mode: 'update'})
+							const uuids = tools.filter(__Internal__.uuids, function(data, uuid) {
+								return (data.hits > 0);
+							});
+							return files.writeFile(dest, JSON.stringify(uuids), {async: true, mode: 'update'})
 								.then(function() {
-									console.info("\t" + types.keys(__Internal__.uuids).length + " UUID(s) saved.");
+									console.info("\t" + types.keys(uuids).length + " UUID(s) saved.");
 								});
 						} else {
 							console.info("Saving package UUIDs to file '" + dest + "'...");
