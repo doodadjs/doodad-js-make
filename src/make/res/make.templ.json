@@ -35,5 +35,58 @@
 	"resources": [
 	],
 	"tasks": {
+		"preExecute": {
+			"operations": [
+				{
+					"class": "Make.UUIDS.Load",
+					"source": "~doodad-js-make/src/make/res/UUIDS_Database.json",
+					"global": true
+				},
+				{
+					"class": "Make.UUIDS.Load",
+					"source": "%SOURCEDIR%/make/res/uuids.json"
+				}
+			]
+		},
+		"postExecute": {
+			"operations": [
+				{
+					"class": "Make.Folder.Create",
+					"destination": "%SOURCEDIR%/make"
+				},
+				{
+					"class": "Make.Folder.Create",
+					"destination": "%SOURCEDIR%/make/res"
+				},
+				{
+					"class": "Make.UUIDS.Save",
+					"destination": "%SOURCEDIR%/make/res/uuids.json"
+				},
+				{
+					"class": "Make.UUIDS.Save",
+					"destination": "~doodad-js-make/src/make/res/UUIDS_Database.json",
+					"global": true
+				},
+				{
+					"class": "Make.UUIDS.Forget"
+				}
+			]
+		},
+		"start": {
+			"operations": [
+				{
+					"class": "Make.Task",
+					"name": "preExecute"
+				},
+				{
+					"class": "Make.Task",
+					"name": "%command%"
+				},
+				{
+					"class": "Make.Task",
+					"name": "postExecute"
+				}
+			]
+		}
 	}
 }

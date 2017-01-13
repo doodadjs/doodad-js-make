@@ -29,7 +29,7 @@ module.exports = {
 		DD_MODULES = (DD_MODULES || {});
 		DD_MODULES['Make'] = {
 			version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update'],
+			namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update', 'UUIDS'],
 			
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
@@ -57,6 +57,7 @@ module.exports = {
 					webpack = make.Webpack,
 					makeModules = make.Modules,
 					update = make.Update,
+					makeUUIDS = make.UUIDS,
 					
 					Promise = types.getPromise(),
 					
@@ -86,8 +87,8 @@ module.exports = {
 					
 				const __Internal__ = {
 					searchJsExtRegExp: /([.]js)$/,
+					pkgUUIDS: types.nullObject(),
 					uuids: types.nullObject(),
-					uuidKeys: types.nullObject(),
 				};
 					
 					
@@ -180,15 +181,15 @@ module.exports = {
 						UUID: function(/*optional*/key) {
 							key = types.toString(key);
 							if (key) {
-								if (key in __Internal__.uuids) {
-									return __Internal__.uuids[key];
+								if (key in __Internal__.pkgUUIDS) {
+									return __Internal__.pkgUUIDS[key];
 								} else {
 									var count = 5,
 										ok = false,
 										uuid;
 									while (count-- > 0) {
 										uuid = tools.generateUUID();
-										if (!(uuid in __Internal__.uuidKeys) || (__Internal__.uuidKeys[uuid] === key)) {
+										if (!(uuid in __Internal__.uuids)) {
 											ok = true;
 											break;
 										};
@@ -196,8 +197,11 @@ module.exports = {
 									if (!ok) {
 										throw new types.Error("Failed to generate a new unique UUID for key '~0~'.", [key]);
 									};
-									__Internal__.uuids[key] = uuid;
-									__Internal__.uuidKeys[uuid] = key;
+									__Internal__.pkgUUIDS[key] = uuid;
+									__Internal__.uuids[uuid] = {
+										packageName: this.options.taskData.manifest.name,
+										name: key,
+									};
 									return uuid;
 								};
 							} else {
@@ -225,7 +229,7 @@ module.exports = {
 
 					createTaskData: doodad.PROTECTED(function createTaskData() {
 						return {
-							init: function init(item, /*optional*/options) {
+							init: function init(command, item, /*optional*/options) {
 								const extendFn = function(result, val, key, extend) {
 									if (types.isArray(val)) {
 										result[key] = types.unique(result[key], val);
@@ -242,6 +246,8 @@ module.exports = {
 										result[key] = val;
 									};
 								};
+
+								this.command = command;
 
 								this.packageDir = files.Path.parse(types.get(item, 'source', process.cwd()));
 							
@@ -327,7 +333,9 @@ module.exports = {
 										const name = str.slice(start, end + 1),
 											nameLc = name.toLowerCase();
 										let value;
-										if (nameLc === '%packagename%') {
+										if (nameLc === '%command%') {
+											return this.command;
+										} else if (nameLc === '%packagename%') {
 											if (this.manifest && this.manifest.name) {
 												value = this.manifest.name;
 											} else {
@@ -448,16 +456,15 @@ module.exports = {
 					}),
 					
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-						command = types.get(item, 'name') || command;
-
-						console.info('Starting task "' + command + '"...');
-						
 						if (!this.taskData || types.get(item, 'source')) {
 							this.taskData = this.createTaskData();
-							this.taskData.init(item, options);
+							this.taskData.init(command, item, options);
 						};
 
-						const task = types.get(this.taskData.makeManifest.tasks, command);
+						let name = types.get(item, 'name');
+						name = this.taskData.parseVariables(name);
+
+						const task = types.get(this.taskData.makeManifest.tasks, name);
 
 						const proceed = function proceed(index) {
 							if (index < task.operations.length) {
@@ -479,7 +486,7 @@ module.exports = {
 
 								obj.taskData = this.taskData;
 								
-								let promise = obj.execute(command, op, options);
+								let promise = obj.execute(name, op, options);
 								
 								if (!types.isPromise(promise)) {
 									promise = Promise.resolve(promise);
@@ -497,6 +504,8 @@ module.exports = {
 									}, null, this);
 							};
 						};
+						
+						console.info('Starting task "' + name + '"...');
 						
 						return proceed.call(this, 0);
 					}),
@@ -1675,12 +1684,102 @@ module.exports = {
 							});
 					}),
 				}));
+
 				
+				makeUUIDS.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Load',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = types.get(item, 'source');
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
+						if (types.get(item, 'global', false)) {
+							console.info("Loading global UUIDs from file '" + source + "'...");
+							return files.readFile(source, {async: true, encoding: 'utf-8'})
+								.then(function(uuids) {
+									__Internal__.uuids = JSON.parse(uuids);
+									console.info("\t" + types.keys(__Internal__.uuids).length + " UUID(s) loaded.");
+								})
+								.catch({code: 'ENOENT'}, function(ex) {
+									console.warn("\tNo UUID loaded because file is missing.");
+								});
+						} else {
+							const pkgName = this.taskData.manifest.name;
+							console.info("Loading package UUIDs from file '" + source + "'...");
+							return files.readFile(source, {async: true, encoding: 'utf-8'})
+								.then(function(uuids) {
+									uuids = JSON.parse(uuids);
+									let count = 0;
+									tools.forEach(uuids, function(uuid, name) {
+										if (uuid in __Internal__.uuids) {
+											const key = __Internal__.uuids[uuid];
+											if ((key.packageName !== pkgName) || (key.name !== name)) {
+												throw new types.Error("Duplicated UUID : '~0~'.", [uuid]);
+											};
+										};
+										__Internal__.pkgUUIDS[name] = uuid;
+										__Internal__.uuids[uuid] = {
+											packageName: pkgName,
+											name: name,
+										};
+										count++;
+									});
+									console.info("\t" + count + " UUID(s) loaded.");
+								})
+								.catch({code: 'ENOENT'}, function(ex) {
+									console.warn("\tNo UUID loaded because file is missing.");
+								});
+						};
+					}),
+				}));
+
+				makeUUIDS.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Save',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let dest = types.get(item, 'destination');
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, { isPath: true });
+						};
+						if (types.get(item, 'global', false)) {
+							console.info("Saving global UUIDs to file '" + dest + "'...");
+							return files.writeFile(dest, JSON.stringify(__Internal__.uuids), {async: true, mode: 'update'})
+								.then(function() {
+									console.info("\t" + types.keys(__Internal__.uuids).length + " UUID(s) saved.");
+								});
+						} else {
+							console.info("Saving package UUIDs to file '" + dest + "'...");
+							return files.writeFile(dest, JSON.stringify(__Internal__.pkgUUIDS), {async: true, mode: 'update'})
+								.then(function() {
+									console.info("\t" + types.keys(__Internal__.pkgUUIDS).length + " UUID(s) saved.");
+								});
+						};
+					}),
+				}));
+
+				
+				makeUUIDS.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Forget',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						if (types.get(item, 'global', false)) {
+							console.info("Forgetting global UUIDs...");
+							__Internal__.uuids = types.nullObject();
+						} else {
+							console.info("Forgetting package UUIDs...");
+							__Internal__.pkgUUIDS = types.nullObject();
+						};
+					}),
+				}));
 
 				
 				make.ADD('run', function run(command, /*optional*/options) {
 					const obj = new make.Task();
-					return obj.execute(command, {}, options);
+					return obj.execute(command, {name: 'start'}, options);
 				});
 			},
 		};
