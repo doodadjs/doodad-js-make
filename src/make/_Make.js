@@ -202,6 +202,7 @@ module.exports = {
 									__Internal__.pkgUUIDS[key] = uuid;
 									__Internal__.uuids[uuid] = {
 										packageName: this.options.taskData.manifest.name,
+										packageVersion: this.options.taskData.makeManifest.version.toString(),
 										name: key,
 										hits: 1,
 									};
@@ -223,6 +224,7 @@ module.exports = {
 								};
 								__Internal__.uuids[uuid] = {
 									packageName: this.options.taskData.manifest.name,
+									packageVersion: this.options.taskData.makeManifest.version.toString(),
 									name: null,
 									hits: 0,  // Will not get saved
 								};
@@ -1717,13 +1719,15 @@ module.exports = {
 							source = this.taskData.parseVariables(source, { isPath: true });
 						};
 						const pkgName = this.taskData.manifest.name;
+						const pkgVersion = this.taskData.makeManifest.version;
 						if (types.get(item, 'global', false)) {
 							console.info("Loading global UUIDs from file '" + source + "'...");
 							return files.readFile(source, {async: true, encoding: 'utf-8'})
 								.then(function(uuids) {
 									__Internal__.uuids = types.nullObject(JSON.parse(uuids));
 									tools.forEach(__Internal__.uuids, function(data, uuid) {
-										if (data.packageName === pkgName) {
+										const version = tools.Version.parse(data.packageVersion, {identifiers: namespaces.VersionIdentifiers});
+										if ((data.packageName === pkgName) && (version.compare(pkgVersion, {count: 1}) === 0)) {
 											data.hits = 0; // Reset number of hits
 										};
 									});
@@ -1737,24 +1741,36 @@ module.exports = {
 							return files.readFile(source, {async: true, encoding: 'utf-8'})
 								.then(function(uuids) {
 									uuids = JSON.parse(uuids);
-									let count = 0;
+									let count = 0,
+										discarded = 0;
 									tools.forEach(uuids, function(uuid, name) {
 										if (uuid in __Internal__.uuids) {
-											const key = __Internal__.uuids[uuid];
-											if ((key.packageName !== pkgName) || (key.name !== name)) {
+											const data = __Internal__.uuids[uuid],
+												version = tools.Version.parse(data.packageVersion, {identifiers: namespaces.VersionIdentifiers});
+											if ((data.packageName !== pkgName) || (data.name !== name)) {
 												throw new types.Error("Duplicated UUID : '~0~'.", [uuid]);
+											};
+											if (version.compare(pkgVersion, {count: 1}) === 0) {
+												__Internal__.pkgUUIDS[name] = uuid;
+												count++;
+											} else {
+												discarded++;
 											};
 										} else {
 											__Internal__.uuids[uuid] = {
 												packageName: pkgName,
+												packageVersion: pkgVersion.toString(),
 												name: name,
 												hits: 0,
 											};
+											__Internal__.pkgUUIDS[name] = uuid;
+											count++;
 										};
-										__Internal__.pkgUUIDS[name] = uuid;
-										count++;
 									});
 									console.info("\t" + count + " UUID(s) loaded.");
+									if (discarded > 0) {
+										console.info("\t" + discarded + " UUID(s) discarded because of package version.");
+									};
 								})
 								.catch({code: 'ENOENT'}, function(ex) {
 									console.warn("\tNo UUID loaded because file is missing.");
