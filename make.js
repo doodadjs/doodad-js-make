@@ -23,7 +23,7 @@
 
 "use strict";
 
-function run(root) {
+function startup(root, _shared) {
 	const doodad = root.Doodad,
 		tools = doodad.Tools,
 		types = doodad.Types,
@@ -86,9 +86,8 @@ function run(root) {
 		return namespaces.load(DD_MODULES, options); 
 	};
 
-	function startup(root) {
-		const make = root.Make;
-		return make.run(command);
+	function run(root) {
+		return root.Make.run(command);
 	};
 
 	return Promise.resolve( {} )
@@ -99,14 +98,7 @@ function run(root) {
 		.then(loadModule('doodad-js-locale'))
 		.then(loadModule('doodad-js-make'))
 		.then(loadNamespaces)
-		.then(startup);
+		.then(run);
 };
 
-require('doodad-js').createRoot(null, {startup: {fromSource: true}})
-	.then(run)
-	.catch(function(err) {
-		err && !err.trapped && console.error(err.stack);
-		if (!process.exitCode) {
-			process.exitCode = 1;
-		};
-	});
+require('doodad-js').createRoot(null, {startup: {fromSource: true}}, startup);
