@@ -610,6 +610,22 @@ module.exports = {
 				
 				file.REGISTER(make.Operation.$extend(
 				{
+					$TYPE_NAME: 'Delete',
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = item.source;
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
+						console.info('Deleting file "' + source + '"...');
+						return files.rm(source, {async: true})
+							.then(function() {
+								// Returns nothing
+							});
+					}),
+				}));
+
+				file.REGISTER(make.Operation.$extend(
+				{
 					$TYPE_NAME: 'Copy',
 
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
@@ -1034,7 +1050,7 @@ module.exports = {
 							return res.client;
 						});
 						
-						// Build modules source
+						// Build modules (debug)
 						ops = types.append(ops, tools.map(modules, function(mod) {
 							return {
 								'class': file.Javascript,
@@ -1049,7 +1065,7 @@ module.exports = {
 							};
 						}));
 						
-						// Build modules
+						// Build modules (build)
 						ops = types.append(ops, tools.map(modules, function(mod) {
 							return {
 								'class': file.Javascript,
@@ -1059,7 +1075,103 @@ module.exports = {
 							};
 						}));
 						
-						// Build tests
+						// Copy resources
+						ops = types.append(ops, tools.map(resources, function(res) {
+							return {
+								'class': folder.Copy,
+								source: '%SOURCEDIR%/' + res.src,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.src,
+							};
+						}));
+						
+						// Generate config file
+						ops.push( 
+							{
+								'class': generate.Configuration,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+							}
+						);
+
+						// Create bundle (debug)
+						ops.push( 
+							{
+								'class': file.Merge,
+								source: tools.map(tools.filter(modules, function(mod) {
+										return !mod.test && !mod.exclude;
+									}), function(mod) {
+										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
+									}),
+								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
+								separator: ';',
+							}
+						);
+
+						// Create package (debug)
+						if (!types.get(item, 'noIndex', false)) {
+							ops.push(
+								{
+									'class': file.Javascript,
+									source: indexTemplate,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%_debug.js',
+									runDirectives: true,
+									variables: {
+										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
+										dependencies: tools.map(tools.filter(dependencies, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+													optional: !!types.get(dep, 'optional', false),
+												};
+											}),
+									},
+								}
+							);
+						};
+						
+						// Create bundle (build)
+						ops.push( 
+							{
+								'class': file.Merge,
+								source: tools.map(tools.filter(modules, function(mod) {
+										return !mod.test && !mod.exclude;
+									}), function(mod) {
+										return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
+									}),
+								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+								separator: ';',
+							}
+						);
+
+						// Create package (build)
+						if (!types.get(item, 'noIndex', false)) {
+							ops.push( 
+								{
+									'class': file.Javascript,
+									source: indexTemplate,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.js',
+									runDirectives: true,
+									variables: {
+										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+										dependencies: tools.map(tools.filter(dependencies, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+													optional: !!types.get(dep, 'optional', false),
+												};
+											}),
+									},
+								}
+							);
+						};
+
+/*						
+						// Build tests index
 						ops.push(
 							{
 								'class': file.Javascript,
@@ -1096,64 +1208,9 @@ module.exports = {
 								},
 							}
 						);
+*/
 						
-						// Copy resources
-						ops = types.append(ops, tools.map(resources, function(res) {
-							return {
-								'class': folder.Copy,
-								source: '%SOURCEDIR%/' + res.src,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.src,
-							};
-						}));
-						
-						// Generate config file
-						ops.push( 
-							{
-								'class': generate.Configuration,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-							}
-						);
-
-						// Create bundle from source
-						ops.push( 
-							{
-								'class': file.Merge,
-								source: tools.map(tools.filter(modules, function(mod) {
-										return !mod.test && !mod.exclude;
-									}), function(mod) {
-										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
-									}),
-								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
-								separator: ';',
-							}
-						);
-
-						// Build index (debug)
-						if (!types.get(item, 'noIndex', false)) {
-							ops.push(
-								{
-									'class': file.Javascript,
-									source: indexTemplate,
-									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%_debug.js',
-									runDirectives: true,
-									variables: {
-										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
-										dependencies: tools.map(tools.filter(dependencies, function(dep) {
-												return !dep.test;
-											}), function(dep) {
-												return {
-													name: dep.name,
-													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-													optional: !!types.get(dep, 'optional', false),
-												};
-											}),
-									},
-								}
-							);
-						};
-						
-						// Create tests bundle from source
+						// Create tests bundle (debug)
 						ops.push( 
 							{
 								'class': file.Merge,
@@ -1166,6 +1223,8 @@ module.exports = {
 								separator: ';',
 							}
 						);
+
+						// Create tests package (debug)
 						ops.push(
 							{
 								'class': file.Javascript,
@@ -1187,51 +1246,28 @@ module.exports = {
 							}
 						);
 						
-						// Create bundle from build
-						ops.push( 
-							{
-								'class': file.Merge,
-								source: tools.map(tools.filter(modules, function(mod) {
-										return !mod.test && !mod.exclude;
-									}), function(mod) {
-										return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
-									}),
-								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
-								separator: ';',
-							}
-						);
-
-						// Build index (build)
-						if (!types.get(item, 'noIndex', false)) {
-							ops.push( 
-								{
-									'class': file.Javascript,
-									source: indexTemplate,
-									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.js',
-									runDirectives: true,
-									variables: {
-										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
-										dependencies: tools.map(tools.filter(dependencies, function(dep) {
-												return !dep.test;
-											}), function(dep) {
-												return {
-													name: dep.name,
-													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-													optional: !!types.get(dep, 'optional', false),
-												};
-											}),
-									},
-								}
-							);
-						};
-						
 						// Copy license file
 						ops.push( 
 							{
 								'class': file.Copy,
 								source: '%PACKAGEDIR%/LICENSE',
 								destination: '%INSTALLDIR%/%PACKAGENAME%/LICENSE',
+							}
+						);
+
+						// Cleanup
+						ops.push( 
+							{
+								'class': file.Delete,
+								source: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
+							},
+							{
+								'class': file.Delete,
+								source: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+							},
+							{
+								'class': file.Delete,
+								source: '%INSTALLDIR%/%PACKAGENAME%/tests_bundle.js',
 							}
 						);
 
