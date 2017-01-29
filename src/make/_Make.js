@@ -763,7 +763,7 @@ module.exports = {
 									.nodeify(function(err, result) {
 										try {
 											jsStream.stopListening();
-											jsStream.destroy();
+											types.DESTROY(jsStream);
 										} catch(o) {
 										};
 										
