@@ -157,7 +157,7 @@ module.exports = {
 							this.pushDirective({
 								name: 'MODULE',
 							});
-							if (!types.has(this.variables, 'serverSide')) {
+							if (!types.get(this.variables, 'serverSide', false)) {
 								this.directives.INJECT("; " +
 									"(function(global, module, DD_MODULES) {"
 								);
@@ -168,7 +168,7 @@ module.exports = {
 							if (!block || (block.name !== 'MODULE')) {
 								throw new types.Error("Invalid 'END_MODULE' directive.");
 							};
-							if (!types.has(this.variables, 'serverSide')) {
+							if (!types.get(this.variables, 'serverSide', false)) {
 								this.directives.INJECT("; " +
 										"module.exports.add(DD_MODULES)" + "; " +
 									"}).call(window, window, {exports: {}}, (typeof DD_MODULES === 'undefined' ? window.DD_MODULES = {} : DD_MODULES))" + "; "
