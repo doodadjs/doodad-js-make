@@ -63,7 +63,9 @@ module.exports = {
 					
 					nodeFs = require('fs'),
 					nodeChildProcess = require('child_process'),
-					Module = require('module').Module;
+					Module = require('module').Module,
+
+					cwd = files.Path.parse(process.cwd());
 					
 				let nodeBrowserify = null;
 				try {
@@ -107,20 +109,32 @@ module.exports = {
 				});
 				
 				
-				__Internal__.getManifest = function getManifest(pkg) {
-					return require(pkg.split('/', 2)[0] + '/package.json');
+				__Internal__.getManifest = function getManifest(pkg, currentPackageDir) {
+					const FILE = pkg.split('/', 2)[0].split('\\', 2)[0] + '/package.json';
+					try {
+						const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux'});
+						return require(path.toString());
+					} catch(o) {
+						return require(FILE);
+					};
 				};
 
-				__Internal__.getMakeManifest = function getMakeManifest(pkg) {
-					return require(pkg.split('/', 2)[0] + '/make.json');
+				__Internal__.getMakeManifest = function getMakeManifest(pkg, currentPackageDir) {
+					const FILE = pkg.split('/', 2)[0].split('\\', 2)[0] + '/make.json';
+					try {
+						const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux'});
+						return require(path.toString());
+					} catch(o) {
+						return require(FILE);
+					};
 				};
 
-				__Internal__.getVersion = function getVersion(pkg) {
+				__Internal__.getVersion = function getVersion(pkg, currentPackageDir) {
 					let manifest = null;
 					try {
-						manifest = __Internal__.getMakeManifest(pkg);
+						manifest = __Internal__.getMakeManifest(pkg, currentPackageDir);
 					} catch(ex) {
-						manifest = __Internal__.getManifest(pkg);
+						manifest = __Internal__.getManifest(pkg, currentPackageDir);
 					};
 					return manifest.version + (manifest.stage || 'd');
 				};
@@ -131,7 +145,7 @@ module.exports = {
 					
 					__knownDirectives: {
 						VERSION: function VERSION(pkg) {
-							return __Internal__.getVersion(pkg);
+							return __Internal__.getVersion(pkg, this.options.taskData.packageDir);
 						},
 						MANIFEST: function MANIFEST(key) {
 							return safeEval.eval(key, this.options.taskData.manifest);
@@ -272,7 +286,12 @@ module.exports = {
 
 								this.command = command;
 
-								this.packageDir = files.Path.parse(types.get(item, 'source', process.cwd()));
+								const source = types.get(item, 'source');
+								if (source) {
+									this.packageDir = files.Path.parse(source);
+								} else {
+									this.packageDir = cwd;
+								};
 							
 								let manifestTemplate = types.get(item, 'manifestTemplate');
 								if (types.isString(manifestTemplate)) {
@@ -1688,9 +1707,9 @@ module.exports = {
 						const getNodeVersion = function getVersion(pkg) {
 							let manifest = null;
 							try {
-								manifest = __Internal__.getMakeManifest(pkg);
+								manifest = __Internal__.getMakeManifest(pkg, taskData.packageDir);
 							} catch(ex) {
-								manifest = __Internal__.getManifest(pkg);
+								manifest = __Internal__.getManifest(pkg, taskData.packageDir);
 							};
 							let version = manifest.version;
 							let stage = manifest.stage;
