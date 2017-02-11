@@ -110,26 +110,47 @@ module.exports = {
 				
 				
 				__Internal__.getManifest = function getManifest(pkg, currentPackageDir) {
-					const FILE = pkg.split('/', 2)[0].split('\\', 2)[0] + '/package.json';
-					try {
-						const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux'});
-						return require(path.toString());
-					} catch(o) {
-						return require(FILE);
+					if (!pkg) {
+						throw new types.Error("Package name is missing.");
 					};
+					pkg = files.Path.parse(pkg, {os: 'linux', isRelative: false, file: ''}).toArray({trim: true})[0];
+					if (!pkg) {
+						throw new types.Error("Package name is missing.");
+					};
+					const FILE = pkg + '/package.json';
+					if (currentPackageDir) {
+						try {
+							const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux'});
+							return require(path.toString());
+						} catch(o) {
+						};
+					};
+					return require(FILE);
 				};
 
-				__Internal__.getMakeManifest = function getMakeManifest(pkg, currentPackageDir) {
-					const FILE = pkg.split('/', 2)[0].split('\\', 2)[0] + '/make.json';
-					try {
-						const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux'});
-						return require(path.toString());
-					} catch(o) {
-						return require(FILE);
+				__Internal__.getMakeManifest = function getMakeManifest(pkg, /*optional*/currentPackageDir) {
+					if (!pkg) {
+						throw new types.Error("Package name is missing.");
 					};
+					pkg = files.Path.parse(pkg, {os: 'linux', isRelative: false, file: ''}).toArray({trim: true})[0];
+					if (!pkg) {
+						throw new types.Error("Package name is missing.");
+					};
+					const FILE = pkg + '/make.json';
+					if (currentPackageDir) {
+						try {
+							const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux'});
+							return require(path.toString());
+						} catch(o) {
+						};
+					};
+					return require(FILE);
 				};
 
-				__Internal__.getVersion = function getVersion(pkg, currentPackageDir) {
+				__Internal__.getVersion = function getVersion(pkg, /*optional*/currentPackageDir) {
+					if (!pkg) {
+						throw new types.Error("Package name is missing.");
+					};
 					let manifest = null;
 					try {
 						manifest = __Internal__.getMakeManifest(pkg, currentPackageDir);
