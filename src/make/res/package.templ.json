@@ -28,6 +28,6 @@
 	"main": "index.js",
 	"browser": "browserify/browserify.js",
 	"engines": {
-		"node": ">=4.2.0"
+		"node": ">=6.0.0"
 	}
 }
