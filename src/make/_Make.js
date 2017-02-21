@@ -120,7 +120,7 @@ module.exports = {
 					const FILE = pkg + '/package.json';
 					if (currentPackageDir) {
 						try {
-							const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux'});
+							const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux', allowTraverse: true});
 							return require(path.toString());
 						} catch(o) {
 						};
@@ -139,7 +139,7 @@ module.exports = {
 					const FILE = pkg + '/make.json';
 					if (currentPackageDir) {
 						try {
-							const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux'});
+							const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux', allowTraverse: true});
 							return require(path.toString());
 						} catch(o) {
 						};
