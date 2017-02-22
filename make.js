@@ -101,4 +101,8 @@ function startup(root, _shared) {
 		.then(run);
 };
 
-require('doodad-js').createRoot(null, {startup: {fromSource: true}}, startup);
+require('doodad-js').createRoot(null, {startup: {fromSource: true}}, startup)
+	.catch(ex => {
+		console.error(ex.stack);
+		process.exit(1);
+	});
