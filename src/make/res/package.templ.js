@@ -33,7 +33,7 @@ module.exports = {
 			dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 					
 			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+				// DON'T PUT "use strict"; HERE !
 						
 				var doodad = root.Doodad,
 					types = doodad.Types;
