@@ -705,6 +705,7 @@ module.exports = {
 							source = [source];
 						};
 						const separator = item.separator;
+						const encoding = types.get(item, 'encoding', 'utf-8');
 						console.info('Merging files to "' + dest + '"...');
 						const createFile = function() {
 							return nodeFs.createWriteStream(dest.toString({shell: 'api'}));
@@ -716,13 +717,69 @@ module.exports = {
 									src = taskData.parseVariables(src, { isPath: true });
 								};
 								src = src.toString({shell: 'api'});
+
 								console.info("    " + src);
+
 								return Promise.create(function pipeInputPromise(resolve, reject) {
 										const inputStream = nodeFs.createReadStream(src);
-										inputStream
-											.on('error', reject)
-											.on('end', resolve)
-											.pipe(outputStream, {end: false});
+
+										if ((encoding === 'utf-8') || (encoding === 'utf8')) {
+											let errorCb, endCb, dataCb;
+
+											const cleanup = function cleanup() {
+												outputStream.removeListener('error', errorCb);
+												inputStream.removeListener('error', errorCb);
+												inputStream.removeListener('end', endCb);
+												inputStream.removeListener('data', dataCb);
+											};
+
+											errorCb = function(err) {
+												try {
+													reject(err);
+													cleanup();
+												} catch(ex) {
+												};
+											};
+
+											outputStream
+												.on('error', errorCb);
+
+											inputStream
+												.on('error', errorCb)
+												.on('end', endCb = function() {
+													try {
+														resolve(null);
+														cleanup();
+													} catch(ex) {
+														reject(ex);
+													};
+												})
+												.once('data', dataCb = function(chunk) {
+													try {
+														if ((chunk[0] === 0xEF) && (chunk[1] === 0xBB) && (chunk[2] === 0xBF)) {
+															// Remove BOM
+															chunk = chunk.slice(3);
+														};
+														outputStream.write(chunk);
+														resolve(inputStream);
+														cleanup();
+													} catch(ex) {
+														reject(ex);
+													};
+												});
+
+										} else {
+											resolve(inputStream);
+
+										};
+									})
+									.thenCreate(function(inputStream, resolve, reject) {
+										if (inputStream) {
+											inputStream
+												.on('error', reject)
+												.on('end', resolve)
+												.pipe(outputStream, {end: false});
+										};
 									})
 									.then(function() {
 										if (source.length) {
