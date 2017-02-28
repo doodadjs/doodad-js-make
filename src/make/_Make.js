@@ -724,49 +724,49 @@ module.exports = {
 										const inputStream = nodeFs.createReadStream(src);
 
 										if ((encoding === 'utf-8') || (encoding === 'utf8')) {
-											let errorCb, endCb, dataCb;
+											let errorCb, dataCb;
 
 											const cleanup = function cleanup() {
-												outputStream.removeListener('error', errorCb);
-												inputStream.removeListener('error', errorCb);
-												inputStream.removeListener('end', endCb);
-												inputStream.removeListener('data', dataCb);
-											};
-
-											errorCb = function(err) {
 												try {
-													reject(err);
-													cleanup();
+													outputStream.removeListener('error', errorCb);
+													inputStream.removeListener('error', errorCb);
+													inputStream.removeListener('end', dataCb);
+													inputStream.removeListener('data', dataCb);
 												} catch(ex) {
 												};
 											};
 
-											outputStream
-												.on('error', errorCb);
+											errorCb = function(err) {
+												cleanup();
+												reject(err);
+											};
 
-											inputStream
-												.on('error', errorCb)
-												.on('end', endCb = function() {
-													try {
-														resolve(null);
-														cleanup();
-													} catch(ex) {
-														reject(ex);
-													};
-												})
-												.once('data', dataCb = function(chunk) {
-													try {
+											dataCb = function(/*optional*/chunk) {
+												cleanup();
+												try {
+													if (chunk) {
 														if ((chunk[0] === 0xEF) && (chunk[1] === 0xBB) && (chunk[2] === 0xBF)) {
 															// Remove BOM
 															chunk = chunk.slice(3);
 														};
 														outputStream.write(chunk);
 														resolve(inputStream);
-														cleanup();
-													} catch(ex) {
-														reject(ex);
+													} else {
+														// EOF
+														resolve(null);
 													};
-												});
+												} catch(ex) {
+													reject(ex);
+												};
+											}
+
+											outputStream
+												.on('error', errorCb);
+
+											inputStream
+												.on('error', errorCb)
+												.on('end', dataCb)
+												.on('data', dataCb);
 
 										} else {
 											resolve(inputStream);
