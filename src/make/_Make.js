@@ -841,7 +841,7 @@ module.exports = {
 						const taskData = this.taskData;
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
-								const jsStream = new __Internal__.JsMinifier({taskData: taskData, flushMode: 'half', runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
+								const jsStream = new __Internal__.JsMinifier({taskData: taskData, runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
 								if (variables) {
 									tools.forEach(variables, function(value, name) {
 										jsStream.define(name, value);
@@ -849,17 +849,15 @@ module.exports = {
 								};
 								return Promise.create(function pipePromise(resolve, reject) {
 										const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
-										const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.ITransform);
+										const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.IWritable);
 										const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
 										outputStream.on('close', resolve);
 										outputStream.on('error', reject);
-										inputStream
-											.pipe(jsStreamTransform)
-											.pipe(outputStream);
+										jsStream.pipe(outputStream);
+										inputStream.pipe(jsStreamTransform);
 									})
 									.nodeify(function(err, result) {
 										try {
-											jsStream.stopListening();
 											types.DESTROY(jsStream);
 										} catch(o) {
 										};
@@ -1690,19 +1688,16 @@ module.exports = {
 										b.add(source.toString());
 									};
 									const outputStream = nodeFs.createWriteStream(dest.toString());
-									let bundleStream = b.bundle();
+									const bundleStream = b.bundle();
 									if (item.minify) {
-										const jsStream = new __Internal__.JsMinifier({taskData: taskData, flushMode: 'half'});
-										jsStream.listen();
-										const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.ITransform);
-										bundleStream = bundleStream
-											.pipe(jsStreamTransform)
-											.pipe(outputStream)
+										const jsStream = new __Internal__.JsMinifier({taskData: taskData});
+										const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.IWritable);
+										jsStream.pipe(outputStream)
+										bundleStream.pipe(jsStreamTransform);
 									} else {
-										bundleStream = bundleStream
-											.pipe(outputStream)
+										bundleStream.pipe(outputStream)
 									};
-									bundleStream
+									outputStream
 										.on('finish', resolve)
 										.on('error', reject);
 								} else {
