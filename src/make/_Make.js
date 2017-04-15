@@ -853,6 +853,9 @@ module.exports = {
 										const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
 										outputStream.on('close', resolve);
 										outputStream.on('error', reject);
+										jsStream.onError.attachOnce(this, function(ev) {
+											reject(ev.error);
+										})
 										jsStream.pipe(outputStream);
 										inputStream.pipe(jsStreamTransform);
 									})
@@ -1689,17 +1692,41 @@ module.exports = {
 									};
 									const outputStream = nodeFs.createWriteStream(dest.toString());
 									const bundleStream = b.bundle();
+									let jsStream = null;
 									if (item.minify) {
-										const jsStream = new __Internal__.JsMinifier({taskData: taskData});
+										jsStream = new __Internal__.JsMinifier({taskData: taskData});
 										const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.IWritable);
 										jsStream.pipe(outputStream)
 										bundleStream.pipe(jsStreamTransform);
 									} else {
 										bundleStream.pipe(outputStream)
 									};
+									const cleanup = function() {
+										if (jsStream) {
+											types.DESTROY(jsStream);
+										};
+										if (bundleStream) {
+											types.DESTROY(bundleStream);
+										};
+										if (outputStream) {
+											types.DESTROY(outputStream);
+										};
+									};
+									if (jsStream) {
+										jsStream.onError.attachOnce(this, function(ev) {
+											cleanup();
+											reject(ev.error);
+										});
+									};
 									outputStream
-										.on('finish', resolve)
-										.on('error', reject);
+										.once('finish', () => {
+											cleanup();
+											resolve();
+										})
+										.once('error', err => {
+											cleanup();
+											reject(err);
+										});
 								} else {
 									throw new types.Error('Can\'t browserify "' + source + '" to "' + dest + '" because "browserify" is not installed.');
 								};
