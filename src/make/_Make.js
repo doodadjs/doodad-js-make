@@ -860,10 +860,7 @@ module.exports = {
 										inputStream.pipe(jsStreamTransform);
 									})
 									.nodeify(function(err, result) {
-										try {
-											types.DESTROY(jsStream);
-										} catch(o) {
-										};
+										types.DESTROY(jsStream);
 										
 										if (err) {
 											throw err;
