@@ -847,10 +847,12 @@ module.exports = {
 										jsStream.define(name, value);
 									});
 								};
+
+								const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
+								const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
+
 								return Promise.create(function pipePromise(resolve, reject) {
-										const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
 										const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.IWritable);
-										const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
 										outputStream.on('close', resolve);
 										outputStream.on('error', reject);
 										jsStream.onError.attachOnce(this, function(ev) {
@@ -861,6 +863,8 @@ module.exports = {
 									})
 									.nodeify(function(err, result) {
 										types.DESTROY(jsStream);
+										types.DESTROY(inputStream);
+										types.DESTROY(outputStream);
 										
 										if (err) {
 											throw err;
@@ -1716,7 +1720,7 @@ module.exports = {
 										});
 									};
 									outputStream
-										.once('finish', () => {
+										.once('close', () => {
 											cleanup();
 											resolve();
 										})
