@@ -1214,6 +1214,7 @@ module.exports = {
 									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%_debug.js',
 									runDirectives: true,
 									variables: {
+										debug: true,
 										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
