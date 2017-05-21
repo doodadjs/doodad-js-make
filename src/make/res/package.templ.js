@@ -31,19 +31,16 @@ module.exports = {
 			version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 			type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
 			dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
-					
+
 			create: function create(root, /*optional*/_options, _shared) {
 				// DON'T PUT "use strict"; HERE !
-						
-				const doodad = root.Doodad,
-					types = doodad.Types;
-							
+
 				const options = [/*! INCLUDE(VAR("config"), 'utf-8') */, _options, {secret: _shared.SECRET}];
 
 				const DD_MODULES = {};
 
 				//! INCLUDE(VAR("bundle"), 'utf-8', true)
-						
+
 				return root.Doodad.Namespaces.load(DD_MODULES, options)
 					.then(function() {
 						// Returns nothing
