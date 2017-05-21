@@ -34,14 +34,9 @@ module.exports = {
 					
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
-						
-				const doodad = root.Doodad,
-					types = doodad.Types;
-							
-				const options = [_options, {secret: _shared.SECRET}];
-						
+
 				const files = {
-					'config.json': {optional: true, isConfig: true, configOptions: options},
+					'config.json': {optional: true, isConfig: true},
 				};
 
 				const fromSource = root.getOptions().fromSource;
@@ -59,10 +54,12 @@ module.exports = {
 					//! END_FOR()
 				};
 
+				const options = [_options, {secret: _shared.SECRET}];
+
 				const _modules = {};
 				_modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = files;
 
-				return doodad.Modules.load(_modules, options)
+				return root.Doodad.Modules.load(_modules, options)
 					.then(function() {
 						// Returns nothing
 					});
