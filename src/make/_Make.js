@@ -588,6 +588,7 @@ module.exports = {
 					}),
 				}));
 
+
 				folder.REGISTER(make.Operation.$extend(
 				{
 					$TYPE_NAME: 'Create',
@@ -604,6 +605,7 @@ module.exports = {
 							});
 					}),
 				}));
+
 
 				folder.REGISTER(make.Operation.$extend(
 				{
@@ -628,6 +630,7 @@ module.exports = {
 							});
 					}),
 				}));
+
 
 				folder.REGISTER(make.Operation.$extend(
 				{
@@ -664,6 +667,7 @@ module.exports = {
 					}),
 				}));
 
+
 				file.REGISTER(make.Operation.$extend(
 				{
 					$TYPE_NAME: 'Copy',
@@ -688,6 +692,8 @@ module.exports = {
 					}),
 				}));
 				
+
+
 				file.REGISTER(make.Operation.$extend(
 				{
 					$TYPE_NAME: 'Merge',
@@ -821,6 +827,8 @@ module.exports = {
 					}),
 				}));
 				
+
+
 				file.REGISTER(make.Operation.$extend(
 				{
 					$TYPE_NAME: 'Javascript',
@@ -880,12 +888,12 @@ module.exports = {
 				}));
 
 				
-				
+/* TODO: Complete and test
 				spawn.REGISTER(make.Operation.$extend(
 				{
 					$TYPE_NAME: 'Node',
 					
-					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional* /options) {
 						let source = item.source;
 						if (types.isString(source)) {
 							source = this.taskData.parseVariables(source, { isPath: true });
@@ -893,8 +901,8 @@ module.exports = {
 						return Promise.create(function nodeJsForkPromise(resolve, reject) {
 								const cp = nodejs.fork(source, item.args, {stdio: ['pipe', 1, 2]});
 								cp.on('close', function(status) {
-									if (status) {
-										reject(new types.Error("Process exited with code '~0~'.", [result.status]));
+									if (status !== 0) {
+										reject(new types.Error("Process exited with code '~0~'.", [status]));
 									} else {
 										resolve();
 									};
@@ -905,7 +913,7 @@ module.exports = {
 							});
 					}),
 				}));
-
+*/
 				
 				
 				
