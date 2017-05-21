@@ -35,14 +35,14 @@ module.exports = {
 			dependencies: ['Doodad.Tools.Files', 'Doodad.Namespaces'],
 			
 			create: function create(root, /*optional*/_options, _shared) {
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					nodejs = doodad.NodeJs,
 					types = doodad.Types,
 					tools = doodad.Tools,
 					files = tools.Files,
 					namespaces = doodad.Namespaces;
 					
-				var Promise = types.getPromise(),
+				const Promise = types.getPromise(),
 					mod = namespaces.get(/*! TO_SOURCE(VAR("namespace")) */);
 				
 				mod.setResourcesLoader({
@@ -52,10 +52,10 @@ module.exports = {
 						});
 					},
 					load: function load(path, /*optional*/options) {
-						var tmp = path.toArray();
+						const tmp = path.toArray();
 						try {
-							var callback = types.get(options, 'callback'),
-								result;
+							const callback = types.get(options, 'callback');
+							let result;
 								
 		//! INJECT(VAR("resources"))
 		//! BEGIN_REMOVE()

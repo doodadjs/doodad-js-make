@@ -37,12 +37,12 @@ module.exports = {
 				
 				//! IF_DEF("modules")
 
-					var doodad = root.Doodad,
+					const doodad = root.Doodad,
 						types = doodad.Types,
 						modules = doodad.Modules,
 						fromSource = root.getOptions().fromSource;
 				
-					var files = {};
+					const files = {};
 					if (fromSource) { 
 						//! FOR_EACH(VAR("modulesSrc"), "mod")
 							//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
@@ -57,7 +57,7 @@ module.exports = {
 						//! END_FOR()
 					};
 
-					var _modules = {};
+					const _modules = {};
 					_modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = files;
 
 					return modules.load(_modules, [_options, {startup: {secret: _shared.SECRET}}])
@@ -66,7 +66,8 @@ module.exports = {
 						});
 
 				//! ELSE()
-					var DD_MODULES = {};
+
+					const DD_MODULES = {};
 				
 					//! INCLUDE(VAR("bundle"), null, true)
 						

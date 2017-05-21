@@ -35,12 +35,12 @@ module.exports = {
 			create: function create(root, /*optional*/_options, _shared) {
 				// DON'T PUT "use strict"; HERE !
 						
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					types = doodad.Types;
 							
-				var options = [/*! INCLUDE(VAR("config"), 'utf-8') */, _options, {secret: _shared.SECRET}];
+				const options = [/*! INCLUDE(VAR("config"), 'utf-8') */, _options, {secret: _shared.SECRET}];
 
-				var DD_MODULES = {};
+				const DD_MODULES = {};
 
 				//! INCLUDE(VAR("bundle"), 'utf-8', true)
 						

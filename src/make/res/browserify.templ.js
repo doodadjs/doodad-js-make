@@ -37,21 +37,21 @@ module.exports = {
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 				
-				var doodad = root.Doodad,
+				const doodad = root.Doodad,
 					namespaces = doodad.Namespaces,
 					nodejs = doodad.NodeJs,
 					types = doodad.Types,
 					tools = doodad.Tools;
 				
-				var config = null;
+				let config = null;
 				try {
 					config = require('../config.json');
 				} catch(ex) {
 				};
 				
-				var options = types.extend({}, config, _options, {secret: _shared.SECRET});
+				const options = types.extend({}, config, _options, {secret: _shared.SECRET});
 				
-				var DD_MODULES = {};
+				const DD_MODULES = {};
 				
 				//! FOR_EACH(VAR("resources"), "res")
 					require(/*! INJECT(TO_SOURCE(VAR("res"))) */).add(DD_MODULES);
