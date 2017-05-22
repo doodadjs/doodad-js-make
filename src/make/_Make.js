@@ -94,15 +94,19 @@ module.exports = {
 				};
 					
 					
-					
-				const __options__ = types.extend({
-				  unixDataPath: "/var/lib/",
-				  unixLibPath: "/usr/local/lib/",
+				const __options__ = types.depthExtend(15, {
+					unix: {
+						dataPath: "/var/lib/",
+						libPath: "/usr/local/lib/",
+					},
 				}, _options);
 
 				//__options__. = types.to....(__options__.);
 
+				types.freezeObject(__options__.unix);
 				types.freezeObject(__options__);
+
+
 
 				make.ADD('getOptions', function() {
 					return __options__;
@@ -446,7 +450,7 @@ module.exports = {
 											} else {
 												// There is no environment variable for this purpose under Unix-like systems
 												// So I use "package.json"'s "config" section.
-												value = solvePath(__options__.unixDataPath || "/var/lib/", os.type);
+												value = solvePath(__options__.unix.dataPath || "/var/lib/", os.type);
 											};
 										} else if (nameLc === '%programfiles%') {
 											if (os.type === 'windows') {
@@ -454,7 +458,7 @@ module.exports = {
 											} else {
 												// There is no environment variable for this purpose under Unix-like systems
 												// So I use "package.json"'s "config" section.
-												value = solvePath(__options__.unixLibPath || "/usr/local/lib/", os.type);
+												value = solvePath(__options__.unix.libPath || "/usr/local/lib/", os.type);
 											};
 										} else if ((nameLc === '%appdata%') || (nameLc === '%localappdata%')) {
 											if (os.type === 'windows') {
