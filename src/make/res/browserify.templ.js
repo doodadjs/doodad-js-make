@@ -49,8 +49,6 @@ module.exports = {
 				} catch(ex) {
 				};
 				
-				const options = types.extend({}, config, _options, {secret: _shared.SECRET});
-				
 				const DD_MODULES = {};
 				
 				//! FOR_EACH(VAR("resources"), "res")
@@ -63,7 +61,9 @@ module.exports = {
 					//! END_IF()
 				//! END_FOR()
 				
-				return namespaces.load(DD_MODULES, config)
+				const options = [config, _options, {secret: _shared.SECRET}];
+
+				return namespaces.load(DD_MODULES, options)
 					.then(function() {
 						// Returns nothing
 					});
