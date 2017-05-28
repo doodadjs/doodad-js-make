@@ -14,7 +14,8 @@
 		"config.json",
 		"make.json",
 		"LICENSE",
-		"README.md"
+		"README.md",
+		".travis.yml"
 	],
 	"scripts": {
 		"build": "ddmake make",
