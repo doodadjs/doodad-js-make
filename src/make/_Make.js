@@ -128,13 +128,43 @@ module.exports = {
 
 				__Internal__.addSearchPaths = function addSearchPaths() {
 					const cwdAr = cwd.toArray({trim: true});
-
-					if (tools.indexOf(cwdAr, 'node_modules') >= 0) {
-						app_module_path.addPath(cwd.moveUp(3).toString());  // Application
+					let name;
+					
+					// The application of the current package (ex: 'doodad-js-test')
+					const pos = tools.indexOf(cwdAr, 'node_modules');
+					if ((cwd.os === 'windows' && (pos > 1)) || (cwd.os !== 'windows' && (pos > 0))) {
+						name = cwd.moveUp(cwdAr.length - pos + 1).toString();
+						try {
+							nodeFs.statSync(name);
+							app_module_path.addPath(name);
+						} catch(ex) {
+							if (ex.code !== 'ENOENT') {
+								throw ex;
+							};
+						};
 					};
 
-					app_module_path.addPath(cwd.moveUp(1).toString()); // The package itself
-					app_module_path.addPath(cwd.combine('node_modules').toString()); // Package modules
+					// The current package itself (ex: 'doodad-js')
+					name = cwd.moveUp(1).toString();
+					try {
+						nodeFs.statSync(name);
+						app_module_path.addPath(name);
+					} catch(ex) {
+						if (ex.code !== 'ENOENT') {
+							throw ex;
+						};
+					};
+
+					// Current package's modules (ex: 'uuid')
+					name = cwd.combine('node_modules').toString();
+					try {
+						nodeFs.statSync(name);
+						app_module_path.addPath(name);
+					} catch(ex) {
+						if (ex.code !== 'ENOENT') {
+							throw ex;
+						};
+					};
 				};
 
 				
