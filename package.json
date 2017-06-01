@@ -22,12 +22,13 @@
     "make"
   ],
   "dependencies": {
-    "npm-package-config": "^0.1.6"
+    "app-module-path": "^2.2.0",
+    "npm-package-config": "^0.4.0"
   },
   "optionalDependencies": {
-	"browserify": "^13.0.0",
-	"webpack": "^1.13.1",
-	"json-loader": "^0.5.4"
+    "browserify": "^14.4.0",
+    "webpack": "^2.6.1",
+    "json-loader": "^0.5.4"
   },
   "repository": {
     "type": "git",
