@@ -68,7 +68,7 @@ module.exports = {
 					npm_package_config = require('npm-package-config'),
 					app_module_path = require('app-module-path'),
 
-					cwd = files.Path.parse(process.cwd());
+					cwd = files.Path.parse(process.cwd(), {file: ''});
 					
 				let nodeBrowserify = null;
 				try {
@@ -82,6 +82,7 @@ module.exports = {
 				} catch(ex) {
 				};
 					
+
 				types.complete(_shared.Natives, {
 					arraySplice: global.Array.prototype.splice,
 					
@@ -125,7 +126,16 @@ module.exports = {
 				};
 
 
-				app_module_path.addPath(cwd.combine('node_modules').toString());
+				__Internal__.addSearchPaths = function addSearchPaths() {
+					const cwdAr = cwd.toArray({trim: true});
+
+					if (tools.indexOf(cwdAr, 'node_modules') >= 0) {
+						app_module_path.addPath(cwd.moveUp(3).toString());  // Application
+					};
+
+					app_module_path.addPath(cwd.moveUp(1).toString()); // The package itself
+					app_module_path.addPath(cwd.combine('node_modules').toString()); // Package modules
+				};
 
 				
 				__Internal__.getManifest = function getManifest(pkg, currentPackageDir) {
@@ -329,6 +339,7 @@ module.exports = {
 								const source = types.get(item, 'source');
 								if (source) {
 									this.packageDir = files.Path.parse(source);
+									app_module_path.addPath(source);
 								} else {
 									this.packageDir = cwd;
 								};
@@ -389,7 +400,7 @@ module.exports = {
 								let path = val;
 								if (isPath) {
 									if (!(path instanceof files.Path)) {
-										path = solvePath(val);
+										path = solvePath(path);
 									};
 									path = path.toArray();
 								} else {
@@ -2011,6 +2022,8 @@ module.exports = {
 
 				
 				make.ADD('run', function run(command, /*optional*/options) {
+					__Internal__.addSearchPaths();
+
 					const obj = new make.Task();
 					return obj.execute(command, {name: 'start'}, options);
 				});
