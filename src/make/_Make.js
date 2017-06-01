@@ -1503,7 +1503,9 @@ module.exports = {
 										debug: true,
 										dependencies: dependencies,
 										modules: tools.map(modules, function(mod) {
-											return taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
+											return types.extend({}, mod, {
+												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+											});
 										}),
 										resources: tools.map(resources, function(res) {
 											return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
