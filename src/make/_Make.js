@@ -65,6 +65,9 @@ module.exports = {
 					nodeChildProcess = require('child_process'),
 					Module = require('module').Module,
 
+					npm_package_config = require('npm-package-config'),
+					app_module_path = require('app-module-path'),
+
 					cwd = files.Path.parse(process.cwd());
 					
 				let nodeBrowserify = null;
@@ -112,6 +115,18 @@ module.exports = {
 					return __options__;
 				});
 				
+
+				__Internal__.resolve = function _resolve(pkg) {
+					return Module._resolveFilename(pkg, require.main || module.parent, true);
+				};
+				
+				__Internal__.require = function _require(pkg) {
+					return Module._load(pkg, require.main || module.parent, true);
+				};
+
+
+				app_module_path.addPath(cwd.combine('node_modules').toString());
+
 				
 				__Internal__.getManifest = function getManifest(pkg, currentPackageDir) {
 					if (!pkg) {
@@ -384,7 +399,7 @@ module.exports = {
 								const os = tools.getOS();
 
 								if (path.length && (path[0][0] === '~')) {
-									const resolved = Module._resolveFilename(path[0].slice(1) + '/package.json', (require.main || module.parent), true);
+									const resolved = __Internal__.resolve(path[0].slice(1) + '/package.json');
 									path = solvePath(resolved, os.type).set({file: null}).combine(null, {file: path.slice(1)});
 									path = path.toArray();
 								};
@@ -933,7 +948,7 @@ module.exports = {
 						return files.mkdir(destination.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
 								console.info('Saving configuration to "' + destination + '"...');
-								return require('npm-package-config').list(self.taskData.manifest.name, {beautify: true, async: true})
+								return npm_package_config.list(self.taskData.manifest.name, {beautify: true, async: true})
 									.then(function(config) {
 										delete config['package'];
 										return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
