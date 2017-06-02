@@ -27,7 +27,7 @@
 		"doodad-js-make": "^0.0.0"
 	},
 	"main": "index.js",
-	"browser": "browserify/browserify.js",
+	"browser": "browserify/browserify.min.js",
 	"engines": {
 		"node": ">=6.0.0"
 	}

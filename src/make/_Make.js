@@ -325,6 +325,9 @@ module.exports = {
 								return uuid;
 							};
 						},
+						PATH: function(name) {
+							return this.options.taskData.parseVariables(name, {isPath: true});
+						},
 					},
 				})),
 				
@@ -1268,7 +1271,7 @@ module.exports = {
 									}), function(mod) {
 										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
 									}),
-								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
+								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 								separator: ';',
 							}
 						);
@@ -1279,12 +1282,12 @@ module.exports = {
 								{
 									'class': file.Javascript,
 									source: indexTemplate,
-									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%_debug.js',
+									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.js',
 									runDirectives: true,
 									variables: {
 										debug: true,
 										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;
 											}), function(dep) {
@@ -1308,7 +1311,7 @@ module.exports = {
 									}), function(mod) {
 										return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
 									}),
-								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
 								separator: ';',
 							}
 						);
@@ -1319,11 +1322,11 @@ module.exports = {
 								{
 									'class': file.Javascript,
 									source: indexTemplate,
-									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.js',
+									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.min.js',
 									runDirectives: true,
 									variables: {
 										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;
 											}), function(dep) {
@@ -1427,11 +1430,11 @@ module.exports = {
 						ops.push( 
 							{
 								'class': file.Delete,
-								source: '%INSTALLDIR%/%PACKAGENAME%/bundle_debug.js',
+								source: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 							},
 							{
 								'class': file.Delete,
-								source: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+								source: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
 							},
 							{
 								'class': file.Delete,
@@ -1511,7 +1514,7 @@ module.exports = {
 								{
 									'class': file.Javascript,
 									source: indexTemplate,
-									destination: '%BROWSERIFYDIR%/browserify.js',
+									destination: '%BROWSERIFYDIR%/browserify.min.js',
 									runDirectives: true,
 									variables: {
 										serverSide: true,
@@ -1536,7 +1539,7 @@ module.exports = {
 								{
 									'class': file.Javascript,
 									source: indexTemplate,
-									destination: '%BROWSERIFYDIR%/browserify_debug.js',
+									destination: '%BROWSERIFYDIR%/browserify.js',
 									runDirectives: true,
 									variables: {
 										serverSide: true,
@@ -1577,7 +1580,7 @@ module.exports = {
 							configTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/webpack.config.templ.js', {os: 'linux'});
 						};
 						const configDest = this.taskData.parseVariables("%PACKAGEDIR%/webpack.config.js", { isPath: true });
-						const entryFile = this.taskData.parseVariables("%BROWSERIFYDIR%/browserify.js", { isPath: true });
+						const entryFile = this.taskData.parseVariables("%BROWSERIFYDIR%/browserify.min.js", { isPath: true });
 						console.info('Preparing webpack config file "' + configDest + '"...');
 						const ops = [
 							{
