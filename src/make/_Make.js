@@ -2029,9 +2029,16 @@ module.exports = {
 								});
 						} else {
 							console.info("Saving package UUIDs to file '" + dest + "'...");
-							return files.writeFile(dest, JSON.stringify(__Internal__.pkgUUIDS), {async: true, mode: 'update'})
+							const pkgName = this.taskData.manifest.name;
+							const pkgVersion = this.taskData.makeManifest.version;
+							const uuids = tools.filter(__Internal__.pkgUUIDS, function(uuid, key) {
+								const guuid = __Internal__.uuids[uuid];
+								const version = tools.Version.parse(guuid.packageVersion, {identifiers: namespaces.VersionIdentifiers});
+								return (guuid.hits > 0) && ((guuid.packageName === pkgName) && (version.compare(pkgVersion, {count: 1}) === 0));
+							});
+							return files.writeFile(dest, JSON.stringify(uuids), {async: true, mode: 'update'})
 								.then(function() {
-									console.info("\t" + types.keys(__Internal__.pkgUUIDS).length + " UUID(s) saved.");
+									console.info("\t" + types.keys(uuids).length + " UUID(s) saved.");
 								});
 						};
 					}),
