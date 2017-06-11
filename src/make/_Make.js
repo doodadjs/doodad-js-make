@@ -996,7 +996,7 @@ module.exports = {
 									.then(function(config) {
 										delete config['package'];
 										return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
-											nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(config), {encoding: 'utf-8'}, function(ex) {
+											nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(config, null, 4), {encoding: 'utf-8'}, function(ex) {
 												if (ex) {
 													reject(ex);
 												} else {
@@ -2023,7 +2023,7 @@ module.exports = {
 							const uuids = tools.filter(__Internal__.uuids, function(data, uuid) {
 								return (data.hits > 0);
 							});
-							return files.writeFile(dest, JSON.stringify(uuids), {async: true, mode: 'update'})
+							return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
 								.then(function() {
 									console.info("\t" + types.keys(uuids).length + " UUID(s) saved.");
 								});
@@ -2036,7 +2036,7 @@ module.exports = {
 								const version = tools.Version.parse(guuid.packageVersion, {identifiers: namespaces.VersionIdentifiers});
 								return (guuid.hits > 0) && ((guuid.packageName === pkgName) && (version.compare(pkgVersion, {count: 1}) === 0));
 							});
-							return files.writeFile(dest, JSON.stringify(uuids), {async: true, mode: 'update'})
+							return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
 								.then(function() {
 									console.info("\t" + types.keys(uuids).length + " UUID(s) saved.");
 								});
