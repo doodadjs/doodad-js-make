@@ -3136,5 +3136,17 @@
         "packageVersion": "5.0.0",
         "name": "BinaryTransformableOutMixIn",
         "hits": 4
+    },
+    "9b6e5c85-9697-464e-866b-5b3f743ff353": {
+        "packageName": "doodad-js-http_jsonrpc",
+        "packageVersion": "0.11.0",
+        "name": "ServiceIsolatedMixIn",
+        "hits": 1
+    },
+    "0eaea9c7-5a18-49e4-8e35-3d44a13de3f5": {
+        "packageName": "doodad-js-http_jsonrpc",
+        "packageVersion": "0.11.0",
+        "name": "ServiceManager",
+        "hits": 1
     }
 }
