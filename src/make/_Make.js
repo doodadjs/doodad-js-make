@@ -992,7 +992,7 @@ module.exports = {
 						return files.mkdir(destination.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
 								console.info('Saving configuration to "' + destination + '"...');
-								return npm_package_config.list(self.taskData.manifest.name, {beautify: true, async: true})
+								return npm_package_config.listAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise})
 									.then(function(config) {
 										delete config['package'];
 										return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
