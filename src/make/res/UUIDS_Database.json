@@ -3154,5 +3154,83 @@
         "packageVersion": "8.0.0",
         "name": "PromiseCancelState",
         "hits": 4
+    },
+    "aae3f5c5-0bbb-432f-9314-a7713f0502f4": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "NodesListIterator",
+        "hits": 4
+    },
+    "051888e9-1f8d-4805-866d-2d69bf63f5bf": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "NodesList",
+        "hits": 4
+    },
+    "7debe420-7192-4745-b1cf-d580894f5a9c": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "Node",
+        "hits": 4
+    },
+    "9d902b77-e4cc-477f-8bf2-9dd0c095fd36": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "Element",
+        "hits": 4
+    },
+    "ac32e511-8066-428e-a7e5-73653e8d9d43": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "Attribute",
+        "hits": 4
+    },
+    "99f1c919-1bf8-4249-9c10-c2bd8a2ddca4": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "Text",
+        "hits": 4
+    },
+    "06915fa1-5124-449e-a156-9a31a6cd8ee7": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "CDATASection",
+        "hits": 4
+    },
+    "d4f1ceaf-d082-4fcc-979b-dafa3f96fb59": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "Entity",
+        "hits": 4
+    },
+    "f5a6c321-7266-473a-b632-e3b4cd9e8ab7": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "ProcessingInstruction",
+        "hits": 4
+    },
+    "ff74fe7c-13b2-4965-93f9-b0a8d9d50e29": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "Comment",
+        "hits": 4
+    },
+    "bfcf166f-7124-4a6f-beee-25ebe54e5c77": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "DocumentType",
+        "hits": 4
+    },
+    "2f88000a-89a9-49d5-9fb2-17f527c27f7c": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "DocumentFragment",
+        "hits": 4
+    },
+    "5e9f21fb-1545-4193-b2e7-9e294c2a9565": {
+        "packageName": "doodad-js-xml",
+        "packageVersion": "4.0.0",
+        "name": "Document",
+        "hits": 4
     }
 }
