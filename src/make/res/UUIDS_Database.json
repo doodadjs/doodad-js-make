@@ -3148,5 +3148,11 @@
         "packageVersion": "0.11.0",
         "name": "ServiceManager",
         "hits": 1
+    },
+    "35aa2204-5e5e-4ffd-aec1-a4d247bbaa6a": {
+        "packageName": "doodad-js",
+        "packageVersion": "8.0.0",
+        "name": "PromiseCancelState",
+        "hits": 4
     }
 }
