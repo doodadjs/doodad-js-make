@@ -2363,12 +2363,6 @@
         "name": "Version",
         "hits": 4
     },
-    "160609c4-7c2f-4631-8726-b51bdba01d55": {
-        "packageName": "doodad-js",
-        "packageVersion": "8.0.0",
-        "name": "BOUND_OBJECT",
-        "hits": 4
-    },
     "93b43e67-56ae-495c-904c-2a92d3c42f34": {
         "packageName": "doodad-js",
         "packageVersion": "8.0.0",
@@ -2439,18 +2433,6 @@
         "packageName": "doodad-js",
         "packageVersion": "8.0.0",
         "name": "Map",
-        "hits": 4
-    },
-    "e54c9058-943b-4f62-bc94-0544144cb3ff": {
-        "packageName": "doodad-js",
-        "packageVersion": "8.0.0",
-        "name": "IsPromiseExtended",
-        "hits": 4
-    },
-    "d7fdeec4-904b-452e-9c56-7bb810f10712": {
-        "packageName": "doodad-js",
-        "packageVersion": "8.0.0",
-        "name": "IsPromise",
         "hits": 4
     },
     "9d19e3e6-34dd-4035-8f32-595323a191d2": {
@@ -3149,12 +3131,6 @@
         "name": "ServiceManager",
         "hits": 1
     },
-    "35aa2204-5e5e-4ffd-aec1-a4d247bbaa6a": {
-        "packageName": "doodad-js",
-        "packageVersion": "8.0.0",
-        "name": "PromiseCancelState",
-        "hits": 4
-    },
     "aae3f5c5-0bbb-432f-9314-a7713f0502f4": {
         "packageName": "doodad-js-xml",
         "packageVersion": "4.0.0",
@@ -3231,6 +3207,36 @@
         "packageName": "doodad-js-xml",
         "packageVersion": "4.0.0",
         "name": "Document",
+        "hits": 4
+    },
+    "e111f689-8856-47e8-a2fd-d5b0524c5e3a": {
+        "packageName": "doodad-js",
+        "packageVersion": "8.0.0",
+        "name": "SYMBOL_NAME",
+        "hits": 4
+    },
+    "643dfb9f-03fa-410c-b1a1-6c202231f93d": {
+        "packageName": "doodad-js",
+        "packageVersion": "8.0.0",
+        "name": "SYMBOL_BOUND_OBJECT",
+        "hits": 4
+    },
+    "08378332-cae4-4264-8d6d-dcf517d00354": {
+        "packageName": "doodad-js",
+        "packageVersion": "8.0.0",
+        "name": "SYMBOL_IS_PROMISE_EXTENDED",
+        "hits": 4
+    },
+    "3e13809d-493b-4db5-95e9-6e275d35dfa3": {
+        "packageName": "doodad-js",
+        "packageVersion": "8.0.0",
+        "name": "SYMBOL_PROMSIE_CANCEL_STATE",
+        "hits": 4
+    },
+    "4dd3170c-5a28-4174-ac6b-068e028896c1": {
+        "packageName": "doodad-js",
+        "packageVersion": "8.0.0",
+        "name": "SYMBOL_IS_PROMISE",
         "hits": 4
     }
 }
