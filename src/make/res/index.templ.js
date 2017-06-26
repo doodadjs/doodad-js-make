@@ -35,31 +35,39 @@ module.exports = {
 			create: function create(root, /*optional*/_options, _shared) {
 				"use strict";
 
-				const files = {
-					'config.json': {optional: true, isConfig: true},
-				};
+				const files = [{
+					module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
+					path: 'config.json',
+					optional: true,
+					isConfig: true,
+				}];
 
 				const fromSource = root.getOptions().fromSource;
 				if (fromSource) { 
 					//! FOR_EACH(VAR("modulesSrc"), "mod")
 						//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-							files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
+							files.push({
+								module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
+								path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
+								optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
+							});
 						//! END_IF()
 					//! END_FOR()
 				} else { 
 					//! FOR_EACH(VAR("modules"), "mod")
 						//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-							files[/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */] = {optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */};
+							files.push({
+								module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
+								path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
+								optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
+							});
 						//! END_IF()
 					//! END_FOR()
 				};
 
 				const options = [_options, {secret: _shared.SECRET}];
 
-				const _modules = {};
-				_modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = files;
-
-				return root.Doodad.Modules.load(_modules, options)
+				return root.Doodad.Modules.load(files, options)
 					.then(function() {
 						// Returns nothing
 					});
