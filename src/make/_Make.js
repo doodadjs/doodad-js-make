@@ -220,8 +220,8 @@ module.exports = {
 				};
 
 				
-				__Internal__.JsMinifier = doodad.REGISTER(minifiers.Javascript.$extend({
-					$TYPE_NAME: '__JsMinifier',
+				make.REGISTER(minifiers.Javascript.$extend({
+					$TYPE_NAME: 'JavascriptBuilder',
 					
 					__knownDirectives: {
 						VERSION: function VERSION(pkg) {
@@ -277,7 +277,11 @@ module.exports = {
 								key = types.toString(key);
 								if (key in __Internal__.pkgUUIDS) {
 									const uuid = __Internal__.pkgUUIDS[key];
-									__Internal__.uuids[uuid].hits++;
+									const data = __Internal__.uuids[uuid];
+									data.hits++;
+									if (tools.indexOf(data.tasks, this.options.taskData.command) < 0) {
+										data.tasks.push(this.options.taskData.command);
+									};
 									return uuid;
 								} else {
 									let count = 5,
@@ -299,6 +303,7 @@ module.exports = {
 										packageVersion: this.options.taskData.makeManifest.version.toString(),
 										name: key,
 										hits: 1,
+										tasks: [this.options.taskData.command],
 									};
 									return uuid;
 								};
@@ -321,6 +326,7 @@ module.exports = {
 									packageVersion: this.options.taskData.makeManifest.version.toString(),
 									name: null,
 									hits: 0,  // Will not get saved
+									tasks: [this.options.taskData.command],
 								};
 								return uuid;
 							};
@@ -596,14 +602,17 @@ module.exports = {
 							if (index < task.operations.length) {
 								const op = task.operations[index];
 								
-								let obj = op['class'];
-									
-								if (types.isString(obj)) {
-									obj = namespaces.get(obj);
+								const clsName = op['class'];
+
+								let obj;
+								if (types.isString(clsName)) {
+									obj = namespaces.get(clsName);
+								} else {
+									obj = clsName;
 								};
 								
 								if (!types._implements(obj, make.Operation)) {
-									throw new types.Error("Invalid class '~0~'.", [obj]);
+									throw new types.Error("Invalid class '~0~'.", [clsName]);
 								};
 
 								if (types.isType(obj)) {
@@ -643,8 +652,8 @@ module.exports = {
 					$TYPE_NAME: 'Load',
 
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-						console.info('Loading required modules...');
-						return modules.load(types.get(item, 'modules'), options)
+						console.info('Loading required module files...');
+						return modules.load(types.get(item, 'files'), options)
 							.then(function(result) {
 								// Returns nothing
 							});
@@ -901,23 +910,27 @@ module.exports = {
 						if (types.isString(source)) {
 							source = this.taskData.parseVariables(source, { isPath: true });
 						};
+
 						let dest = item.destination;
 						if (types.isString(dest)) {
 							dest = this.taskData.parseVariables(dest, { isPath: true });
 						};
+
 						console.info('Minifying file "' + source + '" to "' + dest + '"...');
+
 						const variables = types.extend({
 							task: command,
 						}, types.get(item, 'variables'), types.get(options, 'variables'));
+
 						const taskData = this.taskData;
+
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(function() {
-								const jsStream = new __Internal__.JsMinifier({taskData: taskData, runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
-								if (variables) {
-									tools.forEach(variables, function(value, name) {
-										jsStream.define(name, value);
-									});
-								};
+								const jsStream = new make.JavascriptBuilder({taskData: taskData, runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
+
+								tools.forEach(variables, function(value, name) {
+									jsStream.define(name, value);
+								});
 
 								const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
 								const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
@@ -1769,7 +1782,7 @@ module.exports = {
 									const bundleStream = b.bundle();
 									let jsStream = null;
 									if (item.minify) {
-										jsStream = new __Internal__.JsMinifier({taskData: taskData});
+										jsStream = new make.JavascriptBuilder({taskData: taskData});
 										const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.IWritable);
 										jsStream.pipe(outputStream)
 										bundleStream.pipe(jsStreamTransform);
@@ -1956,8 +1969,11 @@ module.exports = {
 								.then(function(uuids) {
 									__Internal__.uuids = types.nullObject(JSON.parse(uuids));
 									tools.forEach(__Internal__.uuids, function(data, uuid) {
+										if (!types.has(data, 'tasks')) {
+											data.tasks = ['make'];
+										};
 										const version = tools.Version.parse(data.packageVersion, {identifiers: namespaces.VersionIdentifiers});
-										if ((data.packageName === pkgName) && (version.compare(pkgVersion, {count: 1}) === 0)) {
+										if ((data.packageName === pkgName) && (tools.indexOf(data.tasks, command) >= 0) && (version.compare(pkgVersion, {count: 1}) === 0)) {
 											data.hits = 0; // Reset number of hits
 										};
 									});
