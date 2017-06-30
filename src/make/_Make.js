@@ -1973,12 +1973,12 @@ module.exports = {
 											data.tasks = ['make'];
 										};
 										const version = tools.Version.parse(data.packageVersion, {identifiers: namespaces.VersionIdentifiers});
-										if ((data.packageName === pkgName) && (tools.indexOf(data.tasks, command) >= 0) && (version.compare(pkgVersion, {count: 1}) === 0)) {
+										if ((data.packageName === pkgName) && (tools.indexOf(data.tasks, this.taskData.command) >= 0) && (version.compare(pkgVersion, {count: 1}) === 0)) {
 											data.hits = 0; // Reset number of hits
 										};
-									});
+									}, this);
 									console.info("\t" + types.keys(__Internal__.uuids).length + " UUID(s) loaded.");
-								})
+								}, null, this)
 								.catch({code: 'ENOENT'}, function(ex) {
 									console.warn("\tNo UUID loaded because file is missing.");
 								});
