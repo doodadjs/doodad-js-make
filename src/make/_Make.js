@@ -1096,10 +1096,12 @@ module.exports = {
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;
 											}), function(dep) {
+												const path = types.get(dep, 'path', null);
 												return {
 													name: dep.name,
 													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 													optional: !!types.get(dep, 'optional', false),
+													path: path,
 												};
 											}),
 										modules: tools.map(tools.filter(modules, function(mod) {
@@ -1127,18 +1129,20 @@ module.exports = {
 							{
 								'class': file.Javascript,
 								source: testsTemplate,
-								destination: '%PACKAGEDIR%/test/tests.js',
+								destination: '%PACKAGEDIR%/test/%PACKAGENAME%_tests.js',
 								runDirectives: true,
 								variables: {
 									serverSide: true,
 									debug: true,
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
-										}), [{name: 'doodad-js-test'}]), function(dep) {
+										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test'), optional: false, path: null}]), function(dep) {
+											const path = types.get(dep, 'path', null);
 											return {
 												name: dep.name,
 												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 												optional: !!types.get(dep, 'optional', false),
+												path: path,
 											};
 										}),
 									modules: tools.map(tools.filter(modules, function(mod) {
@@ -1276,6 +1280,7 @@ module.exports = {
 						);
 
 						// Create bundle (debug)
+						// NOTE: Temporary file.
 						ops.push( 
 							{
 								'class': file.Merge,
@@ -1304,10 +1309,12 @@ module.exports = {
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;
 											}), function(dep) {
+												const path = types.get(dep, 'path', null);
 												return {
 													name: dep.name,
 													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 													optional: !!types.get(dep, 'optional', false),
+													path: path,
 												};
 											}),
 									},
@@ -1316,6 +1323,7 @@ module.exports = {
 						};
 						
 						// Create bundle (build)
+						// NOTE: Temporary file.
 						ops.push( 
 							{
 								'class': file.Merge,
@@ -1343,10 +1351,12 @@ module.exports = {
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
 												return !dep.test;
 											}), function(dep) {
+												const path = types.get(dep, 'path', null);
 												return {
 													name: dep.name,
 													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 													optional: !!types.get(dep, 'optional', false),
+													path: path,
 												};
 											}),
 									},
@@ -1354,47 +1364,8 @@ module.exports = {
 							);
 						};
 
-/*						
-						// Build tests index
-						ops.push(
-							{
-								'class': file.Javascript,
-								source: testsTemplate,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/tests.js',
-								runDirectives: true,
-								variables: {
-									debug: true,
-									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
-											return dep.test;
-										}), [{name: 'doodad-js-test'}]), function(dep) {
-											return {
-												name: dep.name,
-												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-												optional: !!types.get(dep, 'optional', false),
-											};
-										}),
-									modules: tools.map(tools.filter(modules, function(mod) {
-											return mod.test;
-										}), function(mod) {
-											return types.extend({}, mod, {
-												dest: __Internal__.getBuiltFileName(mod.src),
-												optional: !!types.get(mod, 'optional', false),
-											});
-										}),
-									modulesSrc: tools.map(tools.filter(modules, function(mod) {
-											return mod.test;
-										}), function(mod) {
-											return types.extend({}, mod, {
-												dest: mod.src,
-												optional: !!types.get(mod, 'optional', false),
-											});
-										}),
-								},
-							}
-						);
-*/
-						
 						// Create tests bundle (debug)
+						// NOTE: Temporary file.
 						ops.push( 
 							{
 								'class': file.Merge,
@@ -1403,7 +1374,7 @@ module.exports = {
 									}), function(mod) {
 										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
 									}),
-								destination: '%INSTALLDIR%/%PACKAGENAME%/tests_bundle.js',
+								destination: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
 								separator: ';',
 							}
 						);
@@ -1413,17 +1384,19 @@ module.exports = {
 							{
 								'class': file.Javascript,
 								source: testsTemplate,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%_tests.js',
+								destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME%_tests.js',
 								runDirectives: true,
 								variables: {
-									bundle: '%INSTALLDIR%/%PACKAGENAME%/tests_bundle.js',
+									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
-										}), [{name: 'doodad-js-test'}]), function(dep) {
+										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test'), optional: false, path: null}]), function(dep) {
+											const path = types.get(dep, 'path', null);
 											return {
 												name: dep.name,
 												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
 												optional: !!types.get(dep, 'optional', false),
+												path: path,
 											};
 										}),
 								},
@@ -1451,7 +1424,7 @@ module.exports = {
 							},
 							{
 								'class': file.Delete,
-								source: '%INSTALLDIR%/%PACKAGENAME%/tests_bundle.js',
+								source: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
 							}
 						);
 
@@ -1475,12 +1448,14 @@ module.exports = {
 						const dependencies = tools.map(tools.filter(taskData.makeManifest.dependencies, function(dep) {
 								return dep.browserify && !dep.test;
 							}), function(dep) {
-							return {
-								name: dep.name,
-								version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-								optional: !!types.get(dep, 'optional', false),
-							};
-						});
+								const path = types.get(dep, 'path', null);
+								return {
+									name: dep.name,
+									version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+									optional: !!types.get(dep, 'optional', false),
+									path: path,
+								};
+							});
 						
 						// Get browserify modules
 						const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
