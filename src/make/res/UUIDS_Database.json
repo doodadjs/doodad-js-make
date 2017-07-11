@@ -5407,5 +5407,1166 @@
         "tasks": [
             "make"
         ]
+    },
+    "fd8598bd-b527-4059-9989-7b631382fa17": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Symbol",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d8d31b3b-889d-438d-962f-654c892e9e76": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_IS_TYPE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7345d921-5397-47e4-a270-f5c9e7a46d06": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_TYPE_UUID",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d5b3a3bf-4367-4dba-b662-5aae666007e2": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_INITIALIZED",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "62f732b5-a44d-43ca-85d1-5e2e379f4f56": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_$IS_SINGLETON",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "9f20ad70-a77c-41e9-aa69-dff7b169ce1f": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_SINGLETON",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "02331456-445e-453f-9b26-c903068acd1a": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_JS_TYPE_UUID",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "db517c82-6581-4cd2-9ef8-627b55d17cef": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "JS_TYPE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "5d3a3b4a-b425-4eea-82f2-8297df68c70b": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_IS_ERROR_TYPE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f13fbc79-e79c-44ec-b792-a77abda96334": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ERROR_TYPE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8c9ad580-5f4b-41e1-96c4-5b4eeccd8d51": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "TypeError",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "18cd1d15-6e16-4d0a-9f72-43ab0c137425": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Error",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2af70766-9254-46c4-b30c-7b061bac2a2a": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "AssertionError",
+        "hits": 8,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b13f9a3a-d6d6-4fe4-9b14-7cc331fabc95": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ParseError",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "87d5f4d3-5594-4370-b8e5-2e504c07ca11": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "NotSupported",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "c45bfb4c-b0ef-4349-b933-392a7774ec9b": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "NotAvailable",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "5bde18a5-6c0f-4f69-9e86-4bd0cd20daa6": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "HttpError",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "30da416e-93a1-48c0-a092-f0e0e84224a8": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "BufferOverflow",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d457ee1a-b02c-4ef0-bd62-df3488094fbc": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "TimeoutError",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8aa3b924-38fc-4793-b2d3-98fc13798357": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "CanceledError",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b41c07bd-9fdd-4432-9f43-2a1b18ba7067": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "AccessDenied",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8717c034-44e8-4501-a1e2-3e54b5321d0b": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ScriptInterruptedError",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6bee8a19-f3bd-48a6-95f2-9e260f39a1a6": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ScriptAbortedError",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ccff6f78-a0fb-4d7e-aa14-bd5f88249be0": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_ORIGINAL_VALUE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ef828f65-ca98-4931-85e8-54a372663f5b": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_DOCUMENTATION",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "a22a69a9-4191-4a35-ab5b-a605a6a778ac": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_SUPER_ENABLED",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8288bc93-06b9-49e8-8908-ead5ed36ddef": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_ENUMERABLE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "96ce313f-a241-48d7-b25d-35cb9c49935a": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_READ_ONLY",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "cc63cd3b-4764-4d90-84e1-faf202e19ffa": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_CONFIGURABLE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "32527dc0-f660-4f33-b8af-67b480f7124b": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_GETTER",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e5f35895-e97b-437b-9d42-3cd6b4b47cde": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_SETTER",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "05e42289-15a9-490d-a404-9443d2e9610d": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "DD_TYPE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "fec66175-d298-41dc-a497-c3b487b792dc": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Type",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4db30031-b7c1-4c2c-9733-66dd937ae9f4": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "CustomEvent",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b53c24ff-04e2-4f80-b5e3-4fa22984e032": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "CustomEventTarget",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "94f464c6-69c0-4a81-8e6e-e8ed189b594e": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Namespace",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "52485bf2-8d8f-4ca5-aac4-ecd54ca2fbe5": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "RootNamespace",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "40d19a79-8901-4a48-81dc-3123fb4e870f": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_ATTRIBUTES",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "80cbf3ab-e0b7-47e3-abc2-f88083e927fc": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_IMPLEMENTS",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "eae67ce1-70a4-4997-88c1-16d4a1429040": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_MUST_OVERRIDE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "19dfb614-ff73-4377-9de9-e96f4a6be300": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_BASE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "57fa5394-95e0-4a36-814f-0d9121522344": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_ISOLATED",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4daeea9b-f0bb-4f85-b18e-e78b4031f410": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_ISOLATED_CACHE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f9483920-cc86-4d80-a1d3-45d5d2c20226": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_ATTRIBUTES_STORAGE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b7a5ebc3-0fa8-4b19-9991-e283098d1691": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_CURRENT_DISPATCH",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b8c75b5a-0c40-4e52-a5ba-1bc8e892a747": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_CURRENT_CALLER_INDEX",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7c8aee45-fcf3-479f-b528-e2f27478f51f": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_PROTOTYPE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "28441da4-2438-4c85-bd3a-18cb89ce23bd": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_MODIFIERS",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "65e47bde-de6a-47bc-91bb-e341851157c5": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_CALLERS",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "25d79142-0fb7-465b-a53c-53bba9d2ec43": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_HOST",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "3528e591-c661-4f92-96e8-fbb3fc4351e0": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_EXTENDER",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b4194fb6-316c-4da7-bc4b-70959d9e1b30": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_POSITION",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "bc2b7653-39ee-4b41-80ec-907e0d0e064b": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_USAGE_MESSAGE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "fa918468-0ea3-4bf3-87c1-f71ad2f118c0": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_SCOPE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "204daf9d-ab75-4708-80f4-5f65c5bbedb3": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_RETURNS",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d4874b73-4fb1-4668-ac62-79b7d21e4dc7": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_INTERFACE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "025a99f6-0280-495a-81cc-4feb0b7dedc1": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_CALL_FIRST_LENGTH",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "65c75534-9e62-4dc6-9c4d-f523e17cf472": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_RENAMED_FROM",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "486da10d-6355-43bb-b7f2-76cb81401929": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_RENAMED_TO",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "02fc3c18-e356-4873-ad67-f706f286f344": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_OVERRIDE_WITH",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "28449f22-9faa-4372-a761-d908a6b6ae4f": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_REPLACED_CALLERS",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d8db2d5d-c8d1-489c-81bb-f34d186bb407": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_DESTROYED",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f40e17e9-f99d-4f7d-b1b1-c69c0c0db780": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "TypeEntry",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "297655ae-6cd7-4cb6-88ff-95117c50fc07": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Extender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8b1590e4-dccf-4eb0-a79c-dbdbbc80754f": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "AttributeExtender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f87974b2-fb1f-4994-867b-bbabea16f7d0": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "NullExtender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b9592151-dd5f-4496-b9f4-86c0d53e1a8d": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ClonedAttributeExtender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "be70b926-e8ef-4f86-af62-7b3f60f21ead": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ExtendObjectExtender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "29e92e26-c609-4902-b8d5-3fdcac6856cb": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "UniqueArrayExtender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "70db8341-99d8-4fc6-a461-7522248f1eb5": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "MethodExtender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "9bed6a61-d8f1-4ed9-ac24-6807104810c1": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "JsMethodExtender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6ace1a5c-5470-4a05-9936-1afee1dd657a": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "PropertyExtender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ed6cb770-36b2-4582-ae29-220f6989b6ca": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Class",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "c9e71162-287e-43ba-a798-6c7ed7d1ce3c": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Interface",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4c8a4687-4552-4d1c-ab86-71f3f54579d1": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Event",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "1cd9a27b-f1e3-4618-a660-3dcf7b8a7958": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "CancelEvent",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "198c5974-ec77-4759-9e82-f4ade84f489b": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ErrorEvent",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e3ddc1d3-4c3e-4aea-ad49-2cd75821736f": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "EventHandler",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "27c76005-8532-4c6b-8a70-497af3618f0f": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "EventExtender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "35991e52-78fe-42c0-9d8d-4d747cde35b8": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "RawEventExtender",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ef9add01-a4cd-4f78-aa50-2db1b38fe591": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Clonable",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "95ab6bb3-085b-473e-934a-f60ded04bade": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Serializable",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "187346bd-6032-411a-8d76-539a61879118": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Events",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "39f8a137-0ec7-42cd-b05f-c6718ba0bc35": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Creatable",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ef8a5ad3-9819-4095-90df-da198c484b94": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Translatable",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4abf16f9-ea01-40ae-aa3e-6eccf3b47362": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Configurable",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f348beeb-cfc8-469e-bfc3-a9f4fea24117": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Object",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ae5fc98e-ebf1-4faf-baea-1196132cad08": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "PackedValue",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "43f83484-ee34-4512-a900-637633ab4ca1": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "RegistryIterator",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "52e96af8-b5fc-45d1-9cf1-c5089de7a1ed": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Registry",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "5436276e-08b4-4d36-b91a-0c4cab71c07e": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Entry",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ac61024d-1be1-43d2-9a34-64b455010a2b": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ObjectEntry",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "10acbca4-3548-45f7-a45b-b4dc0079514a": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "NamespaceEntry",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b2bbddbb-9d30-455d-99a9-7fd0d10091e1": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ModuleEntry",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "52a7eff7-e74b-4576-bf1b-dd65f5dd2de9": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SpecialEntry",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "070fb900-3e9e-48f7-9502-c20e7ada18c3": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "PackageEntry",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f4df432f-bbee-4e34-9777-df825e72d74e": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ApplicationEntry",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d88e09ba-66bb-471a-be4d-1524e0f0e498": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Path",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f99f1a28-4e84-4409-bc27-fb0f3271964f": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "UrlArguments",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "02c1ace0-1d05-4d81-894f-0d13d89cb796": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Url",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b2c31cb8-19d1-4027-9701-8e74d53d7a27": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Version",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "39071e7e-a50e-483c-8f30-dc73d807593c": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_NAME",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "754440d7-bb7f-4787-bb7d-0ee35f4a58c0": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_BOUND_OBJECT",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "1a0c6de8-bbd4-423c-b5b4-3fe6c5ee2aea": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Iterator",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "15b237bc-b129-4603-8efb-1642d3ea5af2": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Native_GeneratorFunction",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e848b8f0-1368-4f85-9dd7-c5e2d48d4479": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Native_TypedArray",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "03565475-a187-46ec-b4d4-d3e6c6335254": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SetIterator",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6bd9ceb7-7aac-47da-b547-b09535370a30": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SetValuesIterator",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "169f6c29-d72b-4256-8886-02b57714e6a2": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SetEntriesIterator",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e1110e98-ab33-4e1e-b931-63dbc0722281": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Set",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "a6113a36-c7ce-4d08-b234-2594dc22745a": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "MapIterator",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "a4ab851b-43cc-4bfa-9ebd-dd84929bc352": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "MapKeysIterator",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "59020ebd-f5d3-4dfd-96c7-86786cc22247": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "MapValuesIterator",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7ce43641-5bb9-460d-84b5-d1c3801aef7a": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "MapEntriesIterator",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "5b39fd47-9929-429e-8947-968fc3e8a9df": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "Map",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7600c21e-fb46-477d-a8a8-21fe68ce145e": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_IS_PROMISE_EXTENDED",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8481b4c6-c8df-4096-a153-b30f857ab87c": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_PROMISE_CANCEL_STATE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "a3573515-f740-49a2-b2bd-ce2638cc1e20": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_IS_PROMISE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "086b6a31-d135-40bc-b256-9c84fa6c7878": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "WeakMap",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2047c15c-9ee7-4b71-885e-0f2ea253a34f": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "NATIVE_TYPE",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4ce7d2e8-d62e-494d-b5ba-e2e33fa66aaa": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ScriptLoader",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "403ce089-c1e1-479f-8dc0-3045d6415854": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "NodeEvents",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ba18806d-6918-4f58-b993-b3148201ca8d": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "NodeEventHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8f2dfa6d-2b75-461d-ad2a-29c716bdae76": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "NodeEventExtender",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "30dc3af2-5dd8-4ab8-9b2b-07650d501dfa": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "IEmitter",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "a2ea4835-3a9d-46e4-814e-a130cfc52a49": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "JsEvents",
+        "hits": 3,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e90a855b-cd86-4c45-9ca8-ae5d6e31ad2b": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "JsEventHandler",
+        "hits": 3,
+        "tasks": [
+            "make"
+        ]
+    },
+    "c83f2bf6-f0c3-46de-a08a-e71f99280490": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "JsEventExtender",
+        "hits": 3,
+        "tasks": [
+            "make"
+        ]
+    },
+    "3ebb68c8-d4f6-433f-bea6-12fb2058e4dc": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "MissingDependencies",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
     }
 }
