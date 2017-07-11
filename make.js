@@ -28,7 +28,7 @@ function startup(root, _shared) {
 		tools = doodad.Tools,
 		types = doodad.Types,
 		modules = doodad.Modules,
-		namespaces = doodad.Namespaces,
+		//namespaces = doodad.Namespaces,
 		
 		Promise = types.getPromise();
 
@@ -73,31 +73,15 @@ function startup(root, _shared) {
 		throw new types.Error("Missing command.");
 	};
 	
-	function loadModule(name) {
-		return function(DD_MODULES) { 
-			return modules.loadManifest(name)
-				.then(function(mod) {
-					return mod.add(DD_MODULES);
-				}); 
-		};
-	};
-
-	function loadNamespaces(DD_MODULES) {
-		return namespaces.load(DD_MODULES, options); 
-	};
-
 	function run(root) {
 		return root.Make.run(command);
 	};
 
-	return Promise.resolve( {} )
-		.then(loadModule('doodad-js-io'))
-		.then(loadModule('doodad-js-minifiers'))
-		.then(loadModule('doodad-js-safeeval'))
-		.then(loadModule('doodad-js-unicode'))
-		.then(loadModule('doodad-js-locale'))
-		.then(loadModule('doodad-js-make'))
-		.then(loadNamespaces)
+	return modules.load([
+				{
+					module: 'doodad-js-make',
+				},
+			], options)
 		.then(run);
 };
 
