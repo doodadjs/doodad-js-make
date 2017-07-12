@@ -39,31 +39,19 @@ module.exports = {
 
 					const doodad = root.Doodad,
 						types = doodad.Types,
-						modules = doodad.Modules,
-						fromSource = root.getOptions().fromSource;
+						modules = doodad.Modules;
 				
 					const files = [];
-					if (fromSource) { 
-						//! FOR_EACH(VAR("modulesSrc"), "mod")
-							//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-								files.push({
-									module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
-									path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
-									optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
-								});
-							//! END_IF()
-						//! END_FOR()
-					} else { 
-						//! FOR_EACH(VAR("modules"), "mod")
-							//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-								files.push({
-									module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
-									path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
-									optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
-								});
-							//! END_IF()
-						//! END_FOR()
-					};
+
+					//! FOR_EACH(VAR("modules"), "mod")
+						//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
+							files.push({
+								module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
+								path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
+								optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
+							});
+						//! END_IF()
+					//! END_FOR()
 
 					return modules.load(files, [_options, {startup: {secret: _shared.SECRET}}])
 						.then(function() {

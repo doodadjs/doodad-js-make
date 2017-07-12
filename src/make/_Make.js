@@ -1129,6 +1129,41 @@ module.exports = {
 							);
 						};
 
+						// Create tests package (debug)
+						ops.push(
+							{
+								'class': file.Javascript,
+								source: testsTemplate,
+								destination: '%PACKAGEDIR%/test/%PACKAGENAME%_tests.js',
+								runDirectives: true,
+								keepComments: true,
+								keepSpaces: true,
+								variables: {
+									serverSide: true,
+									debug: true,
+									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
+											return dep.test;
+										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test'), optional: false, path: null}]), function(dep) {
+											const path = types.get(dep, 'path', null);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												optional: !!types.get(dep, 'optional', false),
+												path: path,
+											};
+										}),
+									modules: tools.map(tools.filter(modules, function(mod) {
+											return mod.test;
+										}), function(mod) {
+											return types.extend({}, mod, {
+												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												optional: !!types.get(mod, 'optional', false),
+											});
+										}),
+								},
+							}
+						);
+
 						// Create tests package (build)
 						ops.push(
 							{
@@ -1155,14 +1190,6 @@ module.exports = {
 										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-												optional: !!types.get(mod, 'optional', false),
-											});
-										}),
-									modulesSrc: tools.map(tools.filter(modules, function(mod) {
-											return mod.test;
-										}), function(mod) {
-											return types.extend({}, mod, {
-												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
 												optional: !!types.get(mod, 'optional', false),
 											});
 										}),
