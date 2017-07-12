@@ -35,16 +35,19 @@ module.exports = {
 			create: function create(root, /*optional*/_options, _shared) {
 				// DON'T PUT "use strict"; HERE !
 
-				const options = [/*! INCLUDE(VAR("config"), 'utf-8') */, _options, {secret: _shared.SECRET}];
-
+				const DD_MODULE = undefined;
 				const DD_MODULES = {};
 
 				//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
-				return root.Doodad.Namespaces.load(DD_MODULES, options)
-					.then(function() {
-						// Returns nothing
-					});
+				return (function() {
+					const options = [/*! INCLUDE(VAR("config"), 'utf-8') */, _options, {secret: _shared.SECRET}];
+
+					return root.Doodad.Namespaces.load(DD_MODULES, options)
+						.then(function() {
+							// Returns nothing
+						});
+				})();
 			},
 		};
 		return DD_MODULES;

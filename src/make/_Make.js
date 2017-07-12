@@ -239,7 +239,11 @@ module.exports = {
 							});
 							if (!types.get(this.variables, 'serverSide', false)) {
 								this.directives.INJECT("; " +
-									"(function(global, module, DD_MODULES) {"
+									"(function(/*global, module, DD_MODULES*/) {" +
+										"const global = arguments[0]" + ", " +
+											"window = global" + ", " +
+											"module = arguments[1]" + ", " +
+											"DD_MODULES = arguments[2]" + "; "
 								);
 							};
 						},
@@ -250,8 +254,8 @@ module.exports = {
 							};
 							if (!types.get(this.variables, 'serverSide', false)) {
 								this.directives.INJECT("; " +
-										"module.exports.add(DD_MODULES)" + "; " +
-									"}).call(window, window, {exports: {}}, (typeof DD_MODULES === 'undefined' ? window.DD_MODULES = {} : DD_MODULES))" + "; "
+										(types.get(this.variables, 'autoAdd', false) ? "module.exports.add(DD_MODULES)" + "; " : "") +
+									"}).call(undefined, (typeof global === 'undefined' ? window : global), (typeof DD_MODULE === 'undefined' ? {exports: {}} : DD_MODULE), (typeof DD_MODULES === 'undefined' ? {} : DD_MODULES))" + "; "
 								);
 							};
 						},
@@ -1236,7 +1240,7 @@ module.exports = {
 						const resources = tools.filter(taskData.makeManifest.resources, function(res) {
 							return res.client;
 						});
-						
+
 						// Build modules (debug)
 						ops = types.append(ops, tools.map(modules, function(mod) {
 							return {
@@ -1248,6 +1252,7 @@ module.exports = {
 								keepSpaces: true,
 								variables: {
 									debug: true,
+									autoAdd: true,
 								},
 							};
 						}));
@@ -1259,6 +1264,9 @@ module.exports = {
 								source: '%SOURCEDIR%/' + mod.src,
 								destination: '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src),
 								runDirectives: true,
+								variables: {
+									autoAdd: true,
+								},
 							};
 						}));
 						
@@ -1304,6 +1312,7 @@ module.exports = {
 									runDirectives: true,
 									variables: {
 										debug: true,
+										autoAdd: true,
 										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
@@ -1346,6 +1355,8 @@ module.exports = {
 									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.min.js',
 									runDirectives: true,
 									variables: {
+										debug: false,
+										autoAdd: false,
 										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
 										dependencies: tools.map(tools.filter(dependencies, function(dep) {
@@ -1387,7 +1398,50 @@ module.exports = {
 								destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME%_tests.js',
 								runDirectives: true,
 								variables: {
+									debug: true,
+									autoAdd: true,
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
+									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
+											return dep.test;
+										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test'), optional: false, path: null}]), function(dep) {
+											const path = types.get(dep, 'path', null);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												optional: !!types.get(dep, 'optional', false),
+												path: path,
+											};
+										}),
+								},
+							}
+						);
+						
+						// Create tests bundle (build)
+						// NOTE: Temporary file.
+						ops.push( 
+							{
+								'class': file.Merge,
+								source: tools.map(tools.filter(modules, function(mod) {
+										return mod.test && !mod.exclude;
+									}), function(mod) {
+										return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
+									}),
+								destination: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
+								separator: ';',
+							}
+						);
+
+						// Create tests package (build)
+						ops.push(
+							{
+								'class': file.Javascript,
+								source: testsTemplate,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME%_tests.min.js',
+								runDirectives: true,
+								variables: {
+									debug: false,
+									autoAdd: false,
+									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test'), optional: false, path: null}]), function(dep) {
@@ -1425,6 +1479,10 @@ module.exports = {
 							{
 								'class': file.Delete,
 								source: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
+							},
+							{
+								'class': file.Delete,
+								source: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
 							}
 						);
 
