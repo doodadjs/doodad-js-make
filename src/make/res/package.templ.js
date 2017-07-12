@@ -41,7 +41,7 @@ module.exports = {
 				//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
 				return (function() {
-					const options = [/*! INCLUDE(VAR("config"), 'utf-8') */, _options, {secret: _shared.SECRET}];
+					const options = [/*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */, _options, {startup: {secret: _shared.SECRET}}];
 
 					return root.Doodad.Namespaces.load(DD_MODULES, options)
 						.then(function() {
