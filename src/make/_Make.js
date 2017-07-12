@@ -1129,15 +1129,16 @@ module.exports = {
 							);
 						};
 
+						// Create tests package (build)
 						ops.push(
 							{
 								'class': file.Javascript,
 								source: testsTemplate,
-								destination: '%PACKAGEDIR%/test/%PACKAGENAME%_tests.js',
+								destination: '%PACKAGEDIR%/test/%PACKAGENAME%_tests.min.js',
 								runDirectives: true,
 								variables: {
 									serverSide: true,
-									debug: true,
+									debug: false,
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test'), optional: false, path: null}]), function(dep) {
@@ -1168,7 +1169,7 @@ module.exports = {
 								},
 							}
 						);
-						
+
 						// Copy resources
 						ops = types.append(ops, tools.map(resources, function(res) {
 							return {
@@ -1397,6 +1398,8 @@ module.exports = {
 								source: testsTemplate,
 								destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME%_tests.js',
 								runDirectives: true,
+								keepComments: true,
+								keepSpaces: true,
 								variables: {
 									debug: true,
 									autoAdd: true,

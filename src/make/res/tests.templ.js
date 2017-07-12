@@ -33,9 +33,9 @@ module.exports = {
 			dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 			
 			create: function create(root, /*optional*/_options, _shared) {
-				"use strict";
+				// DON'T PUT "use strict"; HERE !
 				
-				//! IF_DEF("modules")
+				//! IF_DEF("serverSide")
 
 					const doodad = root.Doodad,
 						types = doodad.Types,
@@ -72,15 +72,20 @@ module.exports = {
 
 				//! ELSE()
 
+					const DD_MODULE = undefined;
 					const DD_MODULES = {};
 				
-					//! INCLUDE(VAR("bundle"), null, true)
+					//! INCLUDE(VAR("bundle"), 'utf-8', true)
 						
-					return root.Doodad.Namespaces.load(DD_MODULES, [_options, {startup: {secret: _shared.SECRET}}])
-						.then(function() {
-							// Returns nothing
-						});
-					
+					return (function() {
+						const options = [/*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */, _options, {startup: {secret: _shared.SECRET}}];
+
+						return root.Doodad.Namespaces.load(DD_MODULES, options)
+							.then(function() {
+								// Returns nothing
+							});
+					})();
+
 				//! END_IF()
 			},
 		};
