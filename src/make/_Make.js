@@ -454,7 +454,7 @@ module.exports = {
 
 								if (path.length && (path[0][0] === '~')) {
 									const resolved = __Internal__.resolve(path[0].slice(1) + '/package.json');
-									path = solvePath(resolved, os.type).set({file: null}).combine(null, {file: path.slice(1)});
+									path = solvePath(resolved, os.type).set({file: null}).combine(path.slice(1));
 									path = path.toArray();
 								};
 
