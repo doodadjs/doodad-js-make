@@ -23,7 +23,7 @@
 
 "use strict";
 
-function startup(root, _shared) {
+function startup(root) {
 	const doodad = root.Doodad,
 		tools = doodad.Tools,
 		types = doodad.Types,
@@ -85,7 +85,8 @@ function startup(root, _shared) {
 		.then(run);
 };
 
-require('doodad-js').createRoot(null, {startup: {fromSource: true}}, startup)
+require('doodad-js').createRoot(null, {startup: {fromSource: true}})
+	.then(startup)
 	.catch(ex => {
 		console.error(ex.stack);
 		process.exit(1);
