@@ -48,7 +48,7 @@ module.exports = {
 				mod.setResourcesLoader({
 					locate: function locate(name, /*optional*/options) {
 						return Promise['try'](function tryLocate() {
-							return _shared.pathParser(name);
+							return files.parsePath(name);
 						});
 					},
 					load: function load(path, /*optional*/options) {
