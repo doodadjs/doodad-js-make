@@ -68,7 +68,8 @@ module.exports = {
 					npm_package_config = require('npm-package-config'),
 					app_module_path = require('app-module-path'),
 
-					cwd = files.Path.parse(process.cwd(), {file: ''});
+					cwd = files.parsePath(process.cwd(), {file: ''}),
+					modulePath = files.parsePath(module.filename).set({file: null});
 					
 				let nodeBrowserify = null;
 				try {
@@ -172,14 +173,14 @@ module.exports = {
 					if (!pkg) {
 						throw new types.Error("Package name is missing.");
 					};
-					pkg = files.Path.parse(pkg, {os: 'linux', isRelative: false, file: ''}).toArray({trim: true})[0];
+					pkg = files.parsePath(pkg, {isRelative: true, file: ''}).toArray({trim: true})[0];
 					if (!pkg) {
 						throw new types.Error("Package name is missing.");
 					};
 					const FILE = pkg + '/package.json';
 					if (currentPackageDir) {
 						try {
-							const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux', allowTraverse: true});
+							const path = currentPackageDir.combine('../' + FILE, {allowTraverse: true});
 							return require(path.toString());
 						} catch(o) {
 						};
@@ -191,14 +192,14 @@ module.exports = {
 					if (!pkg) {
 						throw new types.Error("Package name is missing.");
 					};
-					pkg = files.Path.parse(pkg, {os: 'linux', isRelative: false, file: ''}).toArray({trim: true})[0];
+					pkg = files.parsePath(pkg, {isRelative: true, file: ''}).toArray({trim: true})[0];
 					if (!pkg) {
 						throw new types.Error("Package name is missing.");
 					};
 					const FILE = pkg + '/make.json';
 					if (currentPackageDir) {
 						try {
-							const path = currentPackageDir.combine('../' + FILE, {isRelative: true, os: 'linux', allowTraverse: true});
+							const path = currentPackageDir.combine('../' + FILE, {allowTraverse: true});
 							return require(path.toString());
 						} catch(o) {
 						};
@@ -381,7 +382,7 @@ module.exports = {
 
 								const source = types.get(item, 'source');
 								if (source) {
-									this.packageDir = files.Path.parse(source);
+									this.packageDir = files.parsePath(source);
 									app_module_path.addPath(source);
 								} else {
 									this.packageDir = cwd;
@@ -392,7 +393,7 @@ module.exports = {
 									manifestTemplate = this.parseVariables(manifestTemplate, { isPath: true });
 								};
 								if (!manifestTemplate) {
-									manifestTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/package.templ.json', {os: 'linux'});
+									manifestTemplate = modulePath.combine('res/package.templ.json');
 								};
 
 								const templ = require(manifestTemplate.toString());
@@ -401,7 +402,7 @@ module.exports = {
 								this.manifest = types.depthExtend(extendFn, {}, templ, this.manifest);
 								delete this.manifest['//']; // remove comments
 								
-								const makeTempl = require(files.Path.parse(module.filename).set({file: ''}).combine('res/make.templ.json', {os: 'linux'}).toString());
+								const makeTempl = require(modulePath.combine('res/make.templ.json').toString());
 								this.makeManifest = require(this.combineWithPackageDir('./make.json').toString());
 								this.makeManifest = types.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
 								delete this.makeManifest['//']; // remove comments
@@ -413,10 +414,7 @@ module.exports = {
 							},
 							
 							combineWithPackageDir: function combineWithPackageDir(path, options) {
-								path = files.Path.parse(path, {noEscapes: true, dirChar: ['/', '\\'], isRelative: null}).set({
-									noEscapes: false,
-									dirChar: null,
-								});
+								path = files.parsePath(path);
 								if (path.isRelative) {
 									path = this.packageDir.combine(path);
 								};
@@ -425,27 +423,17 @@ module.exports = {
 							
 							parseVariables: function parseVariables(val, /*optional*/options) {
 								function solvePath(path, /*optional*/os) {
-									if (types.isString(path)) {
-										return files.Path.parse(path, {
-											os: (os || 'linux'),
-											dirChar: null,
-											shell: 'api',
-											noEscapes: true,
-											isRelative: null, // auto-detect
-										});
-									} else {
-										return path;
-									};
+									return files.parsePath(path, {
+										os: (os || 'linux'),
+										dirChar: null,
+									});
 								};
 								
 								const isPath = types.get(options, 'isPath', false);
 
 								let path = val;
 								if (isPath) {
-									if (!(path instanceof files.Path)) {
-										path = solvePath(path);
-									};
-									path = path.toArray();
+									path = solvePath(path).toArray();
 								} else {
 									path = [types.toString(path)];
 								};
@@ -454,7 +442,7 @@ module.exports = {
 
 								if (path.length && (path[0][0] === '~')) {
 									const resolved = __Internal__.resolve(path[0].slice(1) + '/package.json');
-									path = solvePath(resolved, os.type).set({file: null}).combine(path.slice(1));
+									path = solvePath(resolved, os.type).set({file: null}).combine(files.Path.parse(path.slice(1)));
 									path = path.toArray();
 								};
 
@@ -553,9 +541,8 @@ module.exports = {
 											};
 											result += value.toString({
 												os: os.type,
-												dirChar: os.dirChar,
+												dirChar: null,
 												shell: 'api',
-												noEscapes: true,
 											});
 										} else {
 											result += types.toString(value);
@@ -583,7 +570,7 @@ module.exports = {
 								};
 								
 								if (isPath) {
-									return files.Path.parse(path);
+									return files.parsePath(path);
 								} else {
 									return path.join('');
 								};
@@ -792,6 +779,20 @@ module.exports = {
 						const createFile = function() {
 							return nodeFs.createWriteStream(dest.toString({shell: 'api'}));
 						};
+						const writeSeparator = function(outputStream) {
+							if (separator) {
+								return Promise.create(function writePromise(resolve, reject) {
+									outputStream.write(separator, function(err, result) {
+										if (err) {
+											reject(err);
+										} else {
+											resolve(outputStream);
+										};
+									});
+								});
+							};
+							return outputStream;
+						};
 						const loopMerge = function(outputStream) {
 							if (source.length) {
 								let src = source.shift();
@@ -861,9 +862,11 @@ module.exports = {
 												.on('error', reject)
 												.on('end', resolve)
 												.pipe(outputStream, {end: false});
+											return inputStream;
 										};
 									})
-									.then(function() {
+									.then(function(inputStream) {
+										_shared.DESTROY(inputStream);
 										if (source.length) {
 											return Promise.resolve(outputStream)
 												.then(writeSeparator)
@@ -876,30 +879,19 @@ module.exports = {
 							};
 							return outputStream;
 						};
-						const writeSeparator = function(outputStream) {
-							if (separator) {
-								return Promise.create(function writePromise(resolve, reject) {
-									outputStream.write(separator, function(err, result) {
-										if (err) {
-											reject(err);
-										} else {
-											resolve(outputStream);
-										};
-									});
-								});
-							};
-							return outputStream;
-						};
-						const closeFile = function(outputStream) {
+						const closeFile = function(err, outputStream) {
 							outputStream.end();
+							_shared.DESTROY(outputStream);
+							if (err) {
+								throw err;
+							} else {
+								return null;
+							};
 						};
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 							.then(createFile)
 							.then(loopMerge)
-							.then(closeFile)
-							.then(function() {
-								// Returns nothing
-							});
+							.nodeify(closeFile);
 					}),
 				}));
 				
@@ -1048,7 +1040,7 @@ module.exports = {
 							indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
 						};
 						if (!indexTemplate) {
-							indexTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/index.templ.js', {os: 'linux'});
+							indexTemplate = modulePath.combine('res/index.templ.js');
 						};
 						
 						let testsTemplate = types.get(item, 'testsTemplate');
@@ -1056,7 +1048,7 @@ module.exports = {
 							testsTemplate = taskData.parseVariables(testsTemplate, { isPath: true });
 						};
 						if (!testsTemplate) {
-							testsTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/tests.templ.js', {os: 'linux'});
+							testsTemplate = modulePath.combine('res/tests.templ.js');
 						};
 						
 						// Get server dependencies
@@ -1243,7 +1235,7 @@ module.exports = {
 							indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
 						};
 						if (!indexTemplate) {
-							indexTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/package.templ.js', {os: 'linux'});
+							indexTemplate = modulePath.combine('res/package.templ.js');
 						};
 						
 						let testsTemplate = types.get(item, 'testsTemplate');
@@ -1251,7 +1243,7 @@ module.exports = {
 							testsTemplate = taskData.parseVariables(testsTemplate, { isPath: true });
 						};
 						if (!testsTemplate) {
-							testsTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/tests.templ.js', {os: 'linux'});
+							testsTemplate = modulePath.combine('res/tests.templ.js');
 						};
 						
 						// Get client dependencies
@@ -1529,7 +1521,7 @@ module.exports = {
 							indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
 						};
 						if (!indexTemplate) {
-							indexTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/browserify.templ.js', {os: 'linux'});
+							indexTemplate = modulePath.combine('res/browserify.templ.js');
 						};
 						
 						// Get browserify dependencies
@@ -1653,7 +1645,7 @@ module.exports = {
 							configTemplate = this.parseVariables(configTemplate, { isPath: true });
 						};
 						if (!configTemplate) {
-							configTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/webpack.config.templ.js', {os: 'linux'});
+							configTemplate = modulePath.combine('res/webpack.config.templ.js');
 						};
 						const configDest = this.taskData.parseVariables("%PACKAGEDIR%/webpack.config.js", { isPath: true });
 						const entryFile = this.taskData.parseVariables("%BROWSERIFYDIR%/browserify.min.js", { isPath: true });
@@ -1709,7 +1701,7 @@ module.exports = {
 							resourcesTemplate = taskData.parseVariables(resourcesTemplate, { isPath: true });
 						};
 						if (!resourcesTemplate) {
-							resourcesTemplate = files.Path.parse(module.filename).set({file: ''}).combine('res/resources.templ.js', {os: 'linux'});
+							resourcesTemplate = modulePath.combine('res/resources.templ.js');
 						};
 						
 						resFile = dest.combine(resFile);
@@ -1723,7 +1715,7 @@ module.exports = {
 										source: stats.path,
 										dest: stats.path.set({file: stats.path.file + '.res.js'}),
 									};
-									return files.mkdir(dest.combine(stats.path).set({file: ''}), {async: true, makeParents: true})
+									return files.mkdir(dest.combine(stats.path).set({file: null}), {async: true, makeParents: true})
 										.then(function() {
 											return files.readFile(source.combine(resource.source), {encoding: (item.encoding || 'utf-8'), async: true});
 										})
@@ -1790,7 +1782,7 @@ module.exports = {
 								};
 								
 								const result = tools.reduce(resources, function(result, resource) {
-									const rp = files.Path.parse('/', {os: 'linux', dirChar: '/'}),
+									const rp = files.parsePath('/', {os: 'linux'}),
 										sourceAr = rp.combine(resource.source).toArray(),
 										destStr = rp.combine(resource.dest).toString({os: 'linux', dirChar: '/'});
 									 // NOTE: Index "0" is "/"
