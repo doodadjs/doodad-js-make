@@ -1071,7 +1071,7 @@ module.exports = {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
-								destination: '%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src),
+								destination: '%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)),
 								runDirectives: true,
 								variables: {
 									serverSide: true,
@@ -1104,7 +1104,7 @@ module.exports = {
 												return !mod.test;
 											}), function(mod) {
 												return types.extend({}, mod, {
-													dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+													dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
 													optional: !!types.get(mod, 'optional', false),
 												});
 											}),
@@ -1181,7 +1181,7 @@ module.exports = {
 											return mod.test;
 										}), function(mod) {
 											return types.extend({}, mod, {
-												dest: taskData.parseVariables('%BUILDDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
 												optional: !!types.get(mod, 'optional', false),
 											});
 										}),
@@ -1266,7 +1266,7 @@ module.exports = {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/' + mod.src,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src),
 								runDirectives: true,
 								keepComments: true,
 								keepSpaces: true,
@@ -1282,7 +1282,7 @@ module.exports = {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src),
+								destination: '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)),
 								runDirectives: true,
 								variables: {
 									autoAdd: true,
@@ -1315,7 +1315,7 @@ module.exports = {
 								source: tools.map(tools.filter(modules, function(mod) {
 										return !mod.test && !mod.exclude;
 									}), function(mod) {
-										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
+										return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
 									}),
 								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 								separator: ';',
@@ -1359,7 +1359,7 @@ module.exports = {
 								source: tools.map(tools.filter(modules, function(mod) {
 										return !mod.test && !mod.exclude;
 									}), function(mod) {
-										return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
+										return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
 									}),
 								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
 								separator: ';',
@@ -1403,7 +1403,7 @@ module.exports = {
 								source: tools.map(tools.filter(modules, function(mod) {
 										return mod.test && !mod.exclude;
 									}), function(mod) {
-										return '%INSTALLDIR%/%PACKAGENAME%/' + mod.src;
+										return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
 									}),
 								destination: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
 								separator: ';',
@@ -1446,7 +1446,7 @@ module.exports = {
 								source: tools.map(tools.filter(modules, function(mod) {
 										return mod.test && !mod.exclude;
 									}), function(mod) {
-										return '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.src);
+										return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
 									}),
 								destination: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
 								separator: ';',
@@ -1547,14 +1547,31 @@ module.exports = {
 							return res.browserify;
 						});
 						
-						// Build modules
+						// Build modules (build)
 						ops = types.append(ops, tools.map(modules, function(mod) {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
-								destination: '%BROWSERIFYDIR%/' + __Internal__.getBuiltFileName(mod.src),
+								destination: '%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)),
 								runDirectives: true,
 								variables: {
+									serverSide: true,
+									browserify: true,
+								},
+							};
+						}));
+						
+						// Build modules (debug)
+						ops = types.append(ops, tools.map(modules, function(mod) {
+							return {
+								'class': file.Javascript,
+								source: '%SOURCEDIR%/' + mod.src,
+								destination: '%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src),
+								runDirectives: true,
+								keepComments: true,
+								keepSpaces: true,
+								variables: {
+									debug: true,
 									serverSide: true,
 									browserify: true,
 								},
@@ -1576,7 +1593,7 @@ module.exports = {
 						
 						const browserifyDest = taskData.parseVariables('%BROWSERIFYDIR%', {isPath: true});
 
-						// Build main file
+						// Build main file (build)
 						if (!types.get(item, 'noIndex', false)) {
 							ops.push( 
 								{
@@ -1590,7 +1607,7 @@ module.exports = {
 										dependencies: dependencies,
 										modules: tools.map(modules, function(mod) {
 											return types.extend({}, mod, {
-												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + __Internal__.getBuiltFileName(mod.src), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 											});
 										}),
 										resources: tools.map(resources, function(res) {
@@ -1609,14 +1626,16 @@ module.exports = {
 									source: indexTemplate,
 									destination: '%BROWSERIFYDIR%/browserify.js',
 									runDirectives: true,
+									keepComments: true,
+									keepSpaces: true,
 									variables: {
+										debug: true,
 										serverSide: true,
 										browserify: true,
-										debug: true,
 										dependencies: dependencies,
 										modules: tools.map(modules, function(mod) {
 											return types.extend({}, mod, {
-												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 											});
 										}),
 										resources: tools.map(resources, function(res) {
