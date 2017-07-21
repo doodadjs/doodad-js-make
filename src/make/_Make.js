@@ -1080,46 +1080,44 @@ module.exports = {
 						}));
 						
 						// Build index
-						if (!types.get(item, 'noIndex', false)) {
-							ops.push(
-								{
-									'class': file.Javascript,
-									source: indexTemplate,
-									destination: '%PACKAGEDIR%/index.js',
-									runDirectives: true,
-									variables: {
-										serverSide: true,
-										dependencies: tools.map(tools.filter(dependencies, function(dep) {
-												return !dep.test;
-											}), function(dep) {
-												const path = types.get(dep, 'path', null);
-												return {
-													name: dep.name,
-													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-													optional: !!types.get(dep, 'optional', false),
-													path: path,
-												};
-											}),
-										modules: tools.map(tools.filter(modules, function(mod) {
-												return !mod.test;
-											}), function(mod) {
-												return types.extend({}, mod, {
-													dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-													optional: !!types.get(mod, 'optional', false),
-												});
-											}),
-										modulesSrc: tools.map(tools.filter(modules, function(mod) {
-												return !mod.test;
-											}), function(mod) {
-												return types.extend({}, mod, {
-													dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-													optional: !!types.get(mod, 'optional', false),
-												});
-											}),
-									},
-								}
-							);
-						};
+						ops.push(
+							{
+								'class': file.Javascript,
+								source: indexTemplate,
+								destination: '%PACKAGEDIR%/index.js',
+								runDirectives: true,
+								variables: {
+									serverSide: true,
+									dependencies: tools.map(tools.filter(dependencies, function(dep) {
+											return !dep.test;
+										}), function(dep) {
+											const path = types.get(dep, 'path', null);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												optional: !!types.get(dep, 'optional', false),
+												path: path,
+											};
+										}),
+									modules: tools.map(tools.filter(modules, function(mod) {
+											return !mod.test && !mod.exclude;
+										}), function(mod) {
+											return types.extend({}, mod, {
+												dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												optional: !!types.get(mod, 'optional', false),
+											});
+										}),
+									modulesSrc: tools.map(tools.filter(modules, function(mod) {
+											return !mod.test && !mod.exclude;
+										}), function(mod) {
+											return types.extend({}, mod, {
+												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+												optional: !!types.get(mod, 'optional', false),
+											});
+										}),
+								},
+							}
+						);
 
 						// Create tests package (debug)
 						ops.push(
@@ -1145,7 +1143,7 @@ module.exports = {
 											};
 										}),
 									modules: tools.map(tools.filter(modules, function(mod) {
-											return mod.test;
+											return mod.test && !mod.exclude;
 										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
@@ -1178,7 +1176,7 @@ module.exports = {
 											};
 										}),
 									modules: tools.map(tools.filter(modules, function(mod) {
-											return mod.test;
+											return mod.test && !mod.exclude;
 										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
@@ -1323,33 +1321,31 @@ module.exports = {
 						);
 
 						// Create package (debug)
-						if (!types.get(item, 'noIndex', false)) {
-							ops.push(
-								{
-									'class': file.Javascript,
-									source: indexTemplate,
-									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.js',
-									runDirectives: true,
-									variables: {
-										debug: true,
-										autoAdd: true,
-										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
-										dependencies: tools.map(tools.filter(dependencies, function(dep) {
-												return !dep.test;
-											}), function(dep) {
-												const path = types.get(dep, 'path', null);
-												return {
-													name: dep.name,
-													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-													optional: !!types.get(dep, 'optional', false),
-													path: path,
-												};
-											}),
-									},
-								}
-							);
-						};
+						ops.push(
+							{
+								'class': file.Javascript,
+								source: indexTemplate,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.js',
+								runDirectives: true,
+								variables: {
+									debug: true,
+									autoAdd: true,
+									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+									dependencies: tools.map(tools.filter(dependencies, function(dep) {
+											return !dep.test;
+										}), function(dep) {
+											const path = types.get(dep, 'path', null);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												optional: !!types.get(dep, 'optional', false),
+												path: path,
+											};
+										}),
+								},
+							}
+						);
 						
 						// Create bundle (build)
 						// NOTE: Temporary file.
@@ -1367,33 +1363,31 @@ module.exports = {
 						);
 
 						// Create package (build)
-						if (!types.get(item, 'noIndex', false)) {
-							ops.push( 
-								{
-									'class': file.Javascript,
-									source: indexTemplate,
-									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.min.js',
-									runDirectives: true,
-									variables: {
-										debug: false,
-										autoAdd: false,
-										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
-										dependencies: tools.map(tools.filter(dependencies, function(dep) {
-												return !dep.test;
-											}), function(dep) {
-												const path = types.get(dep, 'path', null);
-												return {
-													name: dep.name,
-													version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
-													optional: !!types.get(dep, 'optional', false),
-													path: path,
-												};
-											}),
-									},
-								}
-							);
-						};
+						ops.push( 
+							{
+								'class': file.Javascript,
+								source: indexTemplate,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.min.js',
+								runDirectives: true,
+								variables: {
+									debug: false,
+									autoAdd: false,
+									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
+									dependencies: tools.map(tools.filter(dependencies, function(dep) {
+											return !dep.test;
+										}), function(dep) {
+											const path = types.get(dep, 'path', null);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												optional: !!types.get(dep, 'optional', false),
+												path: path,
+											};
+										}),
+								},
+							}
+						);
 
 						// Create tests bundle (debug)
 						// NOTE: Temporary file.
@@ -1594,57 +1588,57 @@ module.exports = {
 						const browserifyDest = taskData.parseVariables('%BROWSERIFYDIR%', {isPath: true});
 
 						// Build main file (build)
-						if (!types.get(item, 'noIndex', false)) {
-							ops.push( 
-								{
-									'class': file.Javascript,
-									source: indexTemplate,
-									destination: '%BROWSERIFYDIR%/browserify.min.js',
-									runDirectives: true,
-									variables: {
-										serverSide: true,
-										browserify: true,
-										dependencies: dependencies,
-										modules: tools.map(modules, function(mod) {
+						ops.push( 
+							{
+								'class': file.Javascript,
+								source: indexTemplate,
+								destination: '%BROWSERIFYDIR%/browserify.min.js',
+								runDirectives: true,
+								variables: {
+									serverSide: true,
+									browserify: true,
+									dependencies: dependencies,
+									modules: tools.map(tools.filter(modules, function(mod) {
+											return !mod.exclude;
+										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 											});
 										}),
-										resources: tools.map(resources, function(res) {
-											return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
-										}),
-									},
-								}
-							);
-						};
+									resources: tools.map(resources, function(res) {
+										return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
+									}),
+								},
+							}
+						);
 						
 						// Build main file (debug)
-						if (!types.get(item, 'noIndex', false)) {
-							ops.push( 
-								{
-									'class': file.Javascript,
-									source: indexTemplate,
-									destination: '%BROWSERIFYDIR%/browserify.js',
-									runDirectives: true,
-									keepComments: true,
-									keepSpaces: true,
-									variables: {
-										debug: true,
-										serverSide: true,
-										browserify: true,
-										dependencies: dependencies,
-										modules: tools.map(modules, function(mod) {
+						ops.push( 
+							{
+								'class': file.Javascript,
+								source: indexTemplate,
+								destination: '%BROWSERIFYDIR%/browserify.js',
+								runDirectives: true,
+								keepComments: true,
+								keepSpaces: true,
+								variables: {
+									debug: true,
+									serverSide: true,
+									browserify: true,
+									dependencies: dependencies,
+									modules: tools.map(tools.filter(modules, function(mod) {
+											return !mod.exclude;
+										}), function(mod) {
 											return types.extend({}, mod, {
 												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 											});
 										}),
-										resources: tools.map(resources, function(res) {
-											return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
-										}),
-									},
-								}
-							);
-						};
+									resources: tools.map(resources, function(res) {
+										return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
+									}),
+								},
+							}
+						);
 						
 						// Copy license
 						ops.push( 
