@@ -1091,12 +1091,13 @@ module.exports = {
 									dependencies: tools.map(tools.filter(dependencies, function(dep) {
 											return !dep.test;
 										}), function(dep) {
-											const path = types.get(dep, 'path', null);
+											const baseName = dep.name.split('/', 2)[0];
 											return {
 												name: dep.name,
-												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
 												optional: !!types.get(dep, 'optional', false),
-												path: path,
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 											};
 										}),
 									modules: tools.map(tools.filter(modules, function(mod) {
@@ -1133,13 +1134,14 @@ module.exports = {
 									debug: true,
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
-										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test'), optional: false, path: null}]), function(dep) {
-											const path = types.get(dep, 'path', null);
+										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+											const baseName = dep.name.split('/', 2)[0];
 											return {
 												name: dep.name,
-												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
 												optional: !!types.get(dep, 'optional', false),
-												path: path,
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 											};
 										}),
 									modules: tools.map(tools.filter(modules, function(mod) {
@@ -1166,13 +1168,14 @@ module.exports = {
 									debug: false,
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
-										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test'), optional: false, path: null}]), function(dep) {
-											const path = types.get(dep, 'path', null);
+										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+											const baseName = dep.name.split('/', 2)[0];
 											return {
 												name: dep.name,
-												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
 												optional: !!types.get(dep, 'optional', false),
-												path: path,
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 											};
 										}),
 									modules: tools.map(tools.filter(modules, function(mod) {
@@ -1335,12 +1338,13 @@ module.exports = {
 									dependencies: tools.map(tools.filter(dependencies, function(dep) {
 											return !dep.test;
 										}), function(dep) {
-											const path = types.get(dep, 'path', null);
+											const baseName = dep.name.split('/', 2)[0];
 											return {
 												name: dep.name,
-												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
 												optional: !!types.get(dep, 'optional', false),
-												path: path,
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 											};
 										}),
 								},
@@ -1377,12 +1381,13 @@ module.exports = {
 									dependencies: tools.map(tools.filter(dependencies, function(dep) {
 											return !dep.test;
 										}), function(dep) {
-											const path = types.get(dep, 'path', null);
+											const baseName = dep.name.split('/', 2)[0];
 											return {
 												name: dep.name,
-												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
 												optional: !!types.get(dep, 'optional', false),
-												path: path,
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 											};
 										}),
 								},
@@ -1419,13 +1424,14 @@ module.exports = {
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
-										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test'), optional: false, path: null}]), function(dep) {
-											const path = types.get(dep, 'path', null);
+										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+											const baseName = dep.name.split('/', 2)[0];
 											return {
 												name: dep.name,
-												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
 												optional: !!types.get(dep, 'optional', false),
-												path: path,
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 											};
 										}),
 								},
@@ -1460,13 +1466,14 @@ module.exports = {
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
 									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
-										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test'), optional: false, path: null}]), function(dep) {
-											const path = types.get(dep, 'path', null);
+										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+											const baseName = dep.name.split('/', 2)[0];
 											return {
 												name: dep.name,
-												version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
 												optional: !!types.get(dep, 'optional', false),
-												path: path,
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 											};
 										}),
 								},
@@ -1522,12 +1529,13 @@ module.exports = {
 						const dependencies = tools.map(tools.filter(taskData.makeManifest.dependencies, function(dep) {
 								return dep.browserify && !dep.test;
 							}), function(dep) {
-								const path = types.get(dep, 'path', null);
+								const baseName = dep.name.split('/', 2)[0];
 								return {
 									name: dep.name,
-									version: __Internal__.getVersion(dep.name.split('/', 2)[0]),
+									version: __Internal__.getVersion(baseName, taskData.packageDir),
 									optional: !!types.get(dep, 'optional', false),
-									path: path,
+									path: types.get(dep, 'path', null),
+									type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 								};
 							});
 						
