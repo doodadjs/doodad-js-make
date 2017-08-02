@@ -178,14 +178,19 @@ module.exports = {
 						throw new types.Error("Package name is missing.");
 					};
 					const FILE = pkg + '/package.json';
+					let result = null;
 					if (currentPackageDir) {
 						try {
 							const path = currentPackageDir.combine('../' + FILE, {allowTraverse: true});
-							return require(path.toString());
+							result = require(path.toString());
 						} catch(o) {
+							result = require(FILE);
 						};
+					} else {
+						result = require(FILE);
 					};
-					return require(FILE);
+					delete result['//'];  // Remove comments
+					return result;
 				};
 
 				__Internal__.getMakeManifest = function getMakeManifest(pkg, /*optional*/currentPackageDir) {
@@ -197,14 +202,20 @@ module.exports = {
 						throw new types.Error("Package name is missing.");
 					};
 					const FILE = pkg + '/make.json';
+					let result = null;
 					if (currentPackageDir) {
 						try {
 							const path = currentPackageDir.combine('../' + FILE, {allowTraverse: true});
-							return require(path.toString());
+							result = require(path.toString());
 						} catch(o) {
+							result = require(FILE);
 						};
+					} else {
+						result = require(FILE);
 					};
-					return require(FILE);
+					types.getDefault(result, 'type', 'Package');
+					delete result['//'];  // Remove comments
+					return result;
 				};
 
 				__Internal__.getVersion = function getVersion(pkg, /*optional*/currentPackageDir) {
@@ -228,10 +239,16 @@ module.exports = {
 						VERSION: function VERSION(pkg) {
 							return __Internal__.getVersion(pkg, this.options.taskData.packageDir);
 						},
-						MANIFEST: function MANIFEST(key) {
+						MANIFEST: function MANIFEST(key, /*optional*/pkg) {
+							if (pkg) {
+								return safeEval.eval(key, __Internal__.getManifest(pkg, this.options.taskData.packageDir));
+							};
 							return safeEval.eval(key, this.options.taskData.manifest);
 						},
-						MAKE_MANIFEST: function MAKE_MANIFEST(key) {
+						MAKE_MANIFEST: function MAKE_MANIFEST(key, /*optional*/pkg) {
+							if (pkg) {
+								return safeEval.eval(key, __Internal__.getMakeManifest(pkg, this.options.taskData.packageDir));
+							};
 							return safeEval.eval(key, this.options.taskData.makeManifest);
 						},
 						BEGIN_MODULE: function() {
