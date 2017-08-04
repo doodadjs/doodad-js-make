@@ -1264,10 +1264,27 @@ module.exports = {
 							testsTemplate = modulePath.combine('res/tests.templ.js');
 						};
 						
-						// Get client dependencies
-						const dependencies = tools.filter(taskData.makeManifest.dependencies, function(dep) {
-							return dep.client;
-						});
+						// Get full client dependencies graph for modules auto-load.
+						const MAX_GRAPH_LEVEL = 50;
+						const loopDeps = function _loopDeps(deps, result, level) {
+							if (level > MAX_GRAPH_LEVEL) {
+								throw new types.Error("Client dependencies graph has reached its maximum level (~0~). Do you have a circular dependency ?", [MAX_GRAPH_LEVEL]);
+							};
+							const clientDeps = tools.filter(deps, function(dep) {
+								return dep.client;
+							});
+							types.append(result, clientDeps);
+							tools.forEach(clientDeps, function(clientDep) {
+								const baseName = clientDep.name.split('/', 2)[0];
+								const clientDepManif = __Internal__.getMakeManifest(baseName, taskData.packageDir);
+								const depsOfClientDep = types.get(clientDepManif, 'dependencies', null);
+								loopDeps(depsOfClientDep, result, level + 1);
+							});
+							return result;
+						};
+						const depsGraph = types.unique(function(dep1, dep2) {
+							return dep1.name === dep2.name;
+						}, loopDeps(taskData.makeManifest.dependencies, [], 0));
 						
 						// Get client modules
 						const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
@@ -1352,7 +1369,7 @@ module.exports = {
 									autoAdd: true,
 									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
-									dependencies: tools.map(tools.filter(dependencies, function(dep) {
+									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
 											return !dep.test;
 										}), function(dep) {
 											const baseName = dep.name.split('/', 2)[0];
@@ -1395,7 +1412,7 @@ module.exports = {
 									autoAdd: false,
 									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
-									dependencies: tools.map(tools.filter(dependencies, function(dep) {
+									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
 											return !dep.test;
 										}), function(dep) {
 											const baseName = dep.name.split('/', 2)[0];
@@ -1439,7 +1456,7 @@ module.exports = {
 									debug: true,
 									autoAdd: true,
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
-									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
+									dependencies: tools.map(types.prepend(tools.filter(depsGraph, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
 											const baseName = dep.name.split('/', 2)[0];
@@ -1481,7 +1498,7 @@ module.exports = {
 									debug: false,
 									autoAdd: false,
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
-									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
+									dependencies: tools.map(types.prepend(tools.filter(depsGraph, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
 											const baseName = dep.name.split('/', 2)[0];
