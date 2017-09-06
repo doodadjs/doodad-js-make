@@ -6882,5 +6882,86 @@
         "tasks": [
             "make"
         ]
+    },
+    "97238e30-41b4-48f8-995f-2adfe05a9b80": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_CREATOR",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "50068e7b-0bf6-4066-8b88-97d9c409b7e3": {
+        "packageName": "doodad-js-http",
+        "packageVersion": "1.1.0",
+        "name": "ClusterDataServiceMaster",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "c564802a-698b-4c47-b41d-54de558f5790": {
+        "packageName": "doodad-js-http",
+        "packageVersion": "1.1.0",
+        "name": "ClusterDataServiceWorker",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "9b460c37-e76b-4d4e-863f-5331f121f0fb": {
+        "packageName": "doodad-js-http",
+        "packageVersion": "1.1.0",
+        "name": "DataHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "480e613d-f0f3-4fcb-b191-62927b7fb08f": {
+        "packageName": "doodad-js-http",
+        "packageVersion": "1.1.0",
+        "name": "ClusterDataHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "37a8d011-afb9-4293-bb75-1a186592429d": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_TO_INITIALIZE",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f7827716-2f5e-473e-b98f-5bbb00c34a21": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_TO_EXTEND_LATER",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "97a9bb30-c936-47b4-87c9-34005fcc5634": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_WHEN",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "00543e32-cdb3-44da-8e06-efe5af4db7b9": {
+        "packageName": "doodad-js-http",
+        "packageVersion": "1.1.0",
+        "name": "HandlersContainerMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
     }
 }
