@@ -84,7 +84,7 @@ module.exports = {
 				};
 					
 
-				types.complete(_shared.Natives, {
+				tools.complete(_shared.Natives, {
 					arraySplice: global.Array.prototype.splice,
 					
 					// "getBuiltFileName"
@@ -94,12 +94,12 @@ module.exports = {
 					
 				const __Internal__ = {
 					searchJsExtRegExp: /([.]js)$/,
-					pkgUUIDS: types.nullObject(),
-					uuids: types.nullObject(),
+					pkgUUIDS: tools.nullObject(),
+					uuids: tools.nullObject(),
 				};
 					
 					
-				const __options__ = types.depthExtend(15, {
+				const __options__ = tools.depthExtend(15, {
 					unix: {
 						dataPath: "/var/lib/",
 						libPath: "/usr/local/lib/",
@@ -380,7 +380,7 @@ module.exports = {
 							init: function init(command, item, /*optional*/options) {
 								const extendFn = function(result, val, key, extend) {
 									if (types.isArray(val)) {
-										result[key] = types.unique(result[key], val);
+										result[key] = tools.unique(result[key], val);
 									} else if (types.isObject(val)) {
 										var resultVal = result[key];
 										if (types.isNothing(resultVal)) {
@@ -416,12 +416,12 @@ module.exports = {
 								const templ = require(manifestTemplate.toString());
 								this.manifestPath = this.combineWithPackageDir('./package.json').toString();					
 								this.manifest = require(this.manifestPath);
-								this.manifest = types.depthExtend(extendFn, {}, templ, this.manifest);
+								this.manifest = tools.depthExtend(extendFn, {}, templ, this.manifest);
 								delete this.manifest['//']; // remove comments
 								
 								const makeTempl = require(modulePath.combine('res/make.templ.json').toString());
 								this.makeManifest = require(this.combineWithPackageDir('./make.json').toString());
-								this.makeManifest = types.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
+								this.makeManifest = tools.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
 								delete this.makeManifest['//']; // remove comments
 								
 								this.sourceDir = this.combineWithPackageDir(types.get(this.makeManifest, 'sourceDir', './src'));
@@ -577,7 +577,7 @@ module.exports = {
 									
 									if (changed) {
 										if (isPath) {
-											path.splice.apply(path, types.append([i, 1], solvePath(result, os.type).toArray()));
+											path.splice.apply(path, tools.append([i, 1], solvePath(result, os.type).toArray()));
 										} else {
 											path[i] = result;
 										};
@@ -641,7 +641,7 @@ module.exports = {
 											if (!types.isArray(newOps)) {
 												newOps = [newOps];
 											};
-											_shared.Natives.arraySplice.apply(task.operations, types.append([index + 1, 0], newOps));
+											_shared.Natives.arraySplice.apply(task.operations, tools.append([index + 1, 0], newOps));
 										};
 										return proceed.call(this, ++index);
 									}, null, this);
@@ -931,7 +931,7 @@ module.exports = {
 
 						console.info('Minifying file "' + source + '" to "' + dest + '"...');
 
-						const variables = types.extend({
+						const variables = tools.extend({
 							task: command,
 						}, types.get(item, 'variables'), types.get(options, 'variables'));
 
@@ -1084,7 +1084,7 @@ module.exports = {
 						});
 						
 						// Build modules
-						ops = types.append(ops, tools.map(modules, function(mod) {
+						ops = tools.append(ops, tools.map(modules, function(mod) {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
@@ -1120,7 +1120,7 @@ module.exports = {
 									modules: tools.map(tools.filter(modules, function(mod) {
 											return !mod.test && !mod.exclude;
 										}), function(mod) {
-											return types.extend({}, mod, {
+											return tools.extend({}, mod, {
 												dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
 												optional: !!types.get(mod, 'optional', false),
 											});
@@ -1128,7 +1128,7 @@ module.exports = {
 									modulesSrc: tools.map(tools.filter(modules, function(mod) {
 											return !mod.test && !mod.exclude;
 										}), function(mod) {
-											return types.extend({}, mod, {
+											return tools.extend({}, mod, {
 												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
 												optional: !!types.get(mod, 'optional', false),
 											});
@@ -1149,7 +1149,7 @@ module.exports = {
 								variables: {
 									serverSide: true,
 									debug: true,
-									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
+									dependencies: tools.map(tools.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
 											const baseName = dep.name.split('/', 2)[0];
@@ -1164,7 +1164,7 @@ module.exports = {
 									modules: tools.map(tools.filter(modules, function(mod) {
 											return mod.test && !mod.exclude;
 										}), function(mod) {
-											return types.extend({}, mod, {
+											return tools.extend({}, mod, {
 												dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
 												optional: !!types.get(mod, 'optional', false),
 											});
@@ -1183,7 +1183,7 @@ module.exports = {
 								variables: {
 									serverSide: true,
 									debug: false,
-									dependencies: tools.map(types.prepend(tools.filter(dependencies, function(dep) {
+									dependencies: tools.map(tools.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
 											const baseName = dep.name.split('/', 2)[0];
@@ -1198,7 +1198,7 @@ module.exports = {
 									modules: tools.map(tools.filter(modules, function(mod) {
 											return mod.test && !mod.exclude;
 										}), function(mod) {
-											return types.extend({}, mod, {
+											return tools.extend({}, mod, {
 												dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
 												optional: !!types.get(mod, 'optional', false),
 											});
@@ -1208,7 +1208,7 @@ module.exports = {
 						);
 
 						// Copy resources
-						ops = types.append(ops, tools.map(resources, function(res) {
+						ops = tools.append(ops, tools.map(resources, function(res) {
 							return {
 								'class': folder.Copy,
 								source: '%SOURCEDIR%/' + res.src,
@@ -1273,7 +1273,7 @@ module.exports = {
 							const clientDeps = tools.filter(deps, function(dep) {
 								return dep.client;
 							});
-							types.append(result, clientDeps);
+							tools.append(result, clientDeps);
 							tools.forEach(clientDeps, function(clientDep) {
 								const baseName = clientDep.name.split('/', 2)[0];
 								const clientDepManif = __Internal__.getMakeManifest(baseName, taskData.packageDir);
@@ -1282,7 +1282,7 @@ module.exports = {
 							});
 							return result;
 						};
-						const depsGraph = types.unique(function(dep1, dep2) {
+						const depsGraph = tools.unique(function(dep1, dep2) {
 							return dep1.name === dep2.name;
 						}, loopDeps(taskData.makeManifest.dependencies, [], 0));
 						
@@ -1297,7 +1297,7 @@ module.exports = {
 						});
 
 						// Build modules (debug)
-						ops = types.append(ops, tools.map(modules, function(mod) {
+						ops = tools.append(ops, tools.map(modules, function(mod) {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
@@ -1313,7 +1313,7 @@ module.exports = {
 						}));
 						
 						// Build modules (build)
-						ops = types.append(ops, tools.map(modules, function(mod) {
+						ops = tools.append(ops, tools.map(modules, function(mod) {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
@@ -1326,7 +1326,7 @@ module.exports = {
 						}));
 						
 						// Copy resources
-						ops = types.append(ops, tools.map(resources, function(res) {
+						ops = tools.append(ops, tools.map(resources, function(res) {
 							return {
 								'class': folder.Copy,
 								source: '%SOURCEDIR%/' + res.src,
@@ -1456,7 +1456,7 @@ module.exports = {
 									debug: true,
 									autoAdd: true,
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
-									dependencies: tools.map(types.prepend(tools.filter(depsGraph, function(dep) {
+									dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
 											const baseName = dep.name.split('/', 2)[0];
@@ -1498,7 +1498,7 @@ module.exports = {
 									debug: false,
 									autoAdd: false,
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
-									dependencies: tools.map(types.prepend(tools.filter(depsGraph, function(dep) {
+									dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
 											const baseName = dep.name.split('/', 2)[0];
@@ -1584,7 +1584,7 @@ module.exports = {
 						});
 						
 						// Build modules (build)
-						ops = types.append(ops, tools.map(modules, function(mod) {
+						ops = tools.append(ops, tools.map(modules, function(mod) {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
@@ -1598,7 +1598,7 @@ module.exports = {
 						}));
 						
 						// Build modules (debug)
-						ops = types.append(ops, tools.map(modules, function(mod) {
+						ops = tools.append(ops, tools.map(modules, function(mod) {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
@@ -1615,7 +1615,7 @@ module.exports = {
 						}));
 						
 						// Generate resources files for browserify
-						ops = types.append(ops, tools.map(resources, function(res, i) {
+						ops = tools.append(ops, tools.map(resources, function(res, i) {
 							return {
 								'class': browserify.Resources,
 								name: '%PACKAGENAME%/res' + i,
@@ -1643,7 +1643,7 @@ module.exports = {
 									modules: tools.map(tools.filter(modules, function(mod) {
 											return !mod.exclude;
 										}), function(mod) {
-											return types.extend({}, mod, {
+											return tools.extend({}, mod, {
 												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 											});
 										}),
@@ -1671,7 +1671,7 @@ module.exports = {
 									modules: tools.map(tools.filter(modules, function(mod) {
 											return !mod.exclude;
 										}), function(mod) {
-											return types.extend({}, mod, {
+											return tools.extend({}, mod, {
 												dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 											});
 										}),
@@ -1782,7 +1782,7 @@ module.exports = {
 																//	this.taskData.manifest.name + '\' hosted by the \'npmjs.com\' web site, ' + 
 																//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' + 
 																'// When not mentionned otherwise, the following is Copyright 2015-2017 Claude Petit, licensed under Apache License version 2.0\n' + 
-																'module.exports=' + types.toSource(content), (item.encoding || 'utf-8'), function(err) {
+																'module.exports=' + tools.toSource(content), (item.encoding || 'utf-8'), function(err) {
 													if (err) {
 														reject(err);
 													} else {
@@ -1816,7 +1816,7 @@ module.exports = {
 									if (index < sourceAr.length - 1) {
 										result[name] = buildPatterns(index + 1, sourceAr, destStr, types.get(result, name, {}));
 									} else {
-										result[name] = "result = require(" + types.toSource('.' + destStr) + ");";
+										result[name] = "result = require(" + tools.toSource('.' + destStr) + ");";
 									};
 									return result;
 								};
@@ -1824,7 +1824,7 @@ module.exports = {
 								function reducePatterns(level, pattern) {
 									let code = "switch(tmp[" + types.toString(level + 1) + "]) {";
 									tools.forEach(pattern, function(val, key) {
-										code += "case " + types.toSource(key) + ": ";
+										code += "case " + tools.toSource(key) + ": ";
 										if (types.isString(val)) {
 											code += val;
 										} else {
@@ -1994,7 +1994,7 @@ module.exports = {
 						
 						const taskData = this.taskData;
 						
-						const manifest = types.depthExtend(15, {}, taskData.manifest, {
+						const manifest = tools.depthExtend(15, {}, taskData.manifest, {
 							dependencies: tools.reduce(tools.filter(taskData.makeManifest.dependencies, function(dep) {
 									return !dep.test;
 								}), function(result, dep) {
@@ -2023,7 +2023,7 @@ module.exports = {
 
 						manifest.version = getNodeVersion(manifest.name);
  
-						manifest.files = types.unique(manifest.files || [],
+						manifest.files = tools.unique(manifest.files || [],
 							(taskData.makeManifest.sourceDir.isRelative ? [taskData.makeManifest.sourceDir.toString()] : undefined),
 							(taskData.makeManifest.buildDir.isRelative ? [taskData.makeManifest.buildDir.toString()] : undefined),
 							(taskData.makeManifest.browserifyDir.isRelative ? [taskData.makeManifest.browserifyDir.toString()] : undefined),
@@ -2077,7 +2077,7 @@ module.exports = {
 							console.info("Loading global UUIDs from file '" + source + "'...");
 							return files.readFile(source, {async: true, encoding: 'utf-8'})
 								.then(function(uuids) {
-									__Internal__.uuids = types.nullObject(JSON.parse(uuids));
+									__Internal__.uuids = tools.nullObject(JSON.parse(uuids));
 									tools.forEach(__Internal__.uuids, function(data, uuid) {
 										if (!types.has(data, 'tasks')) {
 											data.tasks = ['make'];
@@ -2178,10 +2178,10 @@ module.exports = {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						if (types.get(item, 'global', false)) {
 							console.info("Forgetting global UUIDs...");
-							__Internal__.uuids = types.nullObject();
+							__Internal__.uuids = tools.nullObject();
 						} else {
 							console.info("Forgetting package UUIDs...");
-							__Internal__.pkgUUIDS = types.nullObject();
+							__Internal__.pkgUUIDS = tools.nullObject();
 						};
 					}),
 				}));
