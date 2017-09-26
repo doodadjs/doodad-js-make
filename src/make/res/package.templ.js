@@ -2,7 +2,7 @@
 
 //! REPLACE_BY("// Copyright 2015-2017 Claude Petit, licensed under Apache License version 2.0\n", true)
 // doodad-js - Object-oriented programming framework
-// File: package.js - Module startup file (client-side)
+// File: package.js - Module startup file (client-side, CommonJs)
 // Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
@@ -24,33 +24,31 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = DD_MODULES || {};
-		DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
-			version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
-			type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
-			dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = DD_MODULES || {};
+	DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
+		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
+		type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
+		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 
-			create: function create(root, /*optional*/_options, _shared) {
-				// DON'T PUT "use strict"; HERE !
+		create: function create(root, /*optional*/_options, _shared) {
+			// DON'T PUT "use strict"; HERE !
 
-				const DD_MODULE = undefined;
-				const DD_MODULES = {};
+			const DD_MODULE = undefined;
+			const DD_MODULES = {};
 
-				//! INCLUDE(VAR("bundle"), 'utf-8', true)
+			//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
-				return (function() {
-					const options = [/*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */, _options, {startup: {secret: _shared.SECRET}}];
+			return (function() {
+				const options = [/*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */, _options, {startup: {secret: _shared.SECRET}}];
 
-					return root.Doodad.Namespaces.load(DD_MODULES, options)
-						.then(function() {
-							// Returns nothing
-						});
-				})();
-			},
-		};
-		return DD_MODULES;
-	},
+				return root.Doodad.Namespaces.load(DD_MODULES, options)
+					.then(function() {
+						// Returns nothing
+					});
+			})();
+		},
+	};
+	return DD_MODULES;
 };
 //! END_MODULE();

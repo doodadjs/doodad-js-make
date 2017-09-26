@@ -88,7 +88,7 @@ module.exports = {
 					arraySplice: global.Array.prototype.splice,
 					
 					// "getBuiltFileName"
-					stringReplace: String.prototype.replace,
+					stringReplace: global.String.prototype.replace,
 				});
 					
 					
@@ -255,14 +255,28 @@ module.exports = {
 							this.pushDirective({
 								name: 'MODULE',
 							});
-							if (!types.get(this.variables, 'serverSide', false)) {
-								this.directives.INJECT("; " +
-									"(function(/*global, module, DD_MODULES*/) {" +
-										"const global = arguments[0]" + ", " +
-											"window = global" + ", " +
-											"module = arguments[1]" + ", " +
-											"DD_MODULES = arguments[2]" + "; "
-								);
+							const mjs = types.get(this.variables, 'mjs', false);
+							if (types.get(this.variables, 'serverSide', false)) {
+								if (mjs) {
+									this.directives.INJECT("; " +
+										"const exports = {}" + "; "
+									);
+								};
+							} else {
+								if (mjs) {
+									this.directives.INJECT("; " +
+										"const global = window" + ", " +
+											"exports = {}" + "; "
+									);
+								} else {
+									this.directives.INJECT("; " +
+										"(function(/*global, exports, DD_MODULES*/) {" +
+											"'use strict'" + "; " +
+											"const global = arguments[0]" + ", " +
+												"exports = arguments[1]" + ", " +
+												"DD_MODULES = arguments[2]" + "; " 
+									);
+								};
 							};
 						},
 						END_MODULE: function() {
@@ -270,11 +284,24 @@ module.exports = {
 							if (!block || (block.name !== 'MODULE')) {
 								throw new types.Error("Invalid 'END_MODULE' directive.");
 							};
-							if (!types.get(this.variables, 'serverSide', false)) {
-								this.directives.INJECT("; " +
-										(types.get(this.variables, 'autoAdd', false) ? "module.exports.add(DD_MODULES)" + "; " : "") +
-									"}).call(undefined, (typeof global === 'undefined' ? window : global), (typeof DD_MODULE === 'undefined' ? {exports: {}} : DD_MODULE), (typeof DD_MODULES === 'undefined' ? {} : DD_MODULES))" + "; "
-								);
+							const mjs = types.get(this.variables, 'mjs', false);
+							if (types.get(this.variables, 'serverSide', false)) {
+								if (mjs) {
+									this.directives.INJECT("; " +
+										"export default exports" + "; "
+									);
+								};
+							} else {
+								if (mjs) {
+									this.directives.INJECT("; " +
+										"export default exports" + "; "
+									);
+								} else {
+									this.directives.INJECT("; " +
+											(types.get(this.variables, 'autoAdd', false) ? "exports.add(DD_MODULES)" + "; " : "") +
+										"}).call(undefined, (typeof global === 'undefined' ? window : global), (typeof DD_EXPORTS === 'undefined' ? {} : DD_EXPORTS), (typeof DD_MODULES === 'undefined' ? {} : DD_MODULES))" + "; "
+									);
+								};
 							};
 						},
 						INCLUDE: function(file, /*optional*/encoding, /*optional*/raw) {
@@ -1039,8 +1066,8 @@ module.exports = {
 				}));
 
 				
-				__Internal__.getBuiltFileName = function getBuiltFileName(fileName) {
-					return _shared.Natives.stringReplace.call(fileName, __Internal__.searchJsExtRegExp, ".min.js");
+				__Internal__.getBuiltFileName = function getBuiltFileName(fileName, /*optional*/mjs) {
+					return _shared.Natives.stringReplace.call(fileName, __Internal__.searchJsExtRegExp, (mjs ? ".min.mjs" : ".min.js"));
 				};
 				
 
@@ -1058,6 +1085,14 @@ module.exports = {
 						};
 						if (!indexTemplate) {
 							indexTemplate = modulePath.combine('res/index.templ.js');
+						};
+						
+						let indexTemplateMjs = types.get(item, 'indexTemplateMjs');
+						if (types.isString(indexTemplateMjs)) {
+							indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isPath: true });
+						};
+						if (!indexTemplateMjs) {
+							indexTemplateMjs = modulePath.combine('res/index.templ.mjs');
 						};
 						
 						let testsTemplate = types.get(item, 'testsTemplate');
@@ -1083,20 +1118,39 @@ module.exports = {
 							return res.server;
 						});
 						
-						// Build modules
+						// Build modules (CommonJs)
 						ops = tools.append(ops, tools.map(modules, function(mod) {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
-								destination: '%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)),
+								destination: '%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest, false) : __Internal__.getBuiltFileName(mod.src, false)),
 								runDirectives: true,
 								variables: {
+									debug: false,
 									serverSide: true,
+									mjs: false,
 								},
 							};
 						}));
 						
-						// Build index
+						// Build modules (mjs)
+						if (taskData.makeManifest.mjs) {
+							ops = tools.append(ops, tools.map(modules, function(mod) {
+								return {
+									'class': file.Javascript,
+									source: '%SOURCEDIR%/' + mod.src,
+									destination: '%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest, true) : __Internal__.getBuiltFileName(mod.src, true)),
+									runDirectives: true,
+									variables: {
+										debug: false,
+										serverSide: true,
+										mjs: true,
+									},
+								};
+							}));
+						};
+						
+						// Build index (CommonJs)
 						ops.push(
 							{
 								'class': file.Javascript,
@@ -1104,7 +1158,9 @@ module.exports = {
 								destination: '%PACKAGEDIR%/index.js',
 								runDirectives: true,
 								variables: {
+									debug: false,
 									serverSide: true,
+									mjs: false,
 									dependencies: tools.map(tools.filter(dependencies, function(dep) {
 											return !dep.test;
 										}), function(dep) {
@@ -1137,6 +1193,43 @@ module.exports = {
 							}
 						);
 
+						// Build index (mjs)
+						if (taskData.makeManifest.mjs) {
+							ops.push(
+								{
+									'class': file.Javascript,
+									source: indexTemplateMjs,
+									destination: '%PACKAGEDIR%/index.mjs',
+									runDirectives: true,
+									variables: {
+										debug: false,
+										serverSide: true,
+										mjs: true,
+										dependencies: tools.map(tools.filter(dependencies, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												const baseName = dep.name.split('/', 2)[0];
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(baseName, taskData.packageDir),
+													optional: !!types.get(dep, 'optional', false),
+													path: types.get(dep, 'path', null),
+													type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+												};
+											}),
+										modules: tools.map(tools.filter(modules, function(mod) {
+												return !mod.test && !mod.exclude;
+											}), function(mod) {
+												return tools.extend({}, mod, {
+													dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest, true) : __Internal__.getBuiltFileName(mod.src, true)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+													optional: !!types.get(mod, 'optional', false),
+												});
+											}),
+									},
+								}
+							);
+						};
+
 						// Create tests package (debug)
 						ops.push(
 							{
@@ -1147,8 +1240,9 @@ module.exports = {
 								keepComments: true,
 								keepSpaces: true,
 								variables: {
-									serverSide: true,
 									debug: true,
+									serverSide: true,
+									mjs: false,
 									dependencies: tools.map(tools.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
@@ -1181,8 +1275,9 @@ module.exports = {
 								destination: '%PACKAGEDIR%/test/%PACKAGENAME%_tests.min.js',
 								runDirectives: true,
 								variables: {
-									serverSide: true,
 									debug: false,
+									serverSide: true,
+									mjs: false,
 									dependencies: tools.map(tools.prepend(tools.filter(dependencies, function(dep) {
 											return dep.test;
 										}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
@@ -1256,6 +1351,14 @@ module.exports = {
 							indexTemplate = modulePath.combine('res/package.templ.js');
 						};
 						
+						let indexTemplateMjs = types.get(item, 'indexTemplateMjs');
+						if (types.isString(indexTemplateMjs)) {
+							indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isPath: true });
+						};
+						if (!indexTemplateMjs) {
+							indexTemplateMjs = modulePath.combine('res/package.templ.mjs');
+						};
+						
 						let testsTemplate = types.get(item, 'testsTemplate');
 						if (types.isString(testsTemplate)) {
 							testsTemplate = taskData.parseVariables(testsTemplate, { isPath: true });
@@ -1307,7 +1410,9 @@ module.exports = {
 								keepSpaces: true,
 								variables: {
 									debug: true,
+									serverSide: false,
 									autoAdd: true,
+									mjs: false,
 								},
 							};
 						}));
@@ -1320,7 +1425,10 @@ module.exports = {
 								destination: '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)),
 								runDirectives: true,
 								variables: {
+									debug: false,
+									serverSide: false,
 									autoAdd: true,
+									mjs: false,
 								},
 							};
 						}));
@@ -1357,7 +1465,7 @@ module.exports = {
 							}
 						);
 
-						// Create package (debug)
+						// Create package (debug, CommonJs)
 						ops.push(
 							{
 								'class': file.Javascript,
@@ -1366,7 +1474,9 @@ module.exports = {
 								runDirectives: true,
 								variables: {
 									debug: true,
+									serverSide: false,
 									autoAdd: true,
+									mjs: false,
 									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
@@ -1385,6 +1495,38 @@ module.exports = {
 							}
 						);
 						
+						// Create package (debug, mjs)
+						if (taskData.makeManifest.mjs) {
+							ops.push(
+								{
+									'class': file.Javascript,
+									source: indexTemplateMjs,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.mjs',
+									runDirectives: true,
+									variables: {
+										debug: true,
+										serverSide: false,
+										autoAdd: true,
+										mjs: true,
+										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+										dependencies: tools.map(tools.filter(depsGraph, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												const baseName = dep.name.split('/', 2)[0];
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(baseName, taskData.packageDir),
+													optional: !!types.get(dep, 'optional', false),
+													path: types.get(dep, 'path', null),
+													type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+												};
+											}),
+									},
+								}
+							);
+						};
+						
 						// Create bundle (build)
 						// NOTE: Temporary file.
 						ops.push( 
@@ -1400,7 +1542,7 @@ module.exports = {
 							}
 						);
 
-						// Create package (build)
+						// Create package (build, CommonJs)
 						ops.push( 
 							{
 								'class': file.Javascript,
@@ -1409,7 +1551,9 @@ module.exports = {
 								runDirectives: true,
 								variables: {
 									debug: false,
+									serverSide: false,
 									autoAdd: false,
+									mjs: false,
 									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
 									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
@@ -1427,6 +1571,38 @@ module.exports = {
 								},
 							}
 						);
+
+						// Create package (build, mjs)
+						if (taskData.makeManifest.mjs) {
+							ops.push( 
+								{
+									'class': file.Javascript,
+									source: indexTemplateMjs,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.min.mjs',
+									runDirectives: true,
+									variables: {
+										debug: false,
+										serverSide: false,
+										autoAdd: false,
+										mjs: true,
+										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
+										dependencies: tools.map(tools.filter(depsGraph, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												const baseName = dep.name.split('/', 2)[0];
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(baseName, taskData.packageDir),
+													optional: !!types.get(dep, 'optional', false),
+													path: types.get(dep, 'path', null),
+													type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+												};
+											}),
+									},
+								}
+							);
+						};
 
 						// Create tests bundle (debug)
 						// NOTE: Temporary file.
@@ -1453,8 +1629,10 @@ module.exports = {
 								keepComments: true,
 								keepSpaces: true,
 								variables: {
+									serverSide: false,
 									debug: true,
 									autoAdd: true,
+									mjs: false,
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
 									dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
 											return dep.test;
@@ -1496,7 +1674,9 @@ module.exports = {
 								runDirectives: true,
 								variables: {
 									debug: false,
+									serverSide: false,
 									autoAdd: false,
+									mjs: false,
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
 									dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
 											return dep.test;
@@ -1610,6 +1790,7 @@ module.exports = {
 									debug: true,
 									serverSide: true,
 									browserify: true,
+									mjs: false,
 								},
 							};
 						}));
@@ -1637,8 +1818,10 @@ module.exports = {
 								destination: '%BROWSERIFYDIR%/browserify.min.js',
 								runDirectives: true,
 								variables: {
+									debug: false,
 									serverSide: true,
 									browserify: true,
+									mjs: false,
 									dependencies: dependencies,
 									modules: tools.map(tools.filter(modules, function(mod) {
 											return !mod.exclude;
@@ -1667,6 +1850,7 @@ module.exports = {
 									debug: true,
 									serverSide: true,
 									browserify: true,
+									mjs: false,
 									dependencies: dependencies,
 									modules: tools.map(tools.filter(modules, function(mod) {
 											return !mod.exclude;

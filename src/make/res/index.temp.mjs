@@ -2,7 +2,7 @@
 
 //! REPLACE_BY("// Copyright 2015-2017 Claude Petit, licensed under Apache License version 2.0\n", true)
 // doodad-js - Object-oriented programming framework
-// File: index.js - Module startup file (server-side, CommonJs)
+// File: index.js - Module startup file (server-side, mjs)
 // Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
@@ -24,6 +24,14 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+//! FOR_EACH(VAR("modules"), "mod", "index")
+	//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
+		import * as /*! INJECT("module" + VAR("index")) */ from /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */;
+	//! END_IF()
+//! END_FOR()
+
+import * as config from './config.json';
+
 exports.add = function add(DD_MODULES) {
 	DD_MODULES = DD_MODULES || {};
 	DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
@@ -34,39 +42,17 @@ exports.add = function add(DD_MODULES) {
 		create: function create(root, /*optional*/_options, _shared) {
 			"use strict";
 
-			const files = [{
-				module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
-				path: 'config.json',
-				optional: true,
-				isConfig: true,
-			}];
+			const DD_MODULES = {};
 
-			const fromSource = root.getOptions().fromSource;
-			if (fromSource) { 
-				//! FOR_EACH(VAR("modulesSrc"), "mod")
-					//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-						files.push({
-							module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
-							path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
-							optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
-						});
-					//! END_IF()
-				//! END_FOR()
-			} else { 
-				//! FOR_EACH(VAR("modules"), "mod")
-					//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-						files.push({
-							module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
-							path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
-							optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
-						});
-					//! END_IF()
-				//! END_FOR()
-			};
+			//! FOR_EACH(VAR("modules"), "mod", "index")
+				//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
+					/*! INJECT("module" + VAR("index")) */.add(DD_MODULES);
+				//! END_IF()
+			//! END_FOR()
 
 			const options = [_options, {secret: _shared.SECRET}];
 
-			return root.Doodad.Modules.load(files, options)
+			return root.Doodad.Namespaces.load(DD_MODULES, [config, _options])
 				.then(function() {
 					// Returns nothing
 				});
@@ -74,4 +60,5 @@ exports.add = function add(DD_MODULES) {
 	};
 	return DD_MODULES;
 };
+
 //! END_MODULE();

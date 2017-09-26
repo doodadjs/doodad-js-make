@@ -1,34 +1,39 @@
 {
-	"homepage": "https://github.com/doodadjs/",
-	"author": "Claude Petit <doodadjs@gmail.com> (https://github.com/doodadjs/)",
-	"license": "Apache-2.0",
-	"files": [
-		"src",
-		"lib",
-		"build",
-		"dist",
-		"browserify",
-		"test",
-		"index.js",
-		"webpack.config.js",
-		"config.json",
-		"make.json",
-		"LICENSE",
-		"README.md",
-		".travis.yml"
-	],
-	"scripts": {
-		"build": "ddmake make",
-		"dist": "ddmake install",
-		"browserify": "ddmake custom=browserify",
-		"test": "echo Please install and start package 'doodad-js-test'."
-	},
-	"devDependencies": {
-		"doodad-js-make": "^0.0.0"
-	},
-	"main": "index.js",
-	"browser": "./browserify/browserify.min.js",
-	"engines": {
-		"node": ">=6.0.0"
-	}
+  "homepage": "https://github.com/doodadjs/",
+  "author": "Claude Petit <doodadjs@gmail.com> (https://github.com/doodadjs/)",
+  "license": "Apache-2.0",
+  "files": [
+    "src",
+    "lib",
+    "build",
+    "dist",
+    "browserify",
+    "test",
+    "index.js",
+    "index.mjs",
+    "webpack.config.js",
+    "config.json",
+    "make.json",
+    "LICENSE",
+    "README.md",
+    ".eslintignore",
+    ".gitignore",
+    ".npmignore",
+    ".npmrc",
+    ".travis.yml"
+  ],
+  "scripts": {
+    "build": "ddmake make",
+    "dist": "ddmake install",
+    "browserify": "ddmake custom=browserify",
+    "test": "echo Please install and start package 'doodad-js-test'."
+  },
+  "devDependencies": {
+    "doodad-js-make": "^0.0.0"
+  },
+  "main": "index.js",
+  "browser": "./browserify/browserify.min.js",
+  "engines": {
+    "node": ">=6.0.0"
+  }
 }

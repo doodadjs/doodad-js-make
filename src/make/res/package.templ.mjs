@@ -2,7 +2,7 @@
 
 //! REPLACE_BY("// Copyright 2015-2017 Claude Petit, licensed under Apache License version 2.0\n", true)
 // doodad-js - Object-oriented programming framework
-// File: index.js - Module startup file (server-side, CommonJs)
+// File: package.mjs - Module startup file (client-side, mjs)
 // Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
@@ -30,48 +30,26 @@ exports.add = function add(DD_MODULES) {
 		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 		type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
 		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
-					
+
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
+			// DON'T PUT "use strict"; HERE !
 
-			const files = [{
-				module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
-				path: 'config.json',
-				optional: true,
-				isConfig: true,
-			}];
+			const DD_MODULE = undefined;
+			const DD_MODULES = {};
 
-			const fromSource = root.getOptions().fromSource;
-			if (fromSource) { 
-				//! FOR_EACH(VAR("modulesSrc"), "mod")
-					//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-						files.push({
-							module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
-							path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
-							optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
-						});
-					//! END_IF()
-				//! END_FOR()
-			} else { 
-				//! FOR_EACH(VAR("modules"), "mod")
-					//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-						files.push({
-							module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
-							path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
-							optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
-						});
-					//! END_IF()
-				//! END_FOR()
-			};
+			//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
-			const options = [_options, {secret: _shared.SECRET}];
+			return (function() {
+				const options = [/*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */, _options, {startup: {secret: _shared.SECRET}}];
 
-			return root.Doodad.Modules.load(files, options)
-				.then(function() {
-					// Returns nothing
-				});
+				return root.Doodad.Namespaces.load(DD_MODULES, options)
+					.then(function() {
+						// Returns nothing
+					});
+			})();
 		},
 	};
 	return DD_MODULES;
 };
+
 //! END_MODULE();
