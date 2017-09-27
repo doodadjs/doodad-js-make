@@ -24,60 +24,59 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = DD_MODULES || {};
-		DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name") + "/tests")) */] = {
-			version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
-			type: 'TestPackage',
-			dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = DD_MODULES || {};
+	DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name") + "/tests")) */] = {
+		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
+		type: 'TestPackage',
+		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 			
-			create: function create(root, /*optional*/_options, _shared) {
-				// DON'T PUT "use strict"; HERE !
+		create: function create(root, /*optional*/_options, _shared) {
+			// DON'T PUT "use strict"; HERE !
 				
-				//! IF_DEF("serverSide")
+			//! IF_DEF("serverSide")
 
-					const doodad = root.Doodad,
-						types = doodad.Types,
-						modules = doodad.Modules;
+				const doodad = root.Doodad,
+					types = doodad.Types,
+					modules = doodad.Modules;
 				
-					const files = [];
+				const files = [];
 
-					//! FOR_EACH(VAR("modules"), "mod")
-						//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-							files.push({
-								module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
-								path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
-								optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
-							});
-						//! END_IF()
-					//! END_FOR()
+				//! FOR_EACH(VAR("modules"), "mod")
+					//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
+						files.push({
+							module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
+							path: /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */,
+							optional: /*! INJECT(TO_SOURCE(VAR("mod.optional"))) */,
+						});
+					//! END_IF()
+				//! END_FOR()
 
-					return modules.load(files, [_options, {startup: {secret: _shared.SECRET}}])
+				return modules.load(files, [_options, {startup: {secret: _shared.SECRET}}])
+					.then(function() {
+						// Returns nothing
+					});
+
+			//! ELSE()
+
+				const DD_MODULE = undefined;
+				const DD_MODULES = {};
+				
+				//! INCLUDE(VAR("bundle"), 'utf-8', true)
+						
+				return (function() {
+					const options = [/*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */, _options, {startup: {secret: _shared.SECRET}}];
+
+					return root.Doodad.Namespaces.load(DD_MODULES, options)
 						.then(function() {
 							// Returns nothing
 						});
+				})();
 
-				//! ELSE()
-
-					const DD_MODULE = undefined;
-					const DD_MODULES = {};
-				
-					//! INCLUDE(VAR("bundle"), 'utf-8', true)
-						
-					return (function() {
-						const options = [/*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */, _options, {startup: {secret: _shared.SECRET}}];
-
-						return root.Doodad.Namespaces.load(DD_MODULES, options)
-							.then(function() {
-								// Returns nothing
-							});
-					})();
-
-				//! END_IF()
-			},
-		};
-		return DD_MODULES;
-	},
+			//! END_IF()
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()
