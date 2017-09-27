@@ -26,13 +26,13 @@
 
 //! FOR_EACH(VAR("modules"), "mod", "index")
 	//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-		import * as /*! INJECT("module" + VAR("index")) */ from /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */;
+		import {default as /*! INJECT("module" + VAR("index")) */} from /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */;
 	//! END_IF()
 //! END_FOR()
 
-import * as config from './config.json';
+import {default as config} from './config.json';
 
-exports.add = function add(DD_MODULES) {
+export function add(DD_MODULES) {
 	DD_MODULES = DD_MODULES || {};
 	DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
 		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
