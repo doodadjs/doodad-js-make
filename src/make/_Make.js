@@ -298,7 +298,7 @@ exports.add = function add(DD_MODULES) {
 							} else {
 								this.directives.INJECT("; " +
 										(types.get(this.variables, 'autoAdd', false) ? "exports.add(DD_MODULES)" + "; " : "") +
-									"}).call(undefined, (typeof global === 'undefined' ? window : global), (typeof DD_EXPORTS === 'undefined' ? {} : DD_EXPORTS), (typeof DD_MODULES === 'undefined' ? {} : DD_MODULES))" + "; "
+									"}).call(undefined, ((typeof global === 'object') && (global !== null) ? global : window), ((typeof DD_EXPORTS === 'object') &&  (DD_EXPORTS !== null) ? DD_EXPORTS : {}), ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? DD_MODULES : {}))" + "; "
 								);
 							};
 						};

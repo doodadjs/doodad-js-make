@@ -32,9 +32,7 @@ exports.add = function add(DD_MODULES) {
 		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 			
 		create: function create(root, /*optional*/_options, _shared) {
-			// DON'T PUT "use strict"; HERE !
-				
-			//! IF_DEF("serverSide")
+			//! IF_SET("serverSide")
 
 				const doodad = root.Doodad,
 					types = doodad.Types,
@@ -59,7 +57,7 @@ exports.add = function add(DD_MODULES) {
 
 			//! ELSE()
 
-				const DD_MODULE = undefined;
+				const DD_EXPORTS = undefined;
 				const DD_MODULES = {};
 				
 				//! INCLUDE(VAR("bundle"), 'utf-8', true)

@@ -34,7 +34,7 @@ exports.add = function add(DD_MODULES) {
 		create: function create(root, /*optional*/_options, _shared) {
 			// DON'T PUT "use strict"; HERE !
 
-			const DD_MODULE = undefined;
+			const DD_EXPORTS = undefined;
 			const DD_MODULES = {};
 
 			//! INCLUDE(VAR("bundle"), 'utf-8', true)
