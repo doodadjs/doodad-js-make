@@ -26,79 +26,79 @@
 
 "use strict";
 
-module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = DD_MODULES || {};
-		DD_MODULES[/*! INJECT(TO_SOURCE(VAR("name"))) */] = {
-			version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
-			type: 'Package',
-			dependencies: ['Doodad.Tools.Files', 'Doodad.Namespaces'],
+exports.add = function add(DD_MODULES) {
+	DD_MODULES = DD_MODULES || {};
+	DD_MODULES[/*! INJECT(TO_SOURCE(VAR("name"))) */] = {
+		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
+		type: 'Package',
+		dependencies: ['Doodad.Tools.Files', 'Doodad.Namespaces'],
 			
-			create: function create(root, /*optional*/_options, _shared) {
-				const doodad = root.Doodad,
-					nodejs = doodad.NodeJs,
-					types = doodad.Types,
-					tools = doodad.Tools,
-					files = tools.Files,
-					namespaces = doodad.Namespaces;
+		create: function create(root, /*optional*/_options, _shared) {
+			const doodad = root.Doodad,
+				nodejs = doodad.NodeJs,
+				types = doodad.Types,
+				tools = doodad.Tools,
+				files = tools.Files,
+				modules = tools.Modules,
+				namespaces = doodad.Namespaces;
 					
-				const Promise = types.getPromise(),
-					mod = namespaces.get(/*! TO_SOURCE(VAR("namespace")) */);
+			const Promise = types.getPromise(),
+				mod = namespaces.get(/*! TO_SOURCE(VAR("namespace")) */);
 				
-				mod.setResourcesLoader({
-					locate: function locate(name, /*optional*/options) {
-						return Promise['try'](function tryLocate() {
-							return files.parsePath(name);
-						});
-					},
-					load: function load(path, /*optional*/options) {
+			mod.setResourcesLoader({
+				locate: function locate(name, /*optional*/options) {
+					return Promise.try(function tryLocate() {
+						return files.parsePath(name);
+					});
+				},
+				load: function load(path, /*optional*/options) {
+					return Promise.try(function() {
 						const tmp = path.toArray();
-						try {
-							const callback = types.get(options, 'callback');
-							let result;
-								
-		//! INJECT(VAR("resources"))
-		//! BEGIN_REMOVE()
-		Exemple:
-							switch(tmp[1]) {
-								case "locales":
-									switch(tmp[2]) {
-										case "en_US":
-											result = require("./locales/en_US.res.js");
-											break;
-										case "fr_FR":
-											result = require("./locales/fr_FR.res.js");
-											break;
-										case "fr_CA":
-											result = require("./locales/fr_CA.res.js");
-											break;
-										...
-										default:
-											throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
-									};
-								...
-								default:
-									throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
-							};
-		//! END_REMOVE()
-							if (callback) {
-								callback(null, result);
-							};
-							
-							return Promise.resolve(result);
-							
-						} catch(ex) {
-							if (callback) {
-								callback(ex, null);
-							};
 
-							return Promise.reject(ex);
+						const callback = types.get(options, 'callback');
+
+						let result = null;
+								
+//! INJECT(VAR("resources"))
+//! BEGIN_REMOVE()
+Exemple:
+						switch(tmp[1]) {
+							case "locales":
+								switch(tmp[2]) {
+									case "en_US":
+										result = require("./locales/en_US.res.js");
+										break;
+									case "fr_FR":
+										result = require("./locales/fr_FR.res.js");
+										break;
+									case "fr_CA":
+										result = require("./locales/fr_CA.res.js");
+										break;
+									default:
+										throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
+								};
+							default:
+								throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
 						};
-					},
-				});
-			},
-		};
-		return DD_MODULES;
-	},
+//! END_REMOVE()
+						if (callback) {
+							callback(null, result);
+						};
+							
+						return result;
+					})
+					.catch(function(err) {
+						if (callback) {
+							callback(err, null);
+						};
+
+						throw err;
+					});
+				},
+			});
+		},
+	};
+	return DD_MODULES;
 };
+
 //! END_MODULE()

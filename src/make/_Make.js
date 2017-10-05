@@ -24,6 +24,41 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+
+//! IF_SET("mjs")
+	//! INJECT("import {default as nodeFs} from 'fs';")
+	//! INJECT("import {default as npc} from 'npm-package-config';")
+
+	// TODO: Make them optional again.
+	//! INJECT("import {default as nodeBrowserify} from 'browserify';")
+	//! INJECT("import {default as nodeWebpack} from 'webpack';")
+
+//! ELSE()
+	const nodeFs = require('fs'),
+		npc = require('npm-package-config');
+
+	let nodeBrowserify = null;
+	try {
+		nodeBrowserify = require('browserify');
+	} catch(ex) {
+	};
+				
+	let nodeWebpack = null;
+	try {
+		nodeWebpack = require('webpack');
+	} catch(ex) {
+	};
+
+//! END_IF()
+
+const nodeFsCreateReadStream = nodeFs.createReadStream,
+	nodeFsCreateWriteStream = nodeFs.createWriteStream,
+	nodeFsReadFileSync = nodeFs.readFileSync,
+	nodeFsStatSync = nodeFs.statSync,
+
+	npcListAsync = npc.listAsync;
+
+
 exports.add = function add(DD_MODULES) {
 	DD_MODULES = (DD_MODULES || {});
 	DD_MODULES['Make'] = {
@@ -60,28 +95,9 @@ exports.add = function add(DD_MODULES) {
 					
 				Promise = types.getPromise(),
 					
-				nodeFs = require('fs'),
-				nodeChildProcess = require('child_process'),
-				Module = require('module').Module,
-
-				npm_package_config = require('npm-package-config'),
-				app_module_path = require('app-module-path'),
-
 				cwd = files.parsePath(process.cwd(), {file: ''}),
 				modulePath = files.parsePath(module.filename).set({file: null});
-					
-			let nodeBrowserify = null;
-			try {
-				nodeBrowserify = require('browserify');
-			} catch(ex) {
-			};
-				
-			let nodeWebpack = null;
-			try {
-				nodeWebpack = require('webpack');
-			} catch(ex) {
-			};
-					
+			
 
 			tools.complete(_shared.Natives, {
 				arraySplice: global.Array.prototype.splice,
@@ -117,15 +133,6 @@ exports.add = function add(DD_MODULES) {
 			});
 				
 
-			__Internal__.resolve = function _resolve(pkg) {
-				return Module._resolveFilename(pkg, require.main || module.parent, true);
-			};
-				
-			__Internal__.require = function _require(pkg) {
-				return Module._load(pkg, require.main || module.parent, true);
-			};
-
-
 			__Internal__.addSearchPaths = function addSearchPaths() {
 				const cwdAr = cwd.toArray({trim: true});
 				let name;
@@ -133,10 +140,10 @@ exports.add = function add(DD_MODULES) {
 				// The application of the current package (ex: 'doodad-js-test')
 				const pos = tools.indexOf(cwdAr, 'node_modules');
 				if ((cwd.os === 'windows' && (pos > 1)) || (cwd.os !== 'windows' && (pos > 0))) {
-					name = cwd.moveUp(cwdAr.length - pos + 1).toString();
+					name = cwd.moveUp(cwdAr.length - pos + 1);
 					try {
-						nodeFs.statSync(name);
-						app_module_path.addPath(name);
+						nodeFs.statSync(name.toApiString());
+						modules.addSearchPath(name);
 					} catch(ex) {
 						if (ex.code !== 'ENOENT') {
 							throw ex;
@@ -145,10 +152,10 @@ exports.add = function add(DD_MODULES) {
 				};
 
 				// The current package itself (ex: 'doodad-js')
-				name = cwd.moveUp(1).toString();
+				name = cwd.moveUp(1);
 				try {
-					nodeFs.statSync(name);
-					app_module_path.addPath(name);
+					nodeFs.statSync(name.toApiString());
+					modules.addSearchPath(name);
 				} catch(ex) {
 					if (ex.code !== 'ENOENT') {
 						throw ex;
@@ -156,10 +163,10 @@ exports.add = function add(DD_MODULES) {
 				};
 
 				// Current package's modules (ex: 'uuid')
-				name = cwd.combine('node_modules').toString();
+				name = cwd.combine('node_modules');
 				try {
-					nodeFs.statSync(name);
-					app_module_path.addPath(name);
+					nodeFs.statSync(name.toApiString());
+					modules.addSearchPath(name);
 				} catch(ex) {
 					if (ex.code !== 'ENOENT') {
 						throw ex;
@@ -181,13 +188,14 @@ exports.add = function add(DD_MODULES) {
 				if (currentPackageDir) {
 					try {
 						const path = currentPackageDir.combine('../' + FILE, {allowTraverse: true});
-						result = require(path.toString());
+						result = nodeFsReadFileSync(modules.resolve(path.toString()), 'utf-8');
 					} catch(o) {
-						result = require(FILE);
+						result = nodeFsReadFileSync(modules.resolve(FILE), 'utf-8');
 					};
 				} else {
-					result = require(FILE);
+					result = nodeFsReadFileSync(modules.resolve(FILE), 'utf-8');
 				};
+				result = JSON.parse(result);
 				delete result['//'];  // Remove comments
 				return result;
 			};
@@ -205,13 +213,14 @@ exports.add = function add(DD_MODULES) {
 				if (currentPackageDir) {
 					try {
 						const path = currentPackageDir.combine('../' + FILE, {allowTraverse: true});
-						result = require(path.toString());
+						result = nodeFsReadFileSync(modules.resolve(path), 'utf-8');
 					} catch(o) {
-						result = require(FILE);
+						result = nodeFsReadFileSync(modules.resolve(FILE), 'utf-8');
 					};
 				} else {
-					result = require(FILE);
+					result = nodeFsReadFileSync(modules.resolve(FILE), 'utf-8');
 				};
+				result = JSON.parse(result);
 				types.getDefault(result, 'type', 'Package');
 				delete result['//'];  // Remove comments
 				return result;
@@ -310,7 +319,7 @@ exports.add = function add(DD_MODULES) {
 							if (types.isString(file)) {
 								file = this.options.taskData.parseVariables(file, { isPath: true });
 							};
-							let content = nodeFs.readFileSync(file.toString(), encoding || this.options.encoding);
+							let content = nodeFsReadFileSync(file.toString(), encoding || this.options.encoding);
 							if (file.extension === 'json') {
 								content = this.directives.TO_SOURCE(JSON.parse(content), Infinity);
 								raw = true;
@@ -426,7 +435,7 @@ exports.add = function add(DD_MODULES) {
 							const source = types.get(item, 'source');
 							if (source) {
 								this.packageDir = files.parsePath(source);
-								app_module_path.addPath(source);
+								modules.addSearchPath(this.packageDir);
 							} else {
 								this.packageDir = cwd;
 							};
@@ -439,14 +448,14 @@ exports.add = function add(DD_MODULES) {
 								manifestTemplate = modulePath.combine('res/package.templ.json');
 							};
 
-							const templ = require(manifestTemplate.toString());
+							const templ = JSON.parse(nodeFsReadFileSync(modules.resolve(manifestTemplate), 'utf-8'));
 							this.manifestPath = this.combineWithPackageDir('./package.json').toString();					
-							this.manifest = require(this.manifestPath);
+							this.manifest = JSON.parse(nodeFsReadFileSync(modules.resolve(this.manifestPath), 'utf-8'));
 							this.manifest = tools.depthExtend(extendFn, {}, templ, this.manifest);
 							delete this.manifest['//']; // remove comments
 								
-							const makeTempl = require(modulePath.combine('res/make.templ.json').toString());
-							this.makeManifest = require(this.combineWithPackageDir('./make.json').toString());
+							const makeTempl = JSON.parse(nodeFsReadFileSync(modules.resolve(modulePath.combine('res/make.templ.json')), 'utf-8'));
+							this.makeManifest = JSON.parse(nodeFsReadFileSync(modules.resolve(this.combineWithPackageDir('./make.json')), 'utf-8'));
 							this.makeManifest = tools.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
 							delete this.makeManifest['//']; // remove comments
 								
@@ -484,7 +493,7 @@ exports.add = function add(DD_MODULES) {
 							const os = tools.getOS();
 
 							if (path.length && (path[0][0] === '~')) {
-								const resolved = __Internal__.resolve(path[0].slice(1) + '/package.json');
+								const resolved = modules.resolve(path[0].slice(1) + '/package.json');
 								path = solvePath(resolved, os.type).set({file: null}).combine(files.Path.parse(path.slice(1)));
 								path = path.toArray();
 							};
@@ -820,7 +829,7 @@ exports.add = function add(DD_MODULES) {
 					const encoding = types.get(item, 'encoding', 'utf-8');
 					console.info('Merging files to "' + dest + '"...');
 					const createFile = function() {
-						return nodeFs.createWriteStream(dest.toString({shell: 'api'}));
+						return nodeFsCreateWriteStream(dest.toString({shell: 'api'}));
 					};
 					const writeSeparator = function(outputStream) {
 						if (separator) {
@@ -847,7 +856,7 @@ exports.add = function add(DD_MODULES) {
 							console.info("    " + src);
 
 							return Promise.create(function pipeInputPromise(resolve, reject) {
-									const inputStream = nodeFs.createReadStream(src);
+									const inputStream = nodeFsCreateReadStream(src);
 
 									if ((encoding === 'utf-8') || (encoding === 'utf8')) {
 										let errorCb, dataCb;
@@ -971,8 +980,8 @@ exports.add = function add(DD_MODULES) {
 								jsStream.define(name, value);
 							});
 
-							const inputStream = nodeFs.createReadStream(source.toString({shell: 'api'}));
-							const outputStream = nodeFs.createWriteStream(dest.toString({shell: 'api'}));
+							const inputStream = nodeFsCreateReadStream(source.toString({shell: 'api'}));
+							const outputStream = nodeFsCreateWriteStream(dest.toString({shell: 'api'}));
 
 							return Promise.create(function pipePromise(resolve, reject) {
 									const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.IWritable);
@@ -1044,7 +1053,7 @@ exports.add = function add(DD_MODULES) {
 					return files.mkdir(destination.set({file: null}), {makeParents: true, async: true})
 						.then(function() {
 							console.info('Saving configuration to "' + destination + '"...');
-							return npm_package_config.listAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise})
+							return npcListAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise})
 								.then(function(config) {
 									delete config['package'];
 									return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
@@ -2071,7 +2080,7 @@ exports.add = function add(DD_MODULES) {
 								} else {
 									b.add(source.toString());
 								};
-								const outputStream = nodeFs.createWriteStream(dest.toString());
+								const outputStream = nodeFsCreateWriteStream(dest.toString());
 								const bundleStream = b.bundle();
 								let jsStream = null;
 								if (item.minify) {
@@ -2159,7 +2168,6 @@ exports.add = function add(DD_MODULES) {
 							};
 						})
 						.then(function(stats) {
-							//console.log(require('util').inspect(stats));
 							// Returns nothing
 						});
 				}),
