@@ -140,9 +140,9 @@ exports.add = function add(DD_MODULES) {
 				// The application of the current package (ex: 'doodad-js-test')
 				const pos = tools.indexOf(cwdAr, 'node_modules');
 				if ((cwd.os === 'windows' && (pos > 1)) || (cwd.os !== 'windows' && (pos > 0))) {
-					name = cwd.moveUp(cwdAr.length - pos + 1);
+					name = cwd.moveUp(cwdAr.length - pos + 1).toApiString();
 					try {
-						nodeFs.statSync(name.toApiString());
+						nodeFs.statSync(name);
 						modules.addSearchPath(name);
 					} catch(ex) {
 						if (ex.code !== 'ENOENT') {
@@ -152,9 +152,9 @@ exports.add = function add(DD_MODULES) {
 				};
 
 				// The current package itself (ex: 'doodad-js')
-				name = cwd.moveUp(1);
+				name = cwd.moveUp(1).toApiString();
 				try {
-					nodeFs.statSync(name.toApiString());
+					nodeFs.statSync(name);
 					modules.addSearchPath(name);
 				} catch(ex) {
 					if (ex.code !== 'ENOENT') {
@@ -163,9 +163,9 @@ exports.add = function add(DD_MODULES) {
 				};
 
 				// Current package's modules (ex: 'uuid')
-				name = cwd.combine('node_modules');
+				name = cwd.combine('node_modules').toApiString();
 				try {
-					nodeFs.statSync(name.toApiString());
+					nodeFs.statSync(name);
 					modules.addSearchPath(name);
 				} catch(ex) {
 					if (ex.code !== 'ENOENT') {
@@ -1053,7 +1053,7 @@ exports.add = function add(DD_MODULES) {
 					return files.mkdir(destination.set({file: null}), {makeParents: true, async: true})
 						.then(function() {
 							console.info('Saving configuration to "' + destination + '"...');
-							return npcListAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise})
+							return npcListAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise, module: modules.getLocator()})
 								.then(function(config) {
 									delete config['package'];
 									return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
