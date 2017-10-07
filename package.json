@@ -22,7 +22,7 @@
     "make"
   ],
   "dependencies": {
-    "npm-package-config": "^0.5.0",
+    "npm-package-config": "^0.6.0",
     "browserify": "^14.4.0",
     "webpack": "^2.6.1",
     "json-loader": "^0.5.4"
