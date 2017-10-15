@@ -26,7 +26,7 @@
 
 //! FOR_EACH(VAR("modules"), "mod", "index")
 	//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-		import {default as /*! INJECT("module" + VAR("index")) */} from /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */;
+		import {add as /*! INJECT("module" + VAR("index")) */} from /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */;
 	//! END_IF()
 //! END_FOR()
 
@@ -46,7 +46,7 @@ export function add(DD_MODULES) {
 
 			//! FOR_EACH(VAR("modules"), "mod", "index")
 				//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-					/*! INJECT("module" + VAR("index")) */.add(DD_MODULES);
+					/*! INJECT("module" + VAR("index")) */(DD_MODULES);
 				//! END_IF()
 			//! END_FOR()
 
