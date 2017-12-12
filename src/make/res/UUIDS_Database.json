@@ -3905,15 +3905,6 @@
             "make"
         ]
     },
-    "33ce6889-9f0d-4731-b740-2fba0429f85d": {
-        "packageName": "doodad-js-io",
-        "packageVersion": "5.0.0",
-        "name": "TextInputStreamMixIn",
-        "hits": 5,
-        "tasks": [
-            "make"
-        ]
-    },
     "7e4355fb-6dc1-4502-96d1-35cb37d92145": {
         "packageName": "doodad-js-io",
         "packageVersion": "5.0.0",
@@ -5412,7 +5403,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Symbol",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5422,7 +5413,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_IS_TYPE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5432,7 +5423,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_TYPE_UUID",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5442,7 +5433,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_INITIALIZED",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5452,7 +5443,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_$IS_SINGLETON",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5462,7 +5453,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_SINGLETON",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5472,7 +5463,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_JS_TYPE_UUID",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5482,7 +5473,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "JS_TYPE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5492,7 +5483,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_IS_ERROR_TYPE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5502,7 +5493,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ERROR_TYPE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5512,7 +5503,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "TypeError",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5522,7 +5513,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Error",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5532,7 +5523,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "AssertionError",
-        "hits": 10,
+        "hits": 12,
         "tasks": [
             "make",
             "install"
@@ -5542,7 +5533,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ParseError",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5552,7 +5543,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "NotSupported",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5562,7 +5553,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "NotAvailable",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5572,7 +5563,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "HttpError",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5582,7 +5573,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "BufferOverflow",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5592,7 +5583,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "TimeoutError",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5602,7 +5593,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "CanceledError",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5612,7 +5603,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "AccessDenied",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5622,7 +5613,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ScriptInterruptedError",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5632,7 +5623,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ScriptAbortedError",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5642,7 +5633,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_ORIGINAL_VALUE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5652,7 +5643,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_DOCUMENTATION",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5662,7 +5653,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_SUPER_ENABLED",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5672,7 +5663,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_ENUMERABLE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5682,7 +5673,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_READ_ONLY",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5692,7 +5683,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_CONFIGURABLE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5702,7 +5693,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_GETTER",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5712,7 +5703,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_SETTER",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5722,7 +5713,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "DD_TYPE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5732,7 +5723,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Type",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5742,7 +5733,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "CustomEvent",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5752,7 +5743,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "CustomEventTarget",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5762,7 +5753,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Namespace",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5772,7 +5763,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "RootNamespace",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5782,7 +5773,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_ATTRIBUTES",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5792,7 +5783,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_IMPLEMENTS",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5802,7 +5793,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_MUST_OVERRIDE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5812,7 +5803,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_BASE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5822,7 +5813,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_ISOLATED",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5832,7 +5823,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_ISOLATED_CACHE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5842,7 +5833,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_ATTRIBUTES_STORAGE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5852,7 +5843,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_CURRENT_DISPATCH",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5862,7 +5853,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_CURRENT_CALLER_INDEX",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5872,7 +5863,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_PROTOTYPE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5882,7 +5873,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_MODIFIERS",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5892,7 +5883,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_CALLERS",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5902,7 +5893,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_HOST",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5912,7 +5903,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_EXTENDER",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5922,7 +5913,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_POSITION",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5932,7 +5923,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_USAGE_MESSAGE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5942,7 +5933,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_SCOPE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5952,7 +5943,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_RETURNS",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5962,7 +5953,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_INTERFACE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5972,7 +5963,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_CALL_FIRST_LENGTH",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5982,7 +5973,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_RENAMED_FROM",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -5992,7 +5983,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_RENAMED_TO",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6002,7 +5993,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_OVERRIDE_WITH",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6012,7 +6003,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_REPLACED_CALLERS",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6022,7 +6013,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_DESTROYED",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6032,7 +6023,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "TypeEntry",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6042,7 +6033,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Extender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6052,7 +6043,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "AttributeExtender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6062,7 +6053,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "NullExtender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6072,7 +6063,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ClonedAttributeExtender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6082,7 +6073,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ExtendObjectExtender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6092,7 +6083,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "UniqueArrayExtender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6102,7 +6093,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "MethodExtender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6112,7 +6103,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "JsMethodExtender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6122,7 +6113,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "PropertyExtender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6132,7 +6123,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Class",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6142,7 +6133,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Interface",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6152,7 +6143,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Event",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6162,7 +6153,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "CancelEvent",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6172,7 +6163,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ErrorEvent",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6182,7 +6173,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "EventHandler",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6192,7 +6183,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "EventExtender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6202,7 +6193,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "RawEventExtender",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6212,7 +6203,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Clonable",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6222,7 +6213,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Serializable",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6232,7 +6223,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Events",
-        "hits": 5,
+        "hits": 12,
         "tasks": [
             "make",
             "install"
@@ -6242,7 +6233,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Creatable",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6252,7 +6243,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Translatable",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6262,7 +6253,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Configurable",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6272,7 +6263,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Object",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6282,7 +6273,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "PackedValue",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6292,7 +6283,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "RegistryIterator",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6302,7 +6293,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Registry",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6312,7 +6303,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Entry",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6322,7 +6313,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ObjectEntry",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6332,7 +6323,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "NamespaceEntry",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6342,7 +6333,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ModuleEntry",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6352,7 +6343,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SpecialEntry",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6362,7 +6353,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "PackageEntry",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6372,7 +6363,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ApplicationEntry",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6382,7 +6373,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Path",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6392,7 +6383,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "UrlArguments",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6402,7 +6393,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Url",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6412,7 +6403,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Version",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6422,7 +6413,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_NAME",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6432,7 +6423,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_BOUND_OBJECT",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6442,7 +6433,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Iterator",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6452,7 +6443,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Native_GeneratorFunction",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6462,97 +6453,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "Native_TypedArray",
-        "hits": 5,
-        "tasks": [
-            "make",
-            "install"
-        ]
-    },
-    "03565475-a187-46ec-b4d4-d3e6c6335254": {
-        "packageName": "doodad-js",
-        "packageVersion": "9.0.0",
-        "name": "SetIterator",
-        "hits": 5,
-        "tasks": [
-            "make",
-            "install"
-        ]
-    },
-    "6bd9ceb7-7aac-47da-b547-b09535370a30": {
-        "packageName": "doodad-js",
-        "packageVersion": "9.0.0",
-        "name": "SetValuesIterator",
-        "hits": 5,
-        "tasks": [
-            "make",
-            "install"
-        ]
-    },
-    "169f6c29-d72b-4256-8886-02b57714e6a2": {
-        "packageName": "doodad-js",
-        "packageVersion": "9.0.0",
-        "name": "SetEntriesIterator",
-        "hits": 5,
-        "tasks": [
-            "make",
-            "install"
-        ]
-    },
-    "e1110e98-ab33-4e1e-b931-63dbc0722281": {
-        "packageName": "doodad-js",
-        "packageVersion": "9.0.0",
-        "name": "Set",
-        "hits": 5,
-        "tasks": [
-            "make",
-            "install"
-        ]
-    },
-    "a6113a36-c7ce-4d08-b234-2594dc22745a": {
-        "packageName": "doodad-js",
-        "packageVersion": "9.0.0",
-        "name": "MapIterator",
-        "hits": 5,
-        "tasks": [
-            "make",
-            "install"
-        ]
-    },
-    "a4ab851b-43cc-4bfa-9ebd-dd84929bc352": {
-        "packageName": "doodad-js",
-        "packageVersion": "9.0.0",
-        "name": "MapKeysIterator",
-        "hits": 5,
-        "tasks": [
-            "make",
-            "install"
-        ]
-    },
-    "59020ebd-f5d3-4dfd-96c7-86786cc22247": {
-        "packageName": "doodad-js",
-        "packageVersion": "9.0.0",
-        "name": "MapValuesIterator",
-        "hits": 5,
-        "tasks": [
-            "make",
-            "install"
-        ]
-    },
-    "7ce43641-5bb9-460d-84b5-d1c3801aef7a": {
-        "packageName": "doodad-js",
-        "packageVersion": "9.0.0",
-        "name": "MapEntriesIterator",
-        "hits": 5,
-        "tasks": [
-            "make",
-            "install"
-        ]
-    },
-    "5b39fd47-9929-429e-8947-968fc3e8a9df": {
-        "packageName": "doodad-js",
-        "packageVersion": "9.0.0",
-        "name": "Map",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6562,7 +6463,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_IS_PROMISE_EXTENDED",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6572,7 +6473,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_PROMISE_CANCEL_STATE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6582,17 +6483,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_IS_PROMISE",
-        "hits": 5,
-        "tasks": [
-            "make",
-            "install"
-        ]
-    },
-    "086b6a31-d135-40bc-b256-9c84fa6c7878": {
-        "packageName": "doodad-js",
-        "packageVersion": "9.0.0",
-        "name": "WeakMap",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6602,7 +6493,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "NATIVE_TYPE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6612,7 +6503,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "ScriptLoader",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6622,7 +6513,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "NodeEvents",
-        "hits": 1,
+        "hits": 2,
         "tasks": [
             "make"
         ]
@@ -6631,7 +6522,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "NodeEventHandler",
-        "hits": 1,
+        "hits": 2,
         "tasks": [
             "make"
         ]
@@ -6640,7 +6531,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "NodeEventExtender",
-        "hits": 1,
+        "hits": 2,
         "tasks": [
             "make"
         ]
@@ -6649,7 +6540,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "IEmitter",
-        "hits": 1,
+        "hits": 2,
         "tasks": [
             "make"
         ]
@@ -6688,7 +6579,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "MissingDependencies",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make",
             "install"
@@ -6860,7 +6751,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_INIT_INSTANCE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make"
         ]
@@ -6887,7 +6778,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_CREATOR",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make"
         ]
@@ -6932,7 +6823,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_TO_INITIALIZE",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make"
         ]
@@ -6941,7 +6832,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_TO_EXTEND_LATER",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make"
         ]
@@ -6950,7 +6841,7 @@
         "packageName": "doodad-js",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_WHEN",
-        "hits": 5,
+        "hits": 6,
         "tasks": [
             "make"
         ]
@@ -6959,6 +6850,276 @@
         "packageName": "doodad-js-http",
         "packageVersion": "1.1.0",
         "name": "HandlersContainerMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "08af86ac-6a3f-4f45-89e8-f208206b8fbf": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_TARGET",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "3ddaaab3-5455-497c-b0ef-fd1eb9a178b5": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_CONSTRUCTOR",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "dc52925e-9c23-4b67-988b-af5d8a5500a7": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_OBJECT",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "9e00a70e-d0d7-4405-9170-c0a8ae4549ec": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_STACK",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "82f0c0cd-50e1-4e92-81cf-4885ba91a30c": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_SORTED",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ee564d6c-7823-4557-93fc-389607378235": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_CLONED_STACK",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "23f2ad5a-36aa-432d-8052-c5f51dd9ce9a": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_EVENT_INSIDE",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4d8a06a5-13a9-4956-bf3c-e995539b7937": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "OBSOLETE_WARNED",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "9dc8092a-d1e9-4345-82f5-a709f1b808a9": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_OK",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6f39f537-9f0a-4413-832b-c162e6424e78": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_FUNCTION",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "89d4eae6-37e5-46ac-b3f4-532470866295": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_CALLED",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "41d48cec-22b9-4150-994f-36fee45ec973": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "SYMBOL_TYPE",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6b749447-7e3a-4665-81a2-2b7f809c68c6": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "ApplicationException",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ef2e0bdd-4e8b-4523-b2d2-3c0beeda4077": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "PathError",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "641130dc-a03b-48a5-9bb5-e8751babeb87": {
+        "packageName": "doodad-js",
+        "packageVersion": "9.0.0",
+        "name": "PageMovedError",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ed031053-ffb2-4334-9107-3f52b3bd8ca6": {
+        "packageName": "doodad-js-cluster",
+        "packageVersion": "3.1.0",
+        "name": "QueueLimitReached",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b275d7e1-d79d-4997-89ab-666ab1f52d24": {
+        "packageName": "doodad-js-http",
+        "packageVersion": "1.1.0",
+        "name": "ProceedNewHandlers",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "29d34772-c471-4945-8440-2a3050c401e0": {
+        "packageName": "doodad-js-http",
+        "packageVersion": "1.1.0",
+        "name": "StreamAborted",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "1cfbbbd2-95ee-454a-a1e3-296f52cb7f7a": {
+        "packageName": "doodad-js-http_jsonrpc",
+        "packageVersion": "0.13.0",
+        "name": "Error",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "85820b18-8c4f-44be-b358-165cc2858653": {
+        "packageName": "doodad-js-io",
+        "packageVersion": "5.1.0",
+        "name": "InputOutputStreamBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "00b66651-e1fd-42a9-b21b-917fc8e400ae": {
+        "packageName": "doodad-js-io",
+        "packageVersion": "5.1.0",
+        "name": "TextInputStreamMixInBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "1f0ee5d2-ef39-4b9b-8d37-f4ce496c7e88": {
+        "packageName": "doodad-js-io",
+        "packageVersion": "5.1.0",
+        "name": "InputOutputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7a084f44-7ac0-4e12-8ddf-85c563d0110a": {
+        "packageName": "doodad-js-io",
+        "packageVersion": "5.1.0",
+        "name": "BufferedInputOutputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ff9ec3e5-11a3-4cb0-a7cc-72c5a77afe5a": {
+        "packageName": "doodad-js-io",
+        "packageVersion": "5.1.0",
+        "name": "InputOutputStreamMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "1cb7536b-6d47-4bfa-982a-11841bd123ee": {
+        "packageName": "doodad-js-io",
+        "packageVersion": "5.1.0",
+        "name": "BufferedInputOutputStreamMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7e2319ad-b79c-43e1-ae9f-b6b0beec2ea4": {
+        "packageName": "doodad-js-io",
+        "packageVersion": "5.1.0",
+        "name": "BinaryInputOutputStreamNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "272495b8-1517-40be-80bb-a99718642564": {
+        "packageName": "doodad-js-ipc",
+        "packageVersion": "1.1.0",
+        "name": "Error",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b72e22c0-90dd-4b92-b69c-454ddfb01ca3": {
+        "packageName": "doodad-js-ipc",
+        "packageVersion": "1.1.0",
+        "name": "InvalidRequest",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4331208a-9ecc-40c1-bacc-331599b983b4": {
+        "packageName": "doodad-js-ipc",
+        "packageVersion": "1.1.0",
+        "name": "MethodNotCallable",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "3ab3a108-0b84-4d37-aed0-ff9ef87caeb1": {
+        "packageName": "doodad-js-server",
+        "packageVersion": "1.1.0",
+        "name": "EndOfRequest",
         "hits": 1,
         "tasks": [
             "make"
