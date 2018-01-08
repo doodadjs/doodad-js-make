@@ -1,5 +1,5 @@
 {
-  "name": "doodad-js-make",
+  "name": "@doodad-js/make",
   "description": "'Make' tool for doodad-js (alpha)",
   "version": "0.0.0",
   "config": {
@@ -22,7 +22,7 @@
     "make"
   ],
   "dependencies": {
-    "npm-package-config": "^0.7.0",
+    "@doodad-js/npc": "^0.8.0",
     "browserify": "^14.4.0",
     "webpack": "^2.7.0",
     "json-loader": "^0.5.7"

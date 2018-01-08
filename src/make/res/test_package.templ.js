@@ -2,7 +2,7 @@
 
 //! REPLACE_BY("// Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n", true)
 // doodad-js - Object-oriented programming framework
-// File: tests.js - Test module startup file
+// File: test_package.js - Test package file
 // Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
@@ -39,7 +39,7 @@ exports.add = function add(DD_MODULES) {
 					modules = doodad.Modules;
 				
 				const files = [];
-
+				
 				//! FOR_EACH(VAR("modules"), "mod")
 					//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
 						files.push({

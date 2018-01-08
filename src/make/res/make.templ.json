@@ -39,7 +39,7 @@
 			"operations": [
 				{
 					"class": "Make.UUIDS.Load",
-					"source": "~doodad-js-make/src/make/res/UUIDS_Database.json",
+					"source": "~@doodad-js/make/src/make/res/UUIDS_Database.json",
 					"global": true
 				},
 				{
@@ -64,7 +64,7 @@
 				},
 				{
 					"class": "Make.UUIDS.Save",
-					"destination": "~doodad-js-make/src/make/res/UUIDS_Database.json",
+					"destination": "~@doodad-js/make/src/make/res/UUIDS_Database.json",
 					"global": true
 				},
 				{

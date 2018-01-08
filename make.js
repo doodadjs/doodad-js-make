@@ -79,13 +79,13 @@ function startup(root) {
 
 	return modules.load([
 				{
-					module: 'doodad-js-make',
+					module: '@doodad-js/make',
 				},
 			], options)
 		.then(run);
 };
 
-require('doodad-js').createRoot(null, {startup: {fromSource: true}})
+require('@doodad-js/core').createRoot(null, {startup: {fromSource: true}})
 	.then(startup)
 	.catch(ex => {
 		console.error(ex.stack);

@@ -26,10 +26,10 @@
     "build": "ddmake make",
     "dist": "ddmake install",
     "browserify": "ddmake custom=browserify",
-    "test": "echo Please install and start package 'doodad-js-test'."
+    "test": "echo Please install and start package '@doodad-js/test'."
   },
   "devDependencies": {
-    "doodad-js-make": "^0.0.0"
+    "@doodad-js/make": "^0.0.0"
   },
   "main": "index.js",
   "browser": "./browserify/browserify.min.js",

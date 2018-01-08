@@ -35,14 +35,14 @@
 
 //! ELSE()
 	const nodeFs = require('fs'),
-		npc = require('npm-package-config');
+		npc = require('@doodad-js/npc');
 
 	let nodeBrowserify = null;
 	try {
 		nodeBrowserify = require('browserify');
 	} catch(ex) {
 	};
-				
+
 	let nodeWebpack = null;
 	try {
 		nodeWebpack = require('webpack');
@@ -137,7 +137,7 @@ exports.add = function add(DD_MODULES) {
 				const cwdAr = cwd.toArray({trim: true});
 				let name;
 					
-				// The application of the current package (ex: 'doodad-js-test')
+				// The application of the current package (ex: '@doodad-js/test')
 				const pos = tools.indexOf(cwdAr, 'node_modules');
 				if ((cwd.os === 'windows' && (pos > 1)) || (cwd.os !== 'windows' && (pos > 0))) {
 					name = cwd.moveUp(cwdAr.length - pos + 1).toApiString();
@@ -179,21 +179,21 @@ exports.add = function add(DD_MODULES) {
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
-				pkg = files.parsePath(pkg, {isRelative: true, file: ''}).toArray({trim: true})[0];
+				pkg = files.parsePath(pkg, {isRelative: true}).toApiString();
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
-				const FILE = pkg + '/package.json';
+				const file = pkg + '/package.json';
 				let result = null;
 				if (currentPackageDir) {
 					try {
-						const path = currentPackageDir.combine('../' + FILE, {allowTraverse: true});
+						const path = currentPackageDir.combine('../' + file, {allowTraverse: true});
 						result = nodeFsReadFileSync(modules.resolve(path.toString()), 'utf-8');
 					} catch(o) {
-						result = nodeFsReadFileSync(modules.resolve(FILE), 'utf-8');
+						result = nodeFsReadFileSync(modules.resolve(file), 'utf-8');
 					};
 				} else {
-					result = nodeFsReadFileSync(modules.resolve(FILE), 'utf-8');
+					result = nodeFsReadFileSync(modules.resolve(file), 'utf-8');
 				};
 				result = JSON.parse(result);
 				delete result['//'];  // Remove comments
@@ -204,21 +204,21 @@ exports.add = function add(DD_MODULES) {
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
-				pkg = files.parsePath(pkg, {isRelative: true, file: ''}).toArray({trim: true})[0];
+				pkg = files.parsePath(pkg, {isRelative: true}).toApiString();
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
-				const FILE = pkg + '/make.json';
+				const file = pkg + '/make.json';
 				let result = null;
 				if (currentPackageDir) {
 					try {
-						const path = currentPackageDir.combine('../' + FILE, {allowTraverse: true});
+						const path = currentPackageDir.combine('../' + file, {allowTraverse: true});
 						result = nodeFsReadFileSync(modules.resolve(path), 'utf-8');
 					} catch(o) {
-						result = nodeFsReadFileSync(modules.resolve(FILE), 'utf-8');
+						result = nodeFsReadFileSync(modules.resolve(file), 'utf-8');
 					};
 				} else {
-					result = nodeFsReadFileSync(modules.resolve(FILE), 'utf-8');
+					result = nodeFsReadFileSync(modules.resolve(file), 'utf-8');
 				};
 				result = JSON.parse(result);
 				types.getDefault(result, 'type', 'Package');
@@ -493,8 +493,10 @@ exports.add = function add(DD_MODULES) {
 							const os = tools.getOS();
 
 							if (path.length && (path[0][0] === '~')) {
-								const resolved = modules.resolve(path[0].slice(1) + '/package.json');
-								path = solvePath(resolved, os.type).set({file: null}).combine(files.Path.parse(path.slice(1)));
+								const scoped = (path[0][1] === '@');
+								const module = (scoped ? path[0].slice(1) + '/' + path[1] : path[0].slice(1));
+								const resolved = modules.resolve(module + '/package.json');
+								path = solvePath(resolved, os.type).set({file: null}).combine(files.Path.parse(path.slice(scoped ? 2 : 1)));
 								path = path.toArray();
 							};
 
@@ -514,6 +516,18 @@ exports.add = function add(DD_MODULES) {
 									} else if (nameLc === '%packagename%') {
 										if (this.manifest && this.manifest.name) {
 											value = this.manifest.name;
+										} else {
+											throw new types.Error("Package name not specified.");
+										};
+									} else if (nameLc === '%packagename:scope%') {
+										if (this.manifest && this.manifest.name) {
+											value = ((this.manifest.name[0] === '@') ? this.manifest.name.slice(1).split('/')[0] : '');
+										} else {
+											throw new types.Error("Package name not specified.");
+										};
+									} else if (nameLc === '%packagename:name%') {
+										if (this.manifest && this.manifest.name) {
+											value = ((this.manifest.name[0] === '@') ? this.manifest.name.split('/')[1] : this.manifest.name);
 										} else {
 											throw new types.Error("Package name not specified.");
 										};
@@ -1077,6 +1091,11 @@ exports.add = function add(DD_MODULES) {
 			__Internal__.getBuiltFileName = function getBuiltFileName(fileName, /*optional*/mjs) {
 				return _shared.Natives.stringReplace.call(fileName, __Internal__.searchJsExtRegExp, (mjs ? ".min.mjs" : ".min.js"));
 			};
+
+
+			__Internal__.getBaseName = function getBaseName(name) {
+				return ((name[0] === '@') ? name.split('/', 3).slice(0, 2).join('/') : name.split('/', 2)[0]);
+			};
 				
 
 			generate.REGISTER(make.Operation.$extend({
@@ -1103,12 +1122,12 @@ exports.add = function add(DD_MODULES) {
 						indexTemplateMjs = modulePath.combine('res/index.templ.mjs');
 					};
 						
-					let testsTemplate = types.get(item, 'testsTemplate');
-					if (types.isString(testsTemplate)) {
-						testsTemplate = taskData.parseVariables(testsTemplate, { isPath: true });
+					let testTemplate = types.get(item, 'testTemplate');
+					if (types.isString(testTemplate)) {
+						testTemplate = taskData.parseVariables(testTemplate, { isPath: true });
 					};
-					if (!testsTemplate) {
-						testsTemplate = modulePath.combine('res/tests.templ.js');
+					if (!testTemplate) {
+						testTemplate = modulePath.combine('res/test_package.templ.js');
 					};
 						
 					// Get server dependencies
@@ -1172,7 +1191,7 @@ exports.add = function add(DD_MODULES) {
 								dependencies: tools.map(tools.filter(dependencies, function(dep) {
 										return !dep.test;
 									}), function(dep) {
-										const baseName = dep.name.split('/', 2)[0];
+										const baseName = __Internal__.getBaseName(dep.name);
 										return {
 											name: dep.name,
 											version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -1216,7 +1235,7 @@ exports.add = function add(DD_MODULES) {
 									dependencies: tools.map(tools.filter(dependencies, function(dep) {
 											return !dep.test;
 										}), function(dep) {
-											const baseName = dep.name.split('/', 2)[0];
+											const baseName = __Internal__.getBaseName(dep.name);
 											return {
 												name: dep.name,
 												version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -1242,8 +1261,8 @@ exports.add = function add(DD_MODULES) {
 					ops.push(
 						{
 							'class': file.Javascript,
-							source: testsTemplate,
-							destination: '%PACKAGEDIR%/test/%PACKAGENAME%_tests.js',
+							source: testTemplate,
+							destination: '%PACKAGEDIR%/test/test_package.js',
 							runDirectives: true,
 							keepComments: true,
 							keepSpaces: true,
@@ -1253,8 +1272,8 @@ exports.add = function add(DD_MODULES) {
 								mjs: false,
 								dependencies: tools.map(tools.prepend(tools.filter(dependencies, function(dep) {
 										return dep.test;
-									}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
-										const baseName = dep.name.split('/', 2)[0];
+									}), [{name: '@doodad-js/test', version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+										const baseName = __Internal__.getBaseName(dep.name);
 										return {
 											name: dep.name,
 											version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -1279,8 +1298,8 @@ exports.add = function add(DD_MODULES) {
 					ops.push(
 						{
 							'class': file.Javascript,
-							source: testsTemplate,
-							destination: '%PACKAGEDIR%/test/%PACKAGENAME%_tests.min.js',
+							source: testTemplate,
+							destination: '%PACKAGEDIR%/test/test_package.min.js',
 							runDirectives: true,
 							variables: {
 								debug: false,
@@ -1288,8 +1307,8 @@ exports.add = function add(DD_MODULES) {
 								mjs: false,
 								dependencies: tools.map(tools.prepend(tools.filter(dependencies, function(dep) {
 										return dep.test;
-									}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
-										const baseName = dep.name.split('/', 2)[0];
+									}), [{name: '@doodad-js/test', version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+										const baseName = __Internal__.getBaseName(dep.name);
 										return {
 											name: dep.name,
 											version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -1367,12 +1386,12 @@ exports.add = function add(DD_MODULES) {
 						indexTemplateMjs = modulePath.combine('res/package.templ.mjs');
 					};
 						
-					let testsTemplate = types.get(item, 'testsTemplate');
-					if (types.isString(testsTemplate)) {
-						testsTemplate = taskData.parseVariables(testsTemplate, { isPath: true });
+					let testTemplate = types.get(item, 'testTemplate');
+					if (types.isString(testTemplate)) {
+						testTemplate = taskData.parseVariables(testTemplate, { isPath: true });
 					};
-					if (!testsTemplate) {
-						testsTemplate = modulePath.combine('res/tests.templ.js');
+					if (!testTemplate) {
+						testTemplate = modulePath.combine('res/test_package.templ.js');
 					};
 						
 					// Get full client dependencies graph for modules auto-load.
@@ -1386,7 +1405,7 @@ exports.add = function add(DD_MODULES) {
 						});
 						tools.append(result, clientDeps);
 						tools.forEach(clientDeps, function(clientDep) {
-							const baseName = clientDep.name.split('/', 2)[0];
+							const baseName = __Internal__.getBaseName(clientDep.name);
 							const clientDepManif = __Internal__.getMakeManifest(baseName, taskData.packageDir);
 							const depsOfClientDep = types.get(clientDepManif, 'dependencies', null);
 							loopDeps(depsOfClientDep, result, level + 1);
@@ -1394,7 +1413,7 @@ exports.add = function add(DD_MODULES) {
 						return result;
 					};
 					const depsGraph = tools.unique(function(dep1, dep2) {
-						return dep1.name === dep2.name;
+						return (dep1.name === dep2.name);
 					}, loopDeps(taskData.makeManifest.dependencies, [], 0));
 						
 					// Get client modules
@@ -1478,7 +1497,7 @@ exports.add = function add(DD_MODULES) {
 						{
 							'class': file.Javascript,
 							source: indexTemplate,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.js',
+							destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.js',
 							runDirectives: true,
 							variables: {
 								debug: true,
@@ -1490,7 +1509,7 @@ exports.add = function add(DD_MODULES) {
 								dependencies: tools.map(tools.filter(depsGraph, function(dep) {
 										return !dep.test;
 									}), function(dep) {
-										const baseName = dep.name.split('/', 2)[0];
+										const baseName = __Internal__.getBaseName(dep.name);
 										return {
 											name: dep.name,
 											version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -1509,7 +1528,7 @@ exports.add = function add(DD_MODULES) {
 							{
 								'class': file.Javascript,
 								source: indexTemplateMjs,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.mjs',
+								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.mjs',
 								runDirectives: true,
 								variables: {
 									debug: true,
@@ -1521,7 +1540,7 @@ exports.add = function add(DD_MODULES) {
 									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
 											return !dep.test;
 										}), function(dep) {
-											const baseName = dep.name.split('/', 2)[0];
+											const baseName = __Internal__.getBaseName(dep.name);
 											return {
 												name: dep.name,
 												version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -1555,7 +1574,7 @@ exports.add = function add(DD_MODULES) {
 						{
 							'class': file.Javascript,
 							source: indexTemplate,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.min.js',
+							destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.min.js',
 							runDirectives: true,
 							variables: {
 								debug: false,
@@ -1567,7 +1586,7 @@ exports.add = function add(DD_MODULES) {
 								dependencies: tools.map(tools.filter(depsGraph, function(dep) {
 										return !dep.test;
 									}), function(dep) {
-										const baseName = dep.name.split('/', 2)[0];
+										const baseName = __Internal__.getBaseName(dep.name);
 										return {
 											name: dep.name,
 											version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -1586,7 +1605,7 @@ exports.add = function add(DD_MODULES) {
 							{
 								'class': file.Javascript,
 								source: indexTemplateMjs,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME%.min.mjs',
+								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.min.mjs',
 								runDirectives: true,
 								variables: {
 									debug: false,
@@ -1598,7 +1617,7 @@ exports.add = function add(DD_MODULES) {
 									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
 											return !dep.test;
 										}), function(dep) {
-											const baseName = dep.name.split('/', 2)[0];
+											const baseName = __Internal__.getBaseName(dep.name);
 											return {
 												name: dep.name,
 												version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -1622,7 +1641,7 @@ exports.add = function add(DD_MODULES) {
 								}), function(mod) {
 									return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
 								}),
-							destination: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
+							destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
 							separator: ';',
 						}
 					);
@@ -1631,8 +1650,8 @@ exports.add = function add(DD_MODULES) {
 					ops.push(
 						{
 							'class': file.Javascript,
-							source: testsTemplate,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME%_tests.js',
+							source: testTemplate,
+							destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME:NAME%_test.js',
 							runDirectives: true,
 							keepComments: true,
 							keepSpaces: true,
@@ -1641,11 +1660,11 @@ exports.add = function add(DD_MODULES) {
 								debug: true,
 								autoAdd: true,
 								mjs: false,
-								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
+								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
 								dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
 										return dep.test;
-									}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
-										const baseName = dep.name.split('/', 2)[0];
+									}), [{name: '@doodad-js/test', version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+										const baseName = __Internal__.getBaseName(dep.name);
 										return {
 											name: dep.name,
 											version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -1668,7 +1687,7 @@ exports.add = function add(DD_MODULES) {
 								}), function(mod) {
 									return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
 								}),
-							destination: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
+							destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
 							separator: ';',
 						}
 					);
@@ -1677,19 +1696,19 @@ exports.add = function add(DD_MODULES) {
 					ops.push(
 						{
 							'class': file.Javascript,
-							source: testsTemplate,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME%_tests.min.js',
+							source: testTemplate,
+							destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME:NAME%_test.min.js',
 							runDirectives: true,
 							variables: {
 								debug: false,
 								serverSide: false,
 								autoAdd: false,
 								mjs: false,
-								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
+								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
 								dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
 										return dep.test;
-									}), [{name: 'doodad-js-test', version: __Internal__.getVersion('doodad-js-test', taskData.packageDir), optional: false, path: null}]), function(dep) {
-										const baseName = dep.name.split('/', 2)[0];
+									}), [{name: '@doodad-js/test', version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+										const baseName = __Internal__.getBaseName(dep.name);
 										return {
 											name: dep.name,
 											version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -1723,11 +1742,11 @@ exports.add = function add(DD_MODULES) {
 						},
 						{
 							'class': file.Delete,
-							source: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.js',
+							source: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
 						},
 						{
 							'class': file.Delete,
-							source: '%INSTALLDIR%/%PACKAGENAME%/test/tests_bundle.min.js',
+							source: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
 						}
 					);
 
@@ -1751,7 +1770,7 @@ exports.add = function add(DD_MODULES) {
 					const dependencies = tools.map(tools.filter(taskData.makeManifest.dependencies, function(dep) {
 							return dep.browserify && !dep.test;
 						}), function(dep) {
-							const baseName = dep.name.split('/', 2)[0];
+							const baseName = __Internal__.getBaseName(dep.name);
 							return {
 								name: dep.name,
 								version: __Internal__.getVersion(baseName, taskData.packageDir),
@@ -2230,7 +2249,7 @@ exports.add = function add(DD_MODULES) {
 							if (name === taskData.manifest.name) {
 								delete deps[name];
 							} else {
-								deps[name] = deps[name][0] + getNodeVersion(name.split('/', 2)[0]);
+								deps[name] = deps[name][0] + getNodeVersion(__Internal__.getBaseName(name));
 							};
 						};
 					};
@@ -2309,6 +2328,7 @@ exports.add = function add(DD_MODULES) {
 											packageVersion: pkgVersion.toString(),
 											name: name,
 											hits: 0,
+											tasks: [],
 										};
 										__Internal__.pkgUUIDS[name] = uuid;
 										count++;
