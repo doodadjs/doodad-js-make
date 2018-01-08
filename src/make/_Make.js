@@ -1262,7 +1262,7 @@ exports.add = function add(DD_MODULES) {
 						{
 							'class': file.Javascript,
 							source: testTemplate,
-							destination: '%PACKAGEDIR%/test/test_package.js',
+							destination: '%PACKAGEDIR%/test/%PACKAGENAME:NAME%_test.js',
 							runDirectives: true,
 							keepComments: true,
 							keepSpaces: true,
@@ -1299,7 +1299,7 @@ exports.add = function add(DD_MODULES) {
 						{
 							'class': file.Javascript,
 							source: testTemplate,
-							destination: '%PACKAGEDIR%/test/test_package.min.js',
+							destination: '%PACKAGEDIR%/test/%PACKAGENAME:NAME%_test.min.js',
 							runDirectives: true,
 							variables: {
 								debug: false,
