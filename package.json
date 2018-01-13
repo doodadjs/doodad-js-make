@@ -22,10 +22,10 @@
     "make"
   ],
   "dependencies": {
-    "@doodad-js/npc": "^0.8.0",
     "browserify": "^14.4.0",
+    "json-loader": "^0.5.7",
     "webpack": "^2.7.0",
-    "json-loader": "^0.5.7"
+    "@doodad-js/npc": "^0.8.0"
   },
   "repository": {
     "type": "git",

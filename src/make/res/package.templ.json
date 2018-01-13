@@ -27,9 +27,13 @@
     "build": "ddmake make",
     "dist": "ddmake install",
     "browserify": "ddmake custom=browserify",
-    "test": "echo Please install and start package '@doodad-js/test'."
+    "test": "echo Please install and start package '@doodad-js/test'.",
+    "lint": "npx eslint src"
   },
   "devDependencies": {
+    "eslint": "^4.15.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0",
     "@doodad-js/make": "^0.0.0"
   },
   "main": "index.js",
