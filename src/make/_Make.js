@@ -2208,7 +2208,8 @@ exports.add = function add(DD_MODULES) {
 						dependencies: tools.reduce(tools.filter(taskData.makeManifest.dependencies, function(dep) {
 								return !dep.test;
 							}), function(result, dep) {
-								result[dep.name] = '^0.0.0'; return result;
+								result[dep.name] = '^0.0.0';
+								return result;
 							}, {}),
 					});
 						
