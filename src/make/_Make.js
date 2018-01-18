@@ -39,14 +39,18 @@
 
 	let nodeBrowserify = null;
 	try {
+		/* eslint global-require: "off" */  // Optional package
 		nodeBrowserify = require('browserify');
 	} catch(ex) {
+		// Do nothing
 	};
 
 	let nodeWebpack = null;
 	try {
+		/* eslint global-require: "off" */  // Optional package
 		nodeWebpack = require('webpack');
 	} catch(ex) {
+		// Do nothing
 	};
 
 //! END_IF()
@@ -71,7 +75,7 @@ exports.add = function add(DD_MODULES) {
 			const doodad = root.Doodad,
 				tools = doodad.Tools,
 				files = tools.Files,
-				config = tools.Config,
+				//config = tools.Config,
 				types = doodad.Types,
 				modules = doodad.Modules,
 				nodejs = doodad.NodeJs,
@@ -85,7 +89,7 @@ exports.add = function add(DD_MODULES) {
 				make = root.Make,
 				folder = make.Folder,
 				file = make.File,
-				spawn = file.Spawn,
+				//spawn = file.Spawn,
 				generate = make.Generate,
 				browserify = make.Browserify,
 				webpack = make.Webpack,
@@ -98,6 +102,10 @@ exports.add = function add(DD_MODULES) {
 				cwd = files.parsePath(process.cwd(), {file: ''}),
 				modulePath = files.parsePath(module.filename).set({file: null});
 			
+
+			/* eslint camelcase: "off" */  // execute_*
+			/* eslint no-console: "off" */  // That's a CLI.
+
 
 			tools.complete(_shared.Natives, {
 				arraySplice: global.Array.prototype.splice,
@@ -127,7 +135,6 @@ exports.add = function add(DD_MODULES) {
 			types.freezeObject(__options__);
 
 
-
 			make.ADD('getOptions', function() {
 				return __options__;
 			});
@@ -142,7 +149,7 @@ exports.add = function add(DD_MODULES) {
 				if ((cwd.os === 'windows' && (pos > 1)) || (cwd.os !== 'windows' && (pos > 0))) {
 					name = cwd.moveUp(cwdAr.length - pos + 1).toApiString();
 					try {
-						nodeFs.statSync(name);
+						nodeFsStatSync(name);
 						modules.addSearchPath(name);
 					} catch(ex) {
 						if (ex.code !== 'ENOENT') {
@@ -154,7 +161,7 @@ exports.add = function add(DD_MODULES) {
 				// The current package itself (ex: 'doodad-js')
 				name = cwd.moveUp(1).toApiString();
 				try {
-					nodeFs.statSync(name);
+					nodeFsStatSync(name);
 					modules.addSearchPath(name);
 				} catch(ex) {
 					if (ex.code !== 'ENOENT') {
@@ -165,7 +172,7 @@ exports.add = function add(DD_MODULES) {
 				// Current package's modules (ex: 'uuid')
 				name = cwd.combine('node_modules').toApiString();
 				try {
-					nodeFs.statSync(name);
+					nodeFsStatSync(name);
 					modules.addSearchPath(name);
 				} catch(ex) {
 					if (ex.code !== 'ENOENT') {
@@ -259,7 +266,9 @@ exports.add = function add(DD_MODULES) {
 						};
 						return safeEval.eval(key, this.options.taskData.makeManifest);
 					},
-					BEGIN_MODULE: function() {
+					BEGIN_MODULE: function BEGIN_MODULE() {
+						/* eslint no-useless-concat: "off" */
+
 						this.pushDirective({
 							name: 'MODULE',
 						});
@@ -287,7 +296,9 @@ exports.add = function add(DD_MODULES) {
 							};
 						};
 					},
-					END_MODULE: function() {
+					END_MODULE: function END_MODULE() {
+						/* eslint no-useless-concat: "off" */
+
 						const block = this.popDirective();
 						if (!block || (block.name !== 'MODULE')) {
 							throw new types.Error("Invalid 'END_MODULE' directive.");
@@ -312,7 +323,7 @@ exports.add = function add(DD_MODULES) {
 							};
 						};
 					},
-					INCLUDE: function(file, /*optional*/encoding, /*optional*/raw) {
+					INCLUDE: function INCLUDE(file, /*optional*/encoding, /*optional*/raw) {
 						const block = this.getDirective();
 						if (!block.remove) {
 							// TODO: Read file async (if possible !)
@@ -329,7 +340,7 @@ exports.add = function add(DD_MODULES) {
 							this.directives.INJECT(content, raw);
 						};
 					},
-					UUID: function(/*optional*/key) {
+					UUID: function UUID(/*optional*/key) {
 						if (key) {
 							key = types.toString(key);
 							if (key in __Internal__.pkgUUIDS) {
@@ -388,11 +399,11 @@ exports.add = function add(DD_MODULES) {
 							return uuid;
 						};
 					},
-					PATH: function(name) {
+					PATH: function PATH(name) {
 						return this.options.taskData.parseVariables(name, {isPath: true});
 					},
 				},
-			})),
+			}));
 				
 					
 			make.REGISTER(doodad.BASE(doodad.Object.$extend(
@@ -403,7 +414,6 @@ exports.add = function add(DD_MODULES) {
 					
 				execute: doodad.PUBLIC(doodad.ASYNC(doodad.MUST_OVERRIDE())), // function execute(command, item, /*optional*/options)
 			})));
-					
 					
 					
 			make.REGISTER(make.Operation.$extend(
@@ -417,7 +427,7 @@ exports.add = function add(DD_MODULES) {
 								if (types.isArray(val)) {
 									result[key] = tools.unique(result[key], val);
 								} else if (types.isObject(val)) {
-									var resultVal = result[key];
+									const resultVal = result[key];
 									if (types.isNothing(resultVal)) {
 										result[key] = extend({}, val);
 									} else if (types.isObjectLike(resultVal)) {
@@ -500,12 +510,14 @@ exports.add = function add(DD_MODULES) {
 								path = path.toArray();
 							};
 
-							for (var i = 0; i < path.length; ) {
-								let str = path[i],
-									start = str.indexOf('%'),
+							for (let i = 0; i < path.length; ) {
+								const str = path[i];
+
+								let	start = str.indexOf('%'),
 									end = str.indexOf('%', start + 1),
-									result = ((start > 0) ? str.slice(0, start) : ''),
-									changed = (start >= 0);
+									result = ((start > 0) ? str.slice(0, start) : '');
+
+								const changed = (start >= 0);
 
 								while ((start >= 0) && (end >= 0)) {
 									const name = str.slice(start, end + 1),
@@ -695,6 +707,8 @@ exports.add = function add(DD_MODULES) {
 									return proceed.call(this, ++index);
 								}, null, this);
 						};
+
+						return undefined;
 					};
 						
 					console.info('Starting task "' + name + '"...');
@@ -777,7 +791,6 @@ exports.add = function add(DD_MODULES) {
 						});
 				}),
 			}));
-
 				
 				
 			file.REGISTER(make.Operation.$extend(
@@ -820,7 +833,6 @@ exports.add = function add(DD_MODULES) {
 						});
 				}),
 			}));
-				
 
 
 			file.REGISTER(make.Operation.$extend(
@@ -873,7 +885,8 @@ exports.add = function add(DD_MODULES) {
 									const inputStream = nodeFsCreateReadStream(src);
 
 									if ((encoding === 'utf-8') || (encoding === 'utf8')) {
-										let errorCb, dataCb;
+										let errorCb,
+											dataCb;
 
 										const cleanup = function cleanup() {
 											try {
@@ -882,6 +895,7 @@ exports.add = function add(DD_MODULES) {
 												inputStream.removeListener('end', dataCb);
 												inputStream.removeListener('data', dataCb);
 											} catch(ex) {
+												// Do nothing
 											};
 										};
 
@@ -907,7 +921,7 @@ exports.add = function add(DD_MODULES) {
 											} catch(ex) {
 												reject(ex);
 											};
-										}
+										};
 
 										outputStream
 											.on('error', errorCb);
@@ -930,6 +944,7 @@ exports.add = function add(DD_MODULES) {
 											.pipe(outputStream, {end: false});
 										return inputStream;
 									};
+									return undefined;
 								})
 								.then(function(inputStream) {
 									_shared.DESTROY(inputStream);
@@ -960,7 +975,6 @@ exports.add = function add(DD_MODULES) {
 						.nodeify(closeFile);
 				}),
 			}));
-				
 
 
 			file.REGISTER(make.Operation.$extend(
@@ -1003,7 +1017,7 @@ exports.add = function add(DD_MODULES) {
 									outputStream.on('error', reject);
 									jsStream.onError.attachOnce(this, function(ev) {
 										reject(ev.error);
-									})
+									});
 									jsStream.pipe(outputStream);
 									inputStream.pipe(jsStreamTransform);
 								})
@@ -1052,7 +1066,6 @@ exports.add = function add(DD_MODULES) {
 				}),
 			}));
 */
-				
 				
 				
 			generate.REGISTER(make.Operation.$extend({
@@ -1832,7 +1845,7 @@ exports.add = function add(DD_MODULES) {
 							destination: "%BROWSERIFYDIR%/" + res.src,
 							resourcesFile: 'resources.js',
 							resourcesTemplate: types.get(item, 'resourcesTemplate'),
-						}
+						};
 					}));
 						
 					const browserifyDest = taskData.parseVariables('%BROWSERIFYDIR%', {isPath: true});
@@ -1940,7 +1953,6 @@ exports.add = function add(DD_MODULES) {
 					};
 				}),
 			}));
-
 				
 				
 			browserify.REGISTER(make.Operation.$extend(
@@ -1964,7 +1976,7 @@ exports.add = function add(DD_MODULES) {
 						
 					let resourcesTemplate = types.get(item, 'resourcesTemplate');
 					if (types.isString(resourcesTemplate)) {
-						resourcesTemplate = taskData.parseVariables(resourcesTemplate, { isPath: true });
+						resourcesTemplate = this.taskData.parseVariables(resourcesTemplate, { isPath: true });
 					};
 					if (!resourcesTemplate) {
 						resourcesTemplate = modulePath.combine('res/resources.templ.js');
@@ -2043,7 +2055,7 @@ exports.add = function add(DD_MODULES) {
 									};
 									code += "\nbreak;";
 								});
-								code += "default: throw new types.Error(\"Unknown resource file '~0~'.\", [path.toString()]); };"
+								code += "default: throw new types.Error(\"Unknown resource file '~0~'.\", [path.toString()]); };";
 								return code;
 							};
 								
@@ -2105,10 +2117,10 @@ exports.add = function add(DD_MODULES) {
 								if (item.minify) {
 									jsStream = new make.JavascriptBuilder({taskData: taskData});
 									const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.IWritable);
-									jsStream.pipe(outputStream)
+									jsStream.pipe(outputStream);
 									bundleStream.pipe(jsStreamTransform);
 								} else {
-									bundleStream.pipe(outputStream)
+									bundleStream.pipe(outputStream);
 								};
 								const cleanup = function() {
 									if (jsStream) {
@@ -2132,7 +2144,7 @@ exports.add = function add(DD_MODULES) {
 										cleanup();
 										resolve();
 									})
-									.once('error', err => {
+									.once('error', (err) => {
 										cleanup();
 										reject(err);
 									});
@@ -2243,7 +2255,7 @@ exports.add = function add(DD_MODULES) {
 						
 					for (let i = 0; i < this.DEPS_KEYS.length; i++) {
 						const depKey = this.DEPS_KEYS[i];
-						let deps = manifest[depKey];
+						const deps = manifest[depKey];
 						const names = types.keys(deps);
 						for (let j = 0; j < names.length; j++) {
 							const name = names[j];
@@ -2291,7 +2303,7 @@ exports.add = function add(DD_MODULES) {
 								__Internal__.uuids = tools.nullObject(JSON.parse(uuids));
 								tools.forEach(__Internal__.uuids, function(data, uuid) {
 									if (!types.has(data, 'tasks')) {
-										data.tasks = ['make'];
+										data.tasks = [this.taskData.command];
 									};
 									const version = tools.Version.parse(data.packageVersion, {identifiers: namespaces.VersionIdentifiers});
 									if ((data.packageName === pkgName) && (tools.indexOf(data.tasks, this.taskData.command) >= 0) && (version.compare(pkgVersion, {count: 1}) === 0)) {
