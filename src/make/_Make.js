@@ -103,10 +103,6 @@ exports.add = function add(DD_MODULES) {
 				modulePath = files.parsePath(module.filename).set({file: null});
 			
 
-			/* eslint camelcase: "off" */  // execute_*
-			/* eslint no-console: "off" */  // That's a CLI.
-
-
 			tools.complete(_shared.Natives, {
 				arraySplice: global.Array.prototype.splice,
 					
@@ -1114,7 +1110,7 @@ exports.add = function add(DD_MODULES) {
 			generate.REGISTER(make.Operation.$extend({
 				$TYPE_NAME: 'Package',
 
-				execute_make: doodad.PROTECTED(function execute_make(command, item, /*optional*/options) {
+				execute_MAKE: doodad.PROTECTED(function execute_MAKE(command, item, /*optional*/options) {
 					let ops = [];
 						
 					const taskData = this.taskData;
@@ -1378,7 +1374,7 @@ exports.add = function add(DD_MODULES) {
 					return ops;
 				}),
 					
-				execute_install: doodad.PROTECTED(function execute_install(command, item, /*optional*/options) {
+				execute_INSTALL: doodad.PROTECTED(function execute_INSTALL(command, item, /*optional*/options) {
 					let ops = [];
 
 					const taskData = this.taskData;
@@ -1766,7 +1762,7 @@ exports.add = function add(DD_MODULES) {
 					return ops;
 				}),
 					
-				execute_browserify: doodad.PROTECTED(function execute_browserify(command, item, /*optional*/options) {
+				execute_BROWSERIFY: doodad.PROTECTED(function execute_BROWSERIFY(command, item, /*optional*/options) {
 					let ops = [];
 						
 					const taskData = this.taskData;
@@ -1918,7 +1914,7 @@ exports.add = function add(DD_MODULES) {
 					return ops;
 				}),
 					
-				execute_webpack: doodad.PROTECTED(function execute_webpack(command, item, /*optional*/options) {
+				execute_WEBPACK: doodad.PROTECTED(function execute_WEBPACK(command, item, /*optional*/options) {
 					let configTemplate = types.get(item, 'configTemplate');
 					if (types.isString(configTemplate)) {
 						configTemplate = this.parseVariables(configTemplate, { isPath: true });
@@ -1944,7 +1940,7 @@ exports.add = function add(DD_MODULES) {
 				}),
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					const method = 'execute_' + command;
+					const method = 'execute_' + types.toString(command).toUpperCase();
 					if (types.isImplemented(this, method)) {
 						console.info('Generating package for "' + command + "'.");
 						return this[method](command, item, options);
