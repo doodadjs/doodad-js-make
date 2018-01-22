@@ -38,37 +38,77 @@
 		"preExecute": {
 			"operations": [
 				{
-					"class": "Make.UUIDS.Load",
-					"source": "~@doodad-js/make/src/make/res/UUIDS_Database.json",
-					"global": true
-				},
-				{
-					"class": "Make.UUIDS.Load",
-					"source": "%SOURCEDIR%/make/res/uuids.json"
+					"class": "Make.If",
+					"condition": "(['make'].indexOf(command) >= 0)",
+					"operations": [
+						{
+							"class": "Make.Task",
+							"name": "lint"
+						},
+						{
+							"class": "Make.UUIDS.Load",
+							"source": "~@doodad-js/make/src/make/res/UUIDS_Database.json",
+							"global": true
+						},
+						{
+							"class": "Make.UUIDS.Load",
+							"source": "%SOURCEDIR%/make/res/uuids.json"
+						}
+					]
 				}
 			]
 		},
 		"postExecute": {
 			"operations": [
 				{
-					"class": "Make.Folder.Create",
-					"destination": "%SOURCEDIR%/make"
+					"class": "Make.If",
+					"condition": "(['make'].indexOf(command) >= 0)",
+					"operations": [
+						{
+							"class": "Make.Folder.Create",
+							"destination": "%SOURCEDIR%/make"
+						},
+						{
+							"class": "Make.Folder.Create",
+							"destination": "%SOURCEDIR%/make/res"
+						},
+						{
+							"class": "Make.UUIDS.Save",
+							"destination": "%SOURCEDIR%/make/res/uuids.json"
+						},
+						{
+							"class": "Make.UUIDS.Save",
+							"destination": "~@doodad-js/make/src/make/res/UUIDS_Database.json",
+							"global": true
+						},
+						{
+							"class": "Make.UUIDS.Forget"
+						}
+					]
+				}
+			]
+		},
+		"test": {
+			"operations": [
+				{
+					"class": "Make.Modules.Load",
+					"files": [
+						{
+							"module": "@doodad-js/make",
+							"path": "src/make/Make_Test.js"
+						}
+					]
 				},
 				{
-					"class": "Make.Folder.Create",
-					"destination": "%SOURCEDIR%/make/res"
-				},
+					"class": "Make.Test.Run"
+				}
+			]
+		},
+		"lint": {
+			"operations": [
 				{
-					"class": "Make.UUIDS.Save",
-					"destination": "%SOURCEDIR%/make/res/uuids.json"
-				},
-				{
-					"class": "Make.UUIDS.Save",
-					"destination": "~@doodad-js/make/src/make/res/UUIDS_Database.json",
-					"global": true
-				},
-				{
-					"class": "Make.UUIDS.Forget"
+					"class": "Make.ESLint.Check",
+					"source": "%SOURCEDIR%"
 				}
 			]
 		},

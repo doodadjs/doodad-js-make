@@ -57,6 +57,12 @@
 			"client": false,
 			"server": true,
 			"browserify": false
+		},
+		{
+			"src": "make/Make_Test.js",
+			"client": false,
+			"server": true,
+			"browserify": false
 		}
 	],
 	"resources": [

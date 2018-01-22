@@ -32,6 +32,7 @@
 	// TODO: Make them optional again.
 	//! INJECT("import {default as nodeBrowserify} from 'browserify';")
 	//! INJECT("import {default as nodeWebpack} from 'webpack';")
+	//! INJECT("import {default as nodeESLint} from 'eslint';")
 
 //! ELSE()
 	"use strict";
@@ -55,6 +56,14 @@
 		// Do nothing
 	};
 
+	let nodeESLint = null;
+	try {
+		/* eslint global-require: "off" */  // Optional package
+		nodeESLint = require('eslint');
+	} catch(ex) {
+		// Do nothing
+	};
+
 //! END_IF()
 
 const nodeFsCreateReadStream = nodeFs.createReadStream,
@@ -69,7 +78,7 @@ exports.add = function add(DD_MODULES) {
 	DD_MODULES = (DD_MODULES || {});
 	DD_MODULES['Make'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-		namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update', 'UUIDS'],
+		namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update', 'UUIDS', 'ESLint'],
 			
 		create: function create(root, /*optional*/_options, _shared) {
 			const doodad = root.Doodad,
@@ -96,6 +105,7 @@ exports.add = function add(DD_MODULES) {
 				makeModules = make.Modules,
 				update = make.Update,
 				makeUUIDS = make.UUIDS,
+				makeESLint = make.ESLint,
 					
 				Promise = types.getPromise(),
 					
@@ -1110,7 +1120,7 @@ exports.add = function add(DD_MODULES) {
 				$TYPE_NAME: 'Package',
 
 				execute_MAKE: doodad.PROTECTED(function execute_MAKE(command, item, /*optional*/options) {
-					let ops = [];
+					const ops = [];
 						
 					const taskData = this.taskData;
 						
@@ -1152,9 +1162,9 @@ exports.add = function add(DD_MODULES) {
 					const resources = tools.filter(taskData.makeManifest.resources, function(res) {
 						return res.server;
 					});
-						
+
 					// Build modules (CommonJs)
-					ops = tools.append(ops, tools.map(modules, function(mod) {
+					tools.append(ops, tools.map(modules, function(mod) {
 						return {
 							'class': file.Javascript,
 							source: '%SOURCEDIR%/' + mod.src,
@@ -1170,7 +1180,7 @@ exports.add = function add(DD_MODULES) {
 						
 					// Build modules (mjs)
 					if (taskData.makeManifest.mjs) {
-						ops = tools.append(ops, tools.map(modules, function(mod) {
+						tools.append(ops, tools.map(modules, function(mod) {
 							return {
 								'class': file.Javascript,
 								source: '%SOURCEDIR%/' + mod.src,
@@ -1338,7 +1348,7 @@ exports.add = function add(DD_MODULES) {
 					);
 
 					// Copy resources
-					ops = tools.append(ops, tools.map(resources, function(res) {
+					tools.append(ops, tools.map(resources, function(res) {
 						return {
 							'class': folder.Copy,
 							source: '%SOURCEDIR%/' + res.src,
@@ -1374,7 +1384,7 @@ exports.add = function add(DD_MODULES) {
 				}),
 					
 				execute_INSTALL: doodad.PROTECTED(function execute_INSTALL(command, item, /*optional*/options) {
-					let ops = [];
+					const ops = [];
 
 					const taskData = this.taskData;
 						
@@ -1435,7 +1445,7 @@ exports.add = function add(DD_MODULES) {
 					});
 
 					// Build modules (debug)
-					ops = tools.append(ops, tools.map(modules, function(mod) {
+					tools.append(ops, tools.map(modules, function(mod) {
 						return {
 							'class': file.Javascript,
 							source: '%SOURCEDIR%/' + mod.src,
@@ -1453,7 +1463,7 @@ exports.add = function add(DD_MODULES) {
 					}));
 						
 					// Build modules (build)
-					ops = tools.append(ops, tools.map(modules, function(mod) {
+					tools.append(ops, tools.map(modules, function(mod) {
 						return {
 							'class': file.Javascript,
 							source: '%SOURCEDIR%/' + mod.src,
@@ -1469,7 +1479,7 @@ exports.add = function add(DD_MODULES) {
 					}));
 						
 					// Copy resources
-					ops = tools.append(ops, tools.map(resources, function(res) {
+					tools.append(ops, tools.map(resources, function(res) {
 						return {
 							'class': folder.Copy,
 							source: '%SOURCEDIR%/' + res.src,
@@ -1762,7 +1772,7 @@ exports.add = function add(DD_MODULES) {
 				}),
 					
 				execute_BROWSERIFY: doodad.PROTECTED(function execute_BROWSERIFY(command, item, /*optional*/options) {
-					let ops = [];
+					const ops = [];
 						
 					const taskData = this.taskData;
 						
@@ -1799,7 +1809,7 @@ exports.add = function add(DD_MODULES) {
 					});
 						
 					// Build modules (build)
-					ops = tools.append(ops, tools.map(modules, function(mod) {
+					tools.append(ops, tools.map(modules, function(mod) {
 						return {
 							'class': file.Javascript,
 							source: '%SOURCEDIR%/' + mod.src,
@@ -1813,7 +1823,7 @@ exports.add = function add(DD_MODULES) {
 					}));
 						
 					// Build modules (debug)
-					ops = tools.append(ops, tools.map(modules, function(mod) {
+					tools.append(ops, tools.map(modules, function(mod) {
 						return {
 							'class': file.Javascript,
 							source: '%SOURCEDIR%/' + mod.src,
@@ -1831,7 +1841,7 @@ exports.add = function add(DD_MODULES) {
 					}));
 						
 					// Generate resources files for browserify
-					ops = tools.append(ops, tools.map(resources, function(res, i) {
+					tools.append(ops, tools.map(resources, function(res, i) {
 						return {
 							'class': browserify.Resources,
 							name: '%PACKAGENAME%/res' + i,
@@ -2405,7 +2415,58 @@ exports.add = function add(DD_MODULES) {
 				}),
 			}));
 
-				
+
+			makeESLint.REGISTER(make.Operation.$extend(
+			{
+				$TYPE_NAME: 'Check',
+
+				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+					const taskData = this.taskData;
+
+					const pkgDir = taskData.packageDir;
+
+					let source = types.get(item, 'source');
+					if (types.isString(source)) {
+						source = this.taskData.parseVariables(source, { isPath: true });
+					};
+
+					const target = source.relative(pkgDir);
+
+					console.info("Running ESLINT...");
+
+					const cli = new nodeESLint.CLIEngine({
+						reportUnusedDisableDirectives: true,
+						cwd: pkgDir.toApiString(),
+					});
+
+					const report = cli.executeOnFiles([
+						target.toApiString()
+					]);
+
+					const formatter = cli.getFormatter();
+
+					console.error(formatter(report.results));
+
+					if (report.errorCount > 0) {
+						throw new types.Error("'ESLINT' failed with errors.");
+					};
+				}),
+			}));
+
+
+			make.REGISTER(make.Operation.$extend(
+			{
+				$TYPE_NAME: 'If',
+
+				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+					if (safeEval.eval(item.condition, {command, item, options, root, types, tools})) {
+						return item.operations;
+					};
+					return undefined;
+				}),
+			}));
+
+
 			make.ADD('run', function run(command, /*optional*/options) {
 				__Internal__.addSearchPaths();
 

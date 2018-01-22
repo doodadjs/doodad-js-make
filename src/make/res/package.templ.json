@@ -27,8 +27,8 @@
     "build": "ddmake make",
     "dist": "ddmake install",
     "browserify": "ddmake custom=browserify",
-    "test": "echo Please install and start package '@doodad-js/test'.",
-    "lint": "npx eslint src"
+    "test": "ddmake custom=test",
+    "lint": "ddmake custom=lint"
   },
   "devDependencies": {
     "@doodad-js/eslint-config-base": "^0.0.0",
