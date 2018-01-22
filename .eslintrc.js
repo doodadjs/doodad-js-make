@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = {
 	"extends": "@doodad-js/eslint-config-base",
 

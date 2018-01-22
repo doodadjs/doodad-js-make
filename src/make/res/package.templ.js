@@ -24,6 +24,8 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+"use strict";
+
 exports.add = function add(DD_MODULES) {
 	DD_MODULES = DD_MODULES || {};
 	DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {

@@ -24,6 +24,8 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+"use strict";
+
 exports.add = function add(DD_MODULES) {
 	DD_MODULES = DD_MODULES || {};
 	DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
@@ -32,8 +34,6 @@ exports.add = function add(DD_MODULES) {
 		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 					
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
-
 			const files = [{
 				module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
 				path: 'config.json',

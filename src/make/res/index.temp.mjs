@@ -40,8 +40,6 @@ export function add(DD_MODULES) {
 		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 					
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
-
 			const DD_MODULES = {};
 
 			//! FOR_EACH(VAR("modules"), "mod", "index")

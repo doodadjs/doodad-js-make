@@ -34,6 +34,8 @@
 	//! INJECT("import {default as nodeWebpack} from 'webpack';")
 
 //! ELSE()
+	"use strict";
+
 	const nodeFs = require('fs'),
 		npc = require('@doodad-js/npc');
 
@@ -70,8 +72,6 @@ exports.add = function add(DD_MODULES) {
 		namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update', 'UUIDS'],
 			
 		create: function create(root, /*optional*/_options, _shared) {
-			"use strict";
-
 			const doodad = root.Doodad,
 				tools = doodad.Tools,
 				files = tools.Files,
@@ -284,7 +284,6 @@ exports.add = function add(DD_MODULES) {
 							} else {
 								this.directives.INJECT("; " +
 									"(function(/*global, exports, DD_MODULES*/) {" +
-										"'use strict'" + "; " +
 										"const global = arguments[0]" + ", " +
 											"exports = arguments[1]" + ", " +
 											"DD_MODULES = arguments[2]" + "; " 
