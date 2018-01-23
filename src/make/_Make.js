@@ -79,7 +79,7 @@ exports.add = function add(DD_MODULES) {
 	DD_MODULES['Make'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update', 'UUIDS', 'ESLint'],
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			const doodad = root.Doodad,
 				tools = doodad.Tools,
@@ -2459,7 +2459,8 @@ exports.add = function add(DD_MODULES) {
 				$TYPE_NAME: 'If',
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					if (safeEval.eval(item.condition, {command, item, options, root, types, tools})) {
+					const taskData = this.taskData;
+					if (safeEval.eval(types.get(item, 'condition', "false"), {options, root, types, tools, command: taskData.command})) {
 						return item.operations;
 					};
 					return undefined;
