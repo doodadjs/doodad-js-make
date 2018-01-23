@@ -75,6 +75,8 @@ exports.add = function add(DD_MODULES) {
 				$TYPE_NAME: 'Run',
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+					const TEST_PKG = "@doodad-js/test";
+
 					const Promise = types.getPromise();
 
 					const taskData = this.taskData;
@@ -92,7 +94,7 @@ exports.add = function add(DD_MODULES) {
 								cwd: packageDir.toApiString(),
 							};
 
-							const cp = nodeChildProcessSpawn("npm", ['install', "doodad-js-test", '--no-save'], options);
+							const cp = nodeChildProcessSpawn("npm", ['install', TEST_PKG, '--no-save'], options);
 
 							cp.on('close', function cpOnClose(status) {
 								if (status !== 0) {
@@ -106,35 +108,35 @@ exports.add = function add(DD_MODULES) {
 
 					const launch = function _launch(firstAttempt) {
 						return Promise.create(function nodeJsForkPromise(resolve, reject) {
-								const appDir = files.Path.parse(modules.resolve('@doodad-js/test')).set({file: ''});
+							console.info("Launching the test application...");
 
-								const options = {
-									shell: true,
-									env: tools.extend({}, process.env, {}),
-									stdio: [0, 1, 2],
-									cwd: appDir.toApiString(),
+							const appDir = files.Path.parse(modules.resolve(TEST_PKG)).set({file: ''});
+
+							const options = {
+								shell: true,
+								env: tools.extend({}, process.env),
+								stdio: [0, 1, 2],
+								cwd: appDir.toApiString(),
+							};
+
+							const cp = nodeChildProcessSpawn("npm", ['run', 'test'], options);
+
+							cp.on('close', function cpOnClose(status) {
+								if (status !== 0) {
+									reject(new types.Error("'NPM' exited with code '~0~'.", [status]));
+								} else {
+									resolve();
 								};
-
-								const cp = nodeChildProcessSpawn("npm", ['run', 'test'], options);
-
-								cp.on('close', function cpOnClose(status) {
-									if (status !== 0) {
-										reject(new types.Error("'NPM' exited with code '~0~'.", [status]));
-									} else {
-										resolve();
-									};
-								});
-							})
-							.catch(function catchLaunch(err) {
-								if (firstAttempt) {
-									return install()
-										.then(dummy => launch(false));
-								};
-								throw err;
 							});
+						})
+						.catch(function catchLaunch(err) {
+							if (firstAttempt) {
+								return install()
+									.then(dummy => launch(false));
+							};
+							throw err;
+						});
 					};
-
-					console.info("Launching the test application...");
 
 					return launch(true)
 						.then(function thenNothing(dummy) {
