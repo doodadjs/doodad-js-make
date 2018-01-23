@@ -2421,6 +2421,10 @@ exports.add = function add(DD_MODULES) {
 				$TYPE_NAME: 'Check',
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+					if (!nodeESLint) {
+						throw new types.Error("Can't do '~0~' because the 'eslint' package is not installed.", [command]);
+					};
+
 					const taskData = this.taskData;
 
 					const pkgDir = taskData.packageDir;
