@@ -62,7 +62,8 @@
 			"src": "make/Make_Test.js",
 			"client": false,
 			"server": true,
-			"browserify": false
+			"browserify": false,
+			"exclude": true
 		}
 	],
 	"resources": [
