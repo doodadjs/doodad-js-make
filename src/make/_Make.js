@@ -2443,9 +2443,17 @@ exports.add = function add(DD_MODULES) {
 						target.toApiString()
 					]);
 
-					const formatter = cli.getFormatter();
-
-					console.error(formatter(report.results));
+					if ((report.errorCount > 0) || (report.warningCount > 0)) {
+						const formatter = cli.getFormatter();
+						const text = formatter(report.results);
+						if (text) {
+							if (report.errorCount > 0) {
+								console.error(text);
+							} else {
+								console.warn(text);
+							};
+						};
+					};
 
 					if (report.errorCount > 0) {
 						throw new types.Error("'ESLINT' failed with errors.");
