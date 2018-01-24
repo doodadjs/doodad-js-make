@@ -7111,5 +7111,1427 @@
         "tasks": [
             "make"
         ]
+    },
+    "293dcf80-7798-4a1c-9622-a707bb0b9c18": {
+        "packageName": "@doodad-js/cluster",
+        "packageVersion": "4.0.0",
+        "name": "ClusterMessengerRequest",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8eef2ac2-1085-4b19-b095-788b1fe741fc": {
+        "packageName": "@doodad-js/cluster",
+        "packageVersion": "4.0.0",
+        "name": "QueueLimitReached",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f9b993ca-1bec-4cdc-a863-7a771b2a4401": {
+        "packageName": "@doodad-js/cluster",
+        "packageVersion": "4.0.0",
+        "name": "ClusterMessenger",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "10742462-db57-4832-ad52-b817571a5734": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "HeadersMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d2484a8d-6b38-4cdc-a9ea-02cd6035d2c4": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "ResponseBase",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "42434d37-95b7-4c7c-96e6-58f11a7dea4b": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "HandlerState",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2d14fc8f-c3ee-4881-aeec-a8546793a586": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "RequestBase",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "adb3c84c-f6c7-4670-8aa6-1b6e0586c989": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "HandlersContainerMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "170f8731-7495-48de-926a-14fab8f0383f": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "ServerMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d2a2868e-00e7-44b5-a250-a812959d6772": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "HandlerMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e8d5d3b5-8e23-411e-8725-100f71eae661": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "RoutesMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "22412b94-6841-4db3-9036-9459cb31b26f": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "PageMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "0bd7c9d2-ad12-45aa-9788-7e77f363d85c": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "NullPage",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "dac7c8b0-adae-4aef-a812-14636d385396": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "StatusPage",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "edca7324-cf65-4a87-9777-a815c72deafb": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "StaticPageBase",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e16db956-ccb3-4b46-b8d3-546fbc557d9c": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "RedirectHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "a3bf4e0d-c3b3-4ce2-9a8d-c41c3ffff518": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "CrossOriginHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8c7c099c-b5c0-4867-83b6-febda5d8db32": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "ContentSecurityPolicyHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4d1a9e2d-bf42-472a-a246-c1185f6aa22d": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "UpgradeInsecureRequestsHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "12cffb4b-8703-4d3e-9fd6-1fab23e5a086": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "ClientCrashHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "698ef870-e0aa-408e-ac9d-48fcf6ea1002": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "ServerBase",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "199ebe5c-ec60-4e75-86a9-9d0c334853b4": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "RequestMatcherBase",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d4921b3a-8146-42a9-be6c-f85c81e902ca": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "UrlMatcher",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8ed98983-a638-43be-a5bf-b94eea22c9f0": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "Routes",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "37300ffa-97f9-48eb-a1b5-f53894ca91c8": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "JsonBodyHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f09cfe9b-0b90-483a-80a1-b6450590a3b3": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "UrlBodyHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "73ae0718-e208-4d26-bf51-ccf05b5982a3": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "Base64BodyHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2a6be2b5-7062-4b60-8827-5ac4e3435f33": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "TextBodyHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "fd4db9e2-4049-4f4e-a56c-3a0e75fcafe2": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "FormMultipartBodyHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "54732214-1fe0-43d4-a60e-7b93e06834c9": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "ProceedNewHandlers",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ce86d2d2-90a0-404c-982e-8cf45adf939e": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "StreamAborted",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b629f7b7-66bf-48c8-9d0e-fb51fa5dcded": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "NodeJsResponse",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "fd128c87-0bd8-4ef8-a5c8-61560bede8f8": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "NodeJsRequest",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "41fed400-b070-40c3-9e90-800e2511f562": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "NodeJsServer",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "36c6d23e-b8bd-4afa-ab36-88f871294ae3": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "FolderPageTemplate",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "3ebfe170-1d89-4935-9c68-6b9ceecbca50": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "StaticPage",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "fd42e7f9-ec8c-4232-b7fd-b474786f5e9b": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "ClusterDataServiceMaster",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "97da531d-ae1d-4e0a-9972-4bbd65669223": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "ClusterDataServiceWorker",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "cbb40562-5609-4e63-a0a2-5da857c17b50": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "DataHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "62e78465-f495-4db7-a3a4-af5f887de733": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "ClusterDataHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ed46f468-9958-410e-b36d-22040c5ca9a8": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "JavascriptPage",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "0a99959c-0d42-4e0e-b677-6082b73dae4b": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "CacheStream",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f06db64d-2532-4b00-aa27-26715e46d298": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "CacheHeaders",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f34968c5-1ce5-4545-b1b8-653effc590a6": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "CachedObject",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "5bd9e523-4263-43c2-90da-d8e595b5a47f": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "CacheHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "332b6723-674c-405e-80f4-f8803f340b76": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "CompressionBodyHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6afa41e0-677d-45b1-b7de-01095029e2cb": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "CompressionHandler",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "a408855f-8860-49b0-a148-f33e58bae91d": {
+        "packageName": "@doodad-js/http_jsonrpc",
+        "packageVersion": "1.0.0",
+        "name": "Error",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "73e69af9-bc71-418f-9c22-6c65c84f9a9a": {
+        "packageName": "@doodad-js/http_jsonrpc",
+        "packageVersion": "1.0.0",
+        "name": "ServiceIsolatedMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7d00266c-3b67-4b0b-95a4-d51604b75659": {
+        "packageName": "@doodad-js/http_jsonrpc",
+        "packageVersion": "1.0.0",
+        "name": "ServiceManager",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d106892f-9a0c-4db5-91a8-a813ad1813f0": {
+        "packageName": "@doodad-js/http_jsonrpc",
+        "packageVersion": "1.0.0",
+        "name": "Request",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "aa9425a1-e14d-48e8-b247-b11018ab04ab": {
+        "packageName": "@doodad-js/http_jsonrpc",
+        "packageVersion": "1.0.0",
+        "name": "Page",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f80b7d90-886d-4fc7-8abf-3b3b7f3483ec": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "Signal",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e629d1df-8a4b-4c60-9187-f480ef0c5108": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BOFSingleton",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2d2ebac4-0d0a-45ce-84b8-d2421982e5d5": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "EOFSingleton",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "3648cb4f-5f88-4aca-acdc-11965fb1ef1a": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "Data",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6b86f35e-8eea-433b-aa37-a4822e83ab17": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BinaryData",
+        "hits": 10,
+        "tasks": [
+            "make"
+        ]
+    },
+    "26e95823-19e5-40a2-84b7-57fc50eedd2f": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TransformableBaseMixInBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6d56fe82-6fe2-4c75-8a36-d3e1145d0367": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "ListenerMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "08f79667-d75f-4215-84cc-2059ea61f1fa": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "IConsoleIsolated",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "07e8f99d-d7c7-4831-b126-c4d23265771f": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "StreamBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "74318974-3da7-4333-b906-fc0129bb914b": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BufferedStreamBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "9ef77652-0555-418b-968a-d07df6cc7992": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "ObjectTransformableBaseMixInBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "53210b5f-c075-417a-ba35-4432b7d5e4b0": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "ObjectTransformableInMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d4e2bac6-7958-4192-98e9-d52bcc328eb9": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "ObjectTransformableOutMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "9652fe5d-434e-46d3-9e6c-ae87ebae04c6": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BinaryTransformableBaseMixInBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b386309c-6eb8-42f1-b6a1-d9bba6f7be5e": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BinaryTransformableInMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ae3b2a60-4109-4622-b8ef-6ccd68bda0dd": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BinaryTransformableOutMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "c08a3aea-0d7c-451b-bc95-9aa3e0179260": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextStreamBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ad3ea46d-2f73-4418-b287-53bf10d8b134": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "InputStreamBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2c4d8f48-ff91-4ba5-bcb4-4ff9bb3fea5c": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextInputStreamBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "9e599610-1381-4cd5-a059-abc82a4c8c50": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "OutputStreamBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "07828b56-bb50-4d8e-9505-2a011fb11494": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextOutputStreamBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ea0829bc-55db-4e21-9962-2d5b0195b0c4": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "InputOutputStreamBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b206870f-1896-4cae-b5f7-96e44798af73": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BufferedStreamMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "71e2839a-bd93-4049-90ab-936c92efb69a": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "NestedStreamMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "54b5ab69-d668-42c1-9ff7-5fc264874ab0": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextInputStreamMixInBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8e1dc4f2-b916-4815-a715-522afc8831a5": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextOutputStreamMixInBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8731b52b-46c6-46f0-b2fb-e84692d1ffc6": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextInputMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "cac8f64f-64b7-4f10-a8fe-7b93351acbf3": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "KeyboardInputMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "bf3510d2-1a4b-4baa-90f7-bbfdb5f626f1": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextOutputMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e6013b46-3d0f-498d-841c-669f1ccbc3a2": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "StreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "1f6c33d0-f38d-43ab-959b-e4ee046a62bc": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "InputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "817067f5-88e9-4c09-9188-2c532658d8c4": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BufferedInputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "846b4faf-7e32-4720-bd87-267227877e20": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "OutputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "10d3bb76-c81a-4f24-8d7b-3814e16ff519": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BufferedOutputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "edc87f6f-97f3-4ac5-8c8f-7ceeffb48f41": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextInputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "dff10f52-5efb-4521-8b29-b22cffdf9fbc": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BufferedTextInputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "5f2ee65e-b1aa-4249-b6dd-7f6c9168d94c": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextOutputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d09e722f-ae23-4dfb-8236-c8ac96e676b2": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BufferedTextOutputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "14ea9d0e-e69b-4fa4-b09d-172575c36e50": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "InputOutputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6de25154-8c50-473a-8ff4-5a4c94e7b6eb": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BufferedInputOutputStreamBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7d932da2-8321-44dc-a771-8dbeba8beda4": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "HtmlOutputStream",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "dc004402-a25f-428d-9562-de8402461e48": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "ConsoleOutputStream",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7e91f88e-4a35-494f-8ac0-df49f65ad643": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "NullOutputStream",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "25d43e53-0d43-4240-97f7-c45b0a9c33ef": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextDecoderStreamNodeJs",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2defe3cd-552d-4dbf-8b9c-8e2128ba7b3f": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "IStreamIsolatedMixInNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "c171fc0c-0ffb-45ec-912a-05da1796897e": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "IReadableIsolatedMixInNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "c5fbe5dc-aa21-40cb-b626-ede32bd610a8": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "IWritableIsolatedMixInNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "f9673356-9ddc-462a-bb78-3dc9773b8dfd": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "IDuplexIsolatedMixInNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4ba70884-7642-4d3b-8c12-7f5c55afd213": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "ITransformIsolatedMixInNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "93748433-0d13-4171-b209-68940c9fc9b1": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextData",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "546afd50-6bf6-47f5-9930-62231a99c210": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextTransformableBaseMixInBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "0470f265-7085-4720-ac63-115b569acf64": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextTransformableInMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ccb83559-81a2-4f48-b9f1-234fe4955a9a": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextTransformableOutMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "0ebdea6b-474a-4ef4-a67e-92a1dc32414a": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "StreamMixInBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4f59d443-9b66-4cd6-9ec9-fdcdb75c3ac9": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "InputStreamMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "b1b5e53b-b101-4e84-895e-ed3ed90edb06": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BufferedInputStreamMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "3f42d37e-42de-4018-917d-e67c9a5b8d49": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "OutputStreamMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "246ec00f-6262-4212-a7a2-dd9d883bb182": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BufferedOutputStreamMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8744c443-07ff-4b2c-a2a4-88f85b35f17e": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "InputOutputStreamMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d31427cd-9cd4-4bfd-af8b-93f6112bc55b": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BufferedInputOutputStreamMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "cc974215-7a5d-421d-bfca-6fdf68d699ad": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BinaryInputStreamNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "66dd25e7-0328-4b2c-891b-1ec391758673": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextInputStreamNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7a4d2fd2-092f-4464-bb55-fea2bf564fc4": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BinaryOutputStreamNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "01ad25a2-c4d2-4bfb-aa0f-305cf8ac694d": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "TextOutputStreamNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "c06822e4-4805-4983-afb9-fe36d73019d8": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "BinaryInputOutputStreamNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e8ecd42d-5d67-4711-b4b3-d3df5d6e1149": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "UrlDecoderStreamNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "5745f525-170c-488b-98a2-d7fbb3ab92a9": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "Base64DecoderStreamNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d992a971-05f0-48bb-8c2e-4b91a3fc9a16": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "FormMultipartDecoderStreamNodeJs",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "0d40e997-525c-4415-bfb0-63bcfc89e560": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "KeyboardInputStream",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "db26116d-c60a-4f21-bbc5-67d0abf2f323": {
+        "packageName": "@doodad-js/io",
+        "packageVersion": "6.0.0",
+        "name": "DomOutputStream",
+        "hits": 4,
+        "tasks": [
+            "make"
+        ]
+    },
+    "312acc76-7b5a-47e3-9ea4-1a11aea10af2": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "Error",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "5598a364-b33a-424f-b67f-39ee0a62e8d3": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "InvalidRequest",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "dc915ead-5d57-401c-867b-2e33b80b8164": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "MethodNotCallable",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "37102b75-aba5-4de5-8bac-997d9516b56d": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "CallableExtender",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2670ef7f-ba0f-43be-923f-7b95f6f5971b": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "RequestBase",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "fca73eb5-cc8e-44d1-b6ac-326889026362": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "ServiceIsolatedMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ee7bfe1b-c9b9-4616-bf19-84bd66c0fd0e": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "IServiceManagerInterface",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2e8b9bbd-e645-4aaa-9db4-6b3f5378620c": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "IServiceManagerMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2918389f-ce15-4f02-a359-fac053adcb7b": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "ClientBase",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "a0e88877-749d-41d8-8994-b87cdcfc25df": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "IServerInterface",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "664de83b-7377-438c-9f75-4008a4d17994": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "ServerBase",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7c23b072-164b-4279-85c4-63db302764a2": {
+        "packageName": "@doodad-js/ipc",
+        "packageVersion": "2.0.0",
+        "name": "ServiceManager",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "7c6984c7-4fff-423e-b962-5d3096d9cbff": {
+        "packageName": "@doodad-js/json",
+        "packageVersion": "1.0.0",
+        "name": "Stream",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2e323180-808f-44f5-a79a-423b1c76a266": {
+        "packageName": "@doodad-js/minifiers",
+        "packageVersion": "4.0.0",
+        "name": "Javascript",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d70d29cf-f73a-4fa7-9461-737e24261dfe": {
+        "packageName": "@doodad-js/server",
+        "packageVersion": "2.0.0",
+        "name": "Session",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6bf3f4ed-d04e-4c2e-a79f-b26a2e2ef1b7": {
+        "packageName": "@doodad-js/server",
+        "packageVersion": "2.0.0",
+        "name": "StorageManagerInterface",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "9ed0a456-bb22-4b4d-aa27-3837f05706ed": {
+        "packageName": "@doodad-js/server",
+        "packageVersion": "2.0.0",
+        "name": "SessionManagerInterface",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "6bb0e67f-0a11-4a5f-a9c2-7ee2cf53d096": {
+        "packageName": "@doodad-js/server",
+        "packageVersion": "2.0.0",
+        "name": "RequestMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "394da4b6-bd24-4ab2-aff9-964a19c4080e": {
+        "packageName": "@doodad-js/server",
+        "packageVersion": "2.0.0",
+        "name": "ResponseMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "a6c49089-2f94-4510-b49a-06ba4ffbaaeb": {
+        "packageName": "@doodad-js/server",
+        "packageVersion": "2.0.0",
+        "name": "ServerMixIn",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "c9db7dae-4ce3-4c4e-99bf-0c0a081cd4c1": {
+        "packageName": "@doodad-js/server",
+        "packageVersion": "2.0.0",
+        "name": "EndOfRequest",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e887ce04-9228-4644-8c9c-420679d06b2f": {
+        "packageName": "@doodad-js/terminal",
+        "packageVersion": "4.0.0",
+        "name": "Terminal",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "e2f216db-efba-464f-ba00-b323fee5cd73": {
+        "packageName": "@doodad-js/terminal",
+        "packageVersion": "4.0.0",
+        "name": "CommandPrompt",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "5be7a059-8829-4102-b66a-e67237f49748": {
+        "packageName": "@doodad-js/terminal",
+        "packageVersion": "4.0.0",
+        "name": "Javascript",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "ab713307-c39e-455a-85e8-e1b50774a94f": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "AttributesBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "5451eee3-2c0b-4585-8892-b0c978d46ca9": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "IdentitiesBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d78d30b7-0a7b-4f4b-b7b3-29fbc56e5ae7": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "StylesBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "96b59bca-0145-4ecf-b069-eb3785a67b73": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "RenderBaseMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "dc8f0693-eb5e-4e0f-b9d9-2a6fea69b3bc": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "AttributesMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "3a1b1584-4a11-4861-ba05-781ccc90d3c6": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "IdentitiesMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "aefec003-2d37-49c8-9109-e75ccb40ca8b": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "StylesMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "1d8beadf-87f1-47ec-87b0-a35d9447f960": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "RenderMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "8bc7e34d-60d2-4e89-b280-8c7168d01ff2": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "WidgetMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "a1889ed1-4375-4f89-be5e-9218b6a3fdc5": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "HtmlWidgetMixIn",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "c7f9d45c-36b2-43f7-9c22-a3b80d146073": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "WidgetBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d4eed2f0-f444-43e8-816d-2afa7cae8b58": {
+        "packageName": "@doodad-js/widgets",
+        "packageVersion": "1.0.0",
+        "name": "HtmlWidgetBase",
+        "hits": 5,
+        "tasks": [
+            "make"
+        ]
     }
 }
