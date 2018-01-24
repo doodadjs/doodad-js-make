@@ -38,32 +38,10 @@
 	"use strict";
 
 	const nodeFs = require('fs'),
-		npc = require('@doodad-js/npc');
-
-	let nodeBrowserify = null;
-	try {
-		/* eslint global-require: "off" */  // Optional package
-		nodeBrowserify = require('browserify');
-	} catch(ex) {
-		// Do nothing
-	};
-
-	let nodeWebpack = null;
-	try {
-		/* eslint global-require: "off" */  // Optional package
-		nodeWebpack = require('webpack');
-	} catch(ex) {
-		// Do nothing
-	};
-
-	let nodeESLint = null;
-	try {
-		/* eslint global-require: "off" */  // Optional package
+		npc = require('@doodad-js/npc'),
+		nodeBrowserify = require('browserify'),
+		nodeWebpack = require('webpack'),
 		nodeESLint = require('eslint');
-	} catch(ex) {
-		// Do nothing
-	};
-
 //! END_IF()
 
 const nodeFsCreateReadStream = nodeFs.createReadStream,
@@ -1373,13 +1351,6 @@ exports.add = function add(DD_MODULES) {
 						}
 					);
 
-					// Update manifest
-					ops.push( 
-						{
-							'class': update.Manifest,
-						}
-					);
-
 					return ops;
 				}),
 					
@@ -2214,7 +2185,7 @@ exports.add = function add(DD_MODULES) {
 			{
 				$TYPE_NAME: 'Manifest',
 
-				DEPS_KEYS: doodad.PROTECTED(doodad.ATTRIBUTE(['dependencies', 'optionalDependencies', 'devDependencies'], extenders.UniqueArray)),
+				DEPS_KEYS: doodad.PROTECTED(doodad.ATTRIBUTE(['dependencies', 'optionalDependencies', 'devDependencies', 'peerDependencies'], extenders.UniqueArray)),
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 					console.info('Updating manifest...');

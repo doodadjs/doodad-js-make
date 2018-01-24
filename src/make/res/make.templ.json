@@ -107,6 +107,9 @@
 		"lint": {
 			"operations": [
 				{
+					"class": "Make.Update.Manifest"
+				},
+				{
 					"class": "Make.ESLint.Check",
 					"source": "%SOURCEDIR%"
 				}
