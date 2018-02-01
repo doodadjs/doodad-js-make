@@ -49,6 +49,7 @@ module.exports = {
 				} catch(ex) {
 				};
 				
+				const DD_EXPORTS = undefined;
 				const DD_MODULES = {};
 				
 				//! FOR_EACH(VAR("resources"), "res")
