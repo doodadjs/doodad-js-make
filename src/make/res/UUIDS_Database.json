@@ -7427,15 +7427,6 @@
             "make"
         ]
     },
-    "3ebfe170-1d89-4935-9c68-6b9ceecbca50": {
-        "packageName": "@doodad-js/http",
-        "packageVersion": "2.0.0",
-        "name": "StaticPage",
-        "hits": 1,
-        "tasks": [
-            "make"
-        ]
-    },
     "fd42e7f9-ec8c-4232-b7fd-b474786f5e9b": {
         "packageName": "@doodad-js/http",
         "packageVersion": "2.0.0",
@@ -7467,15 +7458,6 @@
         "packageName": "@doodad-js/http",
         "packageVersion": "2.0.0",
         "name": "ClusterDataHandler",
-        "hits": 1,
-        "tasks": [
-            "make"
-        ]
-    },
-    "ed46f468-9958-410e-b36d-22040c5ca9a8": {
-        "packageName": "@doodad-js/http",
-        "packageVersion": "2.0.0",
-        "name": "JavascriptPage",
         "hits": 1,
         "tasks": [
             "make"
@@ -8530,6 +8512,33 @@
         "packageVersion": "1.0.0",
         "name": "HtmlWidgetBase",
         "hits": 5,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2555114e-25c8-4799-85b0-f955472154f6": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "FileSystemPageBase",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "53789fb7-083e-4134-9f48-e7e0dd856a52": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "FileSystemPage",
+        "hits": 1,
+        "tasks": [
+            "make"
+        ]
+    },
+    "d9fcff70-1fa8-4def-926e-ae43dff65537": {
+        "packageName": "@doodad-js/http",
+        "packageVersion": "2.0.0",
+        "name": "JavascriptFileSystemPage",
+        "hits": 1,
         "tasks": [
             "make"
         ]
