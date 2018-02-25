@@ -85,7 +85,7 @@ exports.add = function add(DD_MODULES) {
 
 					const install = function _install() {
 						return Promise.create(function nodeJsForkPromise(resolve, reject) {
-							console.info("Installing the test application...");
+							tools.log(tools.LogLevels.Info, "Installing the test application...");
 
 							const options = {
 								shell: true,
@@ -108,7 +108,7 @@ exports.add = function add(DD_MODULES) {
 
 					const launch = function _launch(firstAttempt) {
 						return Promise.create(function nodeJsForkPromise(resolve, reject) {
-							console.info("Launching the test application...");
+							tools.log(tools.LogLevels.Info, "Launching the test application...");
 
 							const appDir = files.Path.parse(modules.resolve(TEST_PKG)).set({file: ''});
 

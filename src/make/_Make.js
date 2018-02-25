@@ -694,7 +694,7 @@ exports.add = function add(DD_MODULES) {
 						return undefined;
 					};
 						
-					console.info('Starting task "' + name + '"...');
+					tools.log(tools.LogLevels.Debug, "Starting task '~0~'...", [name]);
 						
 					return proceed.call(this, 0);
 				}),
@@ -706,7 +706,7 @@ exports.add = function add(DD_MODULES) {
 				$TYPE_NAME: 'Load',
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					console.info('Loading required module files...');
+					tools.log(tools.LogLevels.Info, 'Loading required module files...');
 					return modules.load(types.get(item, 'files'), options)
 						.then(function(result) {
 							// Returns nothing
@@ -724,7 +724,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isString(dest)) {
 						dest = this.taskData.parseVariables(dest, {isPath: true});
 					};
-					console.info('Creating folder "' + dest + '"...');
+					tools.log(tools.LogLevels.Info, "Creating folder '~0~'...", [dest]);
 					return files.mkdir(dest, {async: true})
 						.then(function() {
 							// Returns nothing
@@ -746,7 +746,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isString(dest)) {
 						dest = this.taskData.parseVariables(dest, { isPath: true });
 					};
-					console.info('Copying folder "' + source + '" to "' + dest + '"...');
+					tools.log(tools.LogLevels.Info, "Copying folder '~0~' to '~1~'...", [source, dest]);
 					return files.mkdir(dest, {makeParents: true, async: true})
 						.then(function() {
 							return files.copy(source, dest, {recursive: true, override: true, async: true});
@@ -767,7 +767,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isString(dest)) {
 						dest = this.taskData.parseVariables(dest, { isPath: true });
 					};
-					console.info('Deleting folder "' + dest + '"...');
+					tools.log(tools.LogLevels.Info, "Deleting folder '~0~'...", [dest]);
 					return files.rmdir(dest, {force: true, async: true})
 						.then(function() {
 							// Returns nothing
@@ -784,7 +784,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isString(source)) {
 						source = this.taskData.parseVariables(source, { isPath: true });
 					};
-					console.info('Deleting file "' + source + '"...');
+					tools.log(tools.LogLevels.Info, "Deleting file '~0~'...", [source]);
 					return files.rm(source, {async: true})
 						.then(function() {
 							// Returns nothing
@@ -806,7 +806,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isString(dest)) {
 						dest = this.taskData.parseVariables(dest, { isPath: true });
 					};
-					console.info('Copying file "' + source + '" to "' + dest + '"...');
+					tools.log(tools.LogLevels.Info, "Copying file '~0~' to '~1~'...", [source, dest]);
 					return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
 						.then(function() {
 							return files.copy(source, dest, {override: true, async: true});
@@ -836,7 +836,7 @@ exports.add = function add(DD_MODULES) {
 					};
 					const separator = item.separator;
 					const encoding = types.get(item, 'encoding', 'utf-8');
-					console.info('Merging files to "' + dest + '"...');
+					tools.log(tools.LogLevels.Info, "Merging files to '~0~'...", [dest]);
 					const createFile = function() {
 						return nodeFsCreateWriteStream(dest.toString({shell: 'api'}));
 					};
@@ -862,7 +862,7 @@ exports.add = function add(DD_MODULES) {
 							};
 							src = src.toString({shell: 'api'});
 
-							console.info("    " + src);
+							tools.log(tools.LogLevels.Info, "    ~0~", [src]);
 
 							return Promise.create(function pipeInputPromise(resolve, reject) {
 									const inputStream = nodeFsCreateReadStream(src);
@@ -975,7 +975,7 @@ exports.add = function add(DD_MODULES) {
 						dest = this.taskData.parseVariables(dest, { isPath: true });
 					};
 
-					console.info('Minifying file "' + source + '" to "' + dest + '"...');
+					tools.log(tools.LogLevels.Info, "Minifying file '~0~' to '~1~'...", [source, dest]);
 
 					const variables = tools.extend({
 						task: command,
@@ -1062,7 +1062,7 @@ exports.add = function add(DD_MODULES) {
 					const self = this;
 					return files.mkdir(destination.set({file: null}), {makeParents: true, async: true})
 						.then(function() {
-							console.info('Saving configuration to "' + destination + '"...');
+							tools.log(tools.LogLevels.Info, "Saving configuration to '~0~'...", [destination]);
 							return npcListAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise, module: modules.getLocator()})
 								.then(function(config) {
 									delete config['package'];
@@ -1904,7 +1904,7 @@ exports.add = function add(DD_MODULES) {
 					};
 					const configDest = this.taskData.parseVariables("%PACKAGEDIR%/webpack.config.js", { isPath: true });
 					const entryFile = this.taskData.parseVariables("%BROWSERIFYDIR%/browserify.min.js", { isPath: true });
-					console.info('Preparing webpack config file "' + configDest + '"...');
+					tools.log(tools.LogLevels.Info, "Preparing webpack config file '~0~'...", [configDest]);
 					const ops = [
 						{
 							'class': file.Javascript,
@@ -1922,7 +1922,7 @@ exports.add = function add(DD_MODULES) {
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 					const method = 'execute_' + types.toString(command).toUpperCase();
 					if (types.isImplemented(this, method)) {
-						console.info('Generating package for "' + command + "'.");
+						tools.log(tools.LogLevels.Info, "Generating package for '~0~'.", [command]);
 						return this[method](command, item, options);
 					} else {
 						throw new types.Error("Command '~0~' not supported by '~1~'.", [command, types.getTypeName(this)]);
@@ -1959,7 +1959,7 @@ exports.add = function add(DD_MODULES) {
 					};
 						
 					resFile = dest.combine(resFile);
-					console.info('Preparing resources for \'browserify\' from "' + source + '" to "' + dest + '"...');
+					tools.log(tools.LogLevels.Info, "Preparing resources for 'browserify' from '~0~' to '~1~'...", [source, dest]);
 					const self = this;
 					function processDir(dir, index, resources) {
 						if (index < dir.length) {
@@ -2077,7 +2077,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isString(dest)) {
 						dest = this.taskData.parseVariables(dest, { isPath: true });
 					};
-					console.info('Browserifying "' + source + '" to "' + dest + '"...');
+					tools.log(tools.LogLevels.Info, "Browserifying '~0~' to '~1~'...", [source, dest]);
 					const taskData = this.taskData;
 					return Promise.create(function browserifyPromise(resolve, reject) {
 							if (nodeBrowserify) {
@@ -2148,7 +2148,7 @@ exports.add = function add(DD_MODULES) {
 					if (types.isString(dest)) {
 						dest = this.taskData.parseVariables(dest, { isPath: true });
 					};
-					console.info('Making webpack bundle from "' + source + '" to "' + dest + '"...');
+					tools.log(tools.LogLevels.Info, "Making webpack bundle from '~0~' to '~1~'...", [source, dest]);
 					return Promise.create(function webpackPromise(resolve, reject) {
 							if (nodeWebpack) {
 								const config = {
@@ -2188,7 +2188,7 @@ exports.add = function add(DD_MODULES) {
 				DEPS_KEYS: doodad.PROTECTED(doodad.ATTRIBUTE(['dependencies', 'optionalDependencies', 'devDependencies', 'peerDependencies'], extenders.UniqueArray)),
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					console.info('Updating manifest...');
+					tools.log(tools.LogLevels.Info, "Updating manifest...");
 						
 					const taskData = this.taskData;
 						
@@ -2273,7 +2273,7 @@ exports.add = function add(DD_MODULES) {
 					const pkgName = this.taskData.manifest.name;
 					const pkgVersion = this.taskData.makeManifest.version;
 					if (types.get(item, 'global', false)) {
-						console.info("Loading global UUIDs from file '" + source + "'...");
+						tools.log(tools.LogLevels.Info, "Loading global UUIDs from file '~0~'...", [source]);
 						return files.readFile(source, {async: true, encoding: 'utf-8'})
 							.then(function(uuids) {
 								__Internal__.uuids = tools.nullObject(JSON.parse(uuids));
@@ -2286,13 +2286,13 @@ exports.add = function add(DD_MODULES) {
 										data.hits = 0; // Reset number of hits
 									};
 								}, this);
-								console.info("\t" + types.keys(__Internal__.uuids).length + " UUID(s) loaded.");
+								tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) loaded.", [types.keys(__Internal__.uuids).length]);
 							}, null, this)
 							.catch({code: 'ENOENT'}, function(ex) {
-								console.warn("\tNo UUID loaded because file is missing.");
+								tools.log(tools.LogLevels.Warning, "\tNo UUID loaded because file is missing.");
 							});
 					} else {
-						console.info("Loading package UUIDs from file '" + source + "'...");
+						tools.log(tools.LogLevels.Info, "Loading package UUIDs from file '~0~'...", [source]);
 						return files.readFile(source, {async: true, encoding: 'utf-8'})
 							.then(function(uuids) {
 								uuids = JSON.parse(uuids);
@@ -2323,13 +2323,13 @@ exports.add = function add(DD_MODULES) {
 										count++;
 									};
 								});
-								console.info("\t" + count + " UUID(s) loaded.");
+								tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) loaded.", [count]);
 								if (discarded > 0) {
-									console.info("\t" + discarded + " UUID(s) discarded because of package version.");
+									tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) discarded because of package version.", [discarded]);
 								};
 							})
 							.catch({code: 'ENOENT'}, function(ex) {
-								console.warn("\tNo UUID loaded because file is missing.");
+								tools.log(tools.LogLevels.Warning, "\tNo UUID loaded because file is missing.");
 							});
 					};
 				}),
@@ -2345,16 +2345,16 @@ exports.add = function add(DD_MODULES) {
 						dest = this.taskData.parseVariables(dest, { isPath: true });
 					};
 					if (types.get(item, 'global', false)) {
-						console.info("Saving global UUIDs to file '" + dest + "'...");
+						tools.log(tools.LogLevels.Info, "Saving global UUIDs to file '~0~'...", [dest]);
 						const uuids = tools.filter(__Internal__.uuids, function(data, uuid) {
 							return (data.hits > 0);
 						});
 						return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
 							.then(function() {
-								console.info("\t" + types.keys(uuids).length + " UUID(s) saved.");
+								tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) saved.", [types.keys(uuids).length]);
 							});
 					} else {
-						console.info("Saving package UUIDs to file '" + dest + "'...");
+						tools.log(tools.LogLevels.Info, "Saving package UUIDs to file '~0~'...", [dest]);
 						const pkgName = this.taskData.manifest.name;
 						const pkgVersion = this.taskData.makeManifest.version;
 						const uuids = tools.filter(__Internal__.pkgUUIDS, function(uuid, key) {
@@ -2364,7 +2364,7 @@ exports.add = function add(DD_MODULES) {
 						});
 						return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
 							.then(function() {
-								console.info("\t" + types.keys(uuids).length + " UUID(s) saved.");
+								tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) saved.", [types.keys(uuids).length]);
 							});
 					};
 				}),
@@ -2377,10 +2377,10 @@ exports.add = function add(DD_MODULES) {
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 					if (types.get(item, 'global', false)) {
-						console.info("Forgetting global UUIDs...");
+						tools.log(tools.LogLevels.Info, "Forgetting global UUIDs...");
 						__Internal__.uuids = tools.nullObject();
 					} else {
-						console.info("Forgetting package UUIDs...");
+						tools.log(tools.LogLevels.Info, "Forgetting package UUIDs...");
 						__Internal__.pkgUUIDS = tools.nullObject();
 					};
 				}),
@@ -2407,7 +2407,7 @@ exports.add = function add(DD_MODULES) {
 
 					const target = source.relative(pkgDir);
 
-					console.info("Running ESLINT...");
+					tools.log(tools.LogLevels.Info, "Running ESLINT...");
 
 					const cli = new nodeESLint.CLIEngine({
 						reportUnusedDisableDirectives: true,
@@ -2423,9 +2423,9 @@ exports.add = function add(DD_MODULES) {
 						const text = formatter(report.results);
 						if (text) {
 							if (report.errorCount > 0) {
-								console.error(text);
+								tools.log(tools.LogLevels.Error, text);
 							} else {
-								console.warn(text);
+								tools.log(tools.LogLevels.Warning, text);
 							};
 						};
 					};

@@ -44,14 +44,16 @@ function startup(root) {
 		let arg = tools.split((process.argv[index++] || ''), '=', 2);
 		
 		if (arg[0][0] === '-') {
-			//let name = arg[0],
-			//	val = (arg.length > 1 ? arg[1] : true);
-			//if (name === ...) {
-			//	options.Make..... = val;
-			//} else {
+			let name = arg[0],
+				val = (arg.length > 1 ? arg[1] : true);
+			if (name === '-v') {
+				tools.setOptions({logLevel: 1});
+			} else if (name === '-vv') {
+				tools.setOptions({logLevel: 0});
+			} else {
 				console.error("Invalid options.");
 				tools.abortScript(1);
-			//};
+			};
 		} else {
 			command = arg[0].toLowerCase();
 			
@@ -85,7 +87,7 @@ function startup(root) {
 		.then(run);
 };
 
-require('@doodad-js/core').createRoot(null, {startup: {fromSource: true}, 'Doodad.Tools': {noWatch: true}})
+require('@doodad-js/core').createRoot(null, {startup: {fromSource: true}, 'Doodad.Tools': {logLevel: 2, noWatch: true}})
 	.then(startup)
 	.catch(ex => {
 		console.error(ex.stack);
