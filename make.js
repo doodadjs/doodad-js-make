@@ -85,7 +85,7 @@ function startup(root) {
 		.then(run);
 };
 
-require('@doodad-js/core').createRoot(null, {startup: {fromSource: true}})
+require('@doodad-js/core').createRoot(null, {startup: {fromSource: true}, 'Doodad.Tools': {noWatch: true}})
 	.then(startup)
 	.catch(ex => {
 		console.error(ex.stack);
