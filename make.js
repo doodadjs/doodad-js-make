@@ -40,13 +40,24 @@ function startup(root) {
 	let command = '',
 		index = 2;
 
+	const commandOptions = {};
+
 	while (index < process.argv.length) {
-		let arg = tools.split((process.argv[index++] || ''), '=', 2);
+		const arg = tools.split((process.argv[index++] || ''), '=', 2);
 		
 		if (arg[0][0] === '-') {
-			let name = arg[0],
-				val = (arg.length > 1 ? arg[1] : true);
-			if (name === '-v') {
+			const name = arg[0];
+			if ((name === '-O') || (name === '--option')) {
+				const keyValArg = (arg[1] ? arg[1] : process.argv[index++]);
+				const keyVal = tools.split(keyValArg, '=', 2);
+				if (!keyVal[0]) {
+					console.error("Missing key argument.");
+					tools.abortScript(1);
+				};
+				const key = keyVal[0];
+				const val = (keyVal.length > 1 ? keyVal[1] : process.argv[index++]);
+				commandOptions[key] = val;
+			} else if ((name === '-v') || (name === '--verbose')) {
 				tools.setOptions({logLevel: 1});
 			} else if (name === '-vv') {
 				tools.setOptions({logLevel: 0});
@@ -76,7 +87,7 @@ function startup(root) {
 	};
 	
 	function run(root) {
-		return root.Make.run(command);
+		return root.Make.run(command, commandOptions);
 	};
 
 	return modules.load([

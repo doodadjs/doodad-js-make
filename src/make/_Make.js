@@ -2392,6 +2392,8 @@ exports.add = function add(DD_MODULES) {
 				$TYPE_NAME: 'Check',
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+					const continueOnError = types.toBoolean(types.get(options, 'continueOnError', false));
+
 					if (!nodeESLint) {
 						throw new types.Error("Can't do '~0~' because the 'eslint' package is not installed.", [command]);
 					};
@@ -2409,9 +2411,12 @@ exports.add = function add(DD_MODULES) {
 
 					tools.log(tools.LogLevels.Info, "Running ESLINT...");
 
+					const fix = types.toBoolean(types.get(options, 'fix', types.get(item, 'fix', false)));
+
 					const cli = new nodeESLint.CLIEngine({
 						reportUnusedDisableDirectives: true,
 						cwd: pkgDir.toApiString(),
+						fix: fix,
 					});
 
 					const report = cli.executeOnFiles([
@@ -2430,8 +2435,16 @@ exports.add = function add(DD_MODULES) {
 						};
 					};
 
-					if (report.errorCount > 0) {
-						throw new types.Error("'ESLINT' failed with errors.");
+					if (!continueOnError && (report.errorCount > 0)) {
+						throw new types.Error("'ESLINT' failed with error(s).");
+					};
+
+					if (fix) {
+						const fixCount = tools.filter(report.results, file => types.has(file, 'output')).length;
+						if (fixCount > 0) {
+							tools.log(tools.LogLevels.Info, "Applying ~0~ fix(es) from ESLINT...", [fixCount]);
+							nodeESLint.CLIEngine.outputFixes(report);
+						};
 					};
 				}),
 			}));
