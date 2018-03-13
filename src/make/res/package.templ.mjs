@@ -24,9 +24,9 @@
 //	limitations under the License.
 //! END_REPLACE()
 
-export function add(DD_MODULES) {
-	DD_MODULES = DD_MODULES || {};
-	DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
+export function add(mods) {
+	mods = mods || {};
+	mods[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
 		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 		type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
 		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
@@ -34,6 +34,7 @@ export function add(DD_MODULES) {
 		create: function create(root, /*optional*/_options, _shared) {
 			const DD_MODULES = {};
 			const DD_EXPORTS = undefined;
+			const DD_BOOTSTRAP = undefined;
 
 			//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
@@ -47,7 +48,7 @@ export function add(DD_MODULES) {
 			})();
 		},
 	};
-	return DD_MODULES;
+	return mods;
 };
 
 //! END_MODULE();

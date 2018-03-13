@@ -26,14 +26,14 @@
 
 "use strict";
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = DD_MODULES || {};
-	DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
+exports.add = function add(modules) {
+	modules = modules || {};
+	modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
 		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 		type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
 		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 					
-		create: function create(root, /*optional*/_options, _shared) {
+		create: function create(root, /*optional*/options, _shared) {
 			const files = [{
 				module: /*! INJECT(TO_SOURCE(MANIFEST("name"))) */,
 				path: 'config.json',
@@ -64,14 +64,12 @@ exports.add = function add(DD_MODULES) {
 				//! END_FOR()
 			};
 
-			const options = [_options, {secret: _shared.SECRET}];
-
-			return root.Doodad.Modules.load(files, options)
+			return root.Doodad.Modules.load(files, [options, {secret: _shared.SECRET}])
 				.then(function() {
 					// Returns nothing
 				});
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 //! END_MODULE();

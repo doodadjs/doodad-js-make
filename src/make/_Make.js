@@ -260,21 +260,27 @@ exports.add = function add(DD_MODULES) {
 						if (types.get(this.variables, 'serverSide', false)) {
 							if (mjs) {
 								this.directives.INJECT("; " +
-									"const exports = {}" + "; "
+									"const exports = {}; "
 								);
 							};
+							this.directives.INJECT(
+								"const DD_MODULES = null; "
+							);
 						} else {
 							if (mjs) {
 								this.directives.INJECT("; " +
-									"const global = window" + ", " +
-										"exports = {}" + "; "
+									"const global = window, " +
+										"exports = {}, " +
+										"DD_MODULES = null; "
 								);
 							} else {
 								this.directives.INJECT("; " +
 									"(function(/*global, exports, DD_MODULES*/) {" +
-										"const global = arguments[0]" + ", " +
-											"exports = arguments[1]" + ", " +
-											"DD_MODULES = arguments[2]" + "; " 
+										"const global = arguments[0], " +
+											"exports = arguments[1], " +
+											"DD_MODULES = arguments[2], " +
+											"DD_EXPORTS = null, " +
+											"DD_BOOTSTRAP = null; "
 								);
 							};
 						};
@@ -290,18 +296,18 @@ exports.add = function add(DD_MODULES) {
 						if (types.get(this.variables, 'serverSide', false)) {
 							if (mjs) {
 								this.directives.INJECT("; " +
-									"export default exports" + "; "
+									"export default exports; "
 								);
 							};
 						} else {
 							if (mjs) {
 								this.directives.INJECT("; " +
-									"export default exports" + "; "
+									"export default exports; "
 								);
 							} else {
 								this.directives.INJECT("; " +
-										(types.get(this.variables, 'autoAdd', false) ? "exports.add(DD_MODULES)" + "; " : "") +
-									"}).call(undefined, ((typeof global === 'object') && (global !== null) ? global : window), ((typeof DD_EXPORTS === 'object') &&  (DD_EXPORTS !== null) ? DD_EXPORTS : {}), ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? DD_MODULES : {}))" + "; "
+										(types.get(this.variables, 'autoAdd', false) ? "exports.add(DD_MODULES); " : "") +
+									"}).call(undefined, ((typeof global === 'object') && (global !== null) ? global : window), ((typeof DD_EXPORTS === 'object') &&  (DD_EXPORTS !== null) ? DD_EXPORTS : {}), ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? DD_MODULES : {})); "
 								);
 							};
 						};
@@ -1812,12 +1818,13 @@ exports.add = function add(DD_MODULES) {
 					}));
 						
 					// Generate resources files for browserify
-					tools.append(ops, tools.map(resources, function(res, i) {
+					tools.append(ops, tools.map(resources, function(res) {
 						return {
 							'class': browserify.Resources,
-							name: '%PACKAGENAME%/res' + i,
+							name: res.name,
 							namespace: res.namespace,
-							source: '%SOURCEDIR%/' + res.src,
+							sourceBase: '%SOURCEDIR%',
+							source: res.src,
 							destination: "%BROWSERIFYDIR%/" + res.src,
 							resourcesFile: 'resources.js',
 							resourcesTemplate: types.get(item, 'resourcesTemplate'),
@@ -1846,8 +1853,12 @@ exports.add = function add(DD_MODULES) {
 											dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 										});
 									}),
-								resources: tools.map(resources, function(res) {
-									return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
+								resources: tools.map(resources, function(res, i) {
+									return {
+										//name: taskData.parseVariables('%PACKAGENAME%/res' + types.toString(i)),
+										source: taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+										//namespace: res.namespace,
+									};
 								}),
 							},
 						}
@@ -1875,8 +1886,12 @@ exports.add = function add(DD_MODULES) {
 											dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 										});
 									}),
-								resources: tools.map(resources, function(res) {
-									return taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'});
+								resources: tools.map(resources, function(res, i) {
+									return {
+										//name: taskData.parseVariables('%PACKAGENAME%/res' + types.toString(i)),
+										source: taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+										//namespace: res.namespace,
+									};
 								}),
 							},
 						}
@@ -1936,6 +1951,10 @@ exports.add = function add(DD_MODULES) {
 				$TYPE_NAME: 'Resources',
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+					let sourceBase = item.sourceBase;
+					if (types.isString(sourceBase)) {
+						sourceBase = this.taskData.parseVariables(sourceBase, { isPath: true });
+					};
 					let source = item.source;
 					if (types.isString(source)) {
 						source = this.taskData.parseVariables(source, { isPath: true });
@@ -1957,6 +1976,8 @@ exports.add = function add(DD_MODULES) {
 					if (!resourcesTemplate) {
 						resourcesTemplate = modulePath.combine('res/resources.templ.js');
 					};
+
+					const fullSource = sourceBase.combine(source);
 						
 					resFile = dest.combine(resFile);
 					tools.log(tools.LogLevels.Info, "Preparing resources for 'browserify' from '~0~' to '~1~'...", [source, dest]);
@@ -1966,12 +1987,12 @@ exports.add = function add(DD_MODULES) {
 							const stats = dir[index];
 							if (stats.isFile) {
 								const resource = {
-									source: stats.path,
+									source: source.combine(stats.path),
 									dest: stats.path.set({file: stats.path.file + '.res.js'}),
 								};
 								return files.mkdir(dest.combine(stats.path).set({file: null}), {async: true, makeParents: true})
 									.then(function() {
-										return files.readFile(source.combine(resource.source), {encoding: (item.encoding || 'utf-8'), async: true});
+										return files.readFile(fullSource.combine(stats.path), {encoding: (item.encoding || 'utf-8'), async: true});
 									})
 									.then(function(content) {
 										return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
@@ -2004,7 +2025,7 @@ exports.add = function add(DD_MODULES) {
 					};
 					return files.mkdir(dest, {makeParents: true, async: true})
 						.then(function() {
-							return files.readdir(source, {async: true, depth: Infinity, relative: true});
+							return files.readdir(fullSource, {async: true, depth: Infinity, relative: true});
 						})
 						.then(function(dir) {
 							return processDir(dir, 0, []);
@@ -2021,7 +2042,7 @@ exports.add = function add(DD_MODULES) {
 							};
 								
 							function reducePatterns(level, pattern) {
-								let code = "switch(tmp[" + types.toString(level + 1) + "]) {";
+								let code = "switch(tmp[" + types.toString(level) + "]) {";
 								tools.forEach(pattern, function(val, key) {
 									code += "case " + tools.toSource(key) + ": ";
 									if (types.isString(val)) {
@@ -2034,13 +2055,12 @@ exports.add = function add(DD_MODULES) {
 								code += "default: throw new types.Error(\"Unknown resource file '~0~'.\", [path.toString()]); };";
 								return code;
 							};
-								
+							
+							const rp = files.parsePath('/', {os: 'linux'});
 							const result = tools.reduce(resources, function(result, resource) {
-								const rp = files.parsePath('/', {os: 'linux'}),
-									sourceAr = rp.combine(resource.source).toArray(),
+								const sourceAr = rp.combine(resource.source).toArray({trim: true}),
 									destStr = rp.combine(resource.dest).toString({os: 'linux', dirChar: '/'});
-									// NOTE: Index "0" is "/"
-									buildPatterns(1, sourceAr, destStr, result);
+									buildPatterns(0, sourceAr, destStr, result);
 									return result;
 							}, {});
 								

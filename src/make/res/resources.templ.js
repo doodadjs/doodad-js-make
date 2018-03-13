@@ -31,71 +31,67 @@ exports.add = function add(DD_MODULES) {
 	DD_MODULES[/*! INJECT(TO_SOURCE(VAR("name"))) */] = {
 		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 		type: 'Package',
-		dependencies: ['Doodad.Tools.Files', 'Doodad.Namespaces'],
+		dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Files', 'Doodad.Namespaces', /*! INJECT(TO_SOURCE(VAR("namespace"))) */],
 			
 		create: function create(root, /*optional*/_options, _shared) {
 			const doodad = root.Doodad,
-				nodejs = doodad.NodeJs,
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files,
-				modules = tools.Modules,
 				namespaces = doodad.Namespaces;
 					
-			const Promise = types.getPromise(),
-				mod = namespaces.get(/*! TO_SOURCE(VAR("namespace")) */);
-				
-			mod.setResourcesLoader({
-				locate: function locate(name, /*optional*/options) {
-					return Promise.try(function tryLocate() {
-						return files.parsePath(name);
-					});
-				},
-				load: function load(path, /*optional*/options) {
-					return Promise.try(function() {
-						const tmp = path.toArray();
+			const mod = namespaces.get(/*! INJECT(TO_SOURCE(VAR("namespace"))) */);
+			
+			return function init(options) {
+				const rp = files.parsePath('/', {os: 'linux'});
 
-						const callback = types.get(options, 'callback');
+				mod.setResourcesLoader({
+					locate: function locate(name, /*optional*/options) {
+						const Promise = types.getPromise();
+						return Promise.try(function tryLocate() {
+							return rp.combine(name);
+						});
+					},
+					load: function load(path, /*optional*/options) {
+						const Promise = types.getPromise();
+						return Promise.try(function() {
+							const tmp = path.toArray({trim: true});
 
-						let result = null;
-								
-//! INJECT(VAR("resources"))
-//! BEGIN_REMOVE()
-Exemple:
-						switch(tmp[1]) {
-							case "locales":
-								switch(tmp[2]) {
-									case "en_US":
-										result = require("./locales/en_US.res.js");
-										break;
-									case "fr_FR":
-										result = require("./locales/fr_FR.res.js");
-										break;
-									case "fr_CA":
-										result = require("./locales/fr_CA.res.js");
-										break;
-									default:
-										throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
-								};
-							default:
-								throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
-						};
-//! END_REMOVE()
-						if (callback) {
-							callback(null, result);
-						};
+							let result = null;
+									
+							//! INJECT(VAR("resources"))
+
+					//! BEGIN_REMOVE()
+					Exemple:
+							switch(tmp[0]) {
+								case "locales":
+									switch(tmp[1]) {
+										case "en_US.json":
+											result = require("./locales/en_US.json.res.js");
+											break;
+										case "fr_FR.json":
+											result = require("./locales/fr_FR.json.res.js");
+											break;
+										case "fr_CA.json":
+											result = require("./locales/fr_CA.json.res.js");
+											break;
+										default:
+											throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
+									};
+								default:
+									throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
+							};
+					//! END_REMOVE()
 							
-						return result;
-					})
-					.catch(function(err) {
-						if (callback) {
-							callback(err, null);
-						};
+							if (path.extension === 'json') {
+								result = JSON.parse(result);
+							};
 
-						throw err;
-					});
-				},
-			});
+							return result;
+						});
+					},
+				});
+			};
 		},
 	};
 	return DD_MODULES;

@@ -27,9 +27,9 @@
 "use strict";
 
 module.exports = {
-	add: function add(DD_MODULES) {
-		DD_MODULES = DD_MODULES || {};
-		DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
+	add: function add(modules) {
+		modules = modules || {};
+		modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
 			version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 			type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
 			dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
@@ -49,28 +49,27 @@ module.exports = {
 				} catch(ex) {
 				};
 				
-				const DD_EXPORTS = undefined;
-				const DD_MODULES = {};
+				const pkgModules = {};
 				
 				//! FOR_EACH(VAR("resources"), "res")
-					require(/*! INJECT(TO_SOURCE(VAR("res"))) */).add(DD_MODULES);
+					require(/*! INJECT(TO_SOURCE(VAR("res.source"))) */).add(pkgModules);
 				//! END_FOR()
-				
+
 				//! FOR_EACH(VAR("modules"), "mod")
 					//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-						require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(DD_MODULES);
+						require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(pkgModules);
 					//! END_IF()
 				//! END_FOR()
 				
 				const options = [config, _options, {secret: _shared.SECRET}];
 
-				return namespaces.load(DD_MODULES, options)
+				return namespaces.load(pkgModules, options)
 					.then(function() {
 						// Returns nothing
 					});
 			},
 		};
-		return DD_MODULES;
+		return modules;
 	},
 };
 //! END_MODULE()

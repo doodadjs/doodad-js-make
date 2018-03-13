@@ -32,31 +32,29 @@
 
 import {default as config} from './config.json';
 
-export function add(DD_MODULES) {
-	DD_MODULES = DD_MODULES || {};
-	DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
+export function add(modules) {
+	modules = modules || {};
+	modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
 		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 		type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
 		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 					
-		create: function create(root, /*optional*/_options, _shared) {
-			const DD_MODULES = {};
+		create: function create(root, /*optional*/options, _shared) {
+			const pkgModules = {};
 
 			//! FOR_EACH(VAR("modules"), "mod", "index")
 				//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-					/*! INJECT("module" + VAR("index")) */(DD_MODULES);
+					/*! INJECT("module" + VAR("index")) */(pkgModules);
 				//! END_IF()
 			//! END_FOR()
 
-			const options = [_options, {secret: _shared.SECRET}];
-
-			return root.Doodad.Namespaces.load(DD_MODULES, [config, _options])
+			return root.Doodad.Namespaces.load(pkgModules, [config, options, {secret: _shared.SECRET}])
 				.then(function() {
 					// Returns nothing
 				});
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE();
