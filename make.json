@@ -68,7 +68,7 @@
 	],
 	"resources": [
 		{
-			"src": "make/res",
+			"source": "make/res",
 			"client": false,
 			"server": true,
 			"browserify": false
