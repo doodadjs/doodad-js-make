@@ -1337,7 +1337,7 @@ exports.add = function add(DD_MODULES) {
 					tools.append(ops, tools.map(resources, function(res) {
 						return {
 							'class': folder.Copy,
-							source: res.sourceBase + '/' + res.source,
+							source: types.get(res, 'sourceBase', '%SOURCEDIR%/') + '/' + res.source,
 							destination: '%BUILDDIR%/' + res.source,
 						};
 					}));
@@ -1461,7 +1461,7 @@ exports.add = function add(DD_MODULES) {
 					tools.append(ops, tools.map(resources, function(res) {
 						return {
 							'class': folder.Copy,
-							source: res.sourceBase + '/' + res.source,
+							source: types.get(res, 'sourceBase', '%SOURCEDIR%/') + '/' + res.source,
 							destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.source,
 						};
 					}));
@@ -1825,7 +1825,7 @@ exports.add = function add(DD_MODULES) {
 							'class': browserify.Resources,
 							name: res.name,
 							namespace: res.namespace,
-							sourceBase: res.sourceBase,
+							sourceBase: types.get(res, 'sourceBase', '%SOURCEDIR%/'),
 							source: res.source,
 							destination: "%BROWSERIFYDIR%/" + res.source,
 							resourcesFile: 'resources.js',
@@ -1954,7 +1954,7 @@ exports.add = function add(DD_MODULES) {
 				$TYPE_NAME: 'Resources',
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let sourceBase = item.sourceBase;
+					let sourceBase = types.get(item, 'sourceBase', '%SOURCEDIR%/');
 					if (types.isString(sourceBase)) {
 						sourceBase = this.taskData.parseVariables(sourceBase, { isPath: true });
 					};
