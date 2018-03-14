@@ -43,20 +43,16 @@ exports.add = function add(DD_MODULES) {
 			const mod = namespaces.get(/*! INJECT(TO_SOURCE(VAR("namespace"))) */);
 			
 			return function init(options) {
+				const prevLoader = mod.getResourcesLoader();
+
 				const rp = files.parsePath('/', {os: 'linux'});
 
 				mod.setResourcesLoader({
-					locate: function locate(name, /*optional*/options) {
+					load: function load(filename, /*optional*/options) {
 						const Promise = types.getPromise();
-						return Promise.try(function tryLocate() {
-							return rp.combine(name);
-						});
-					},
-					load: function load(path, /*optional*/options) {
-						const Promise = types.getPromise();
-						return Promise.try(function() {
+                        return Promise.try(function tryLoad() {
+							const path = rp.combine(filename);
 							const tmp = path.toArray({trim: true});
-
 							let result = null;
 									
 							//! INJECT(VAR("resources"))
@@ -76,10 +72,10 @@ exports.add = function add(DD_MODULES) {
 											result = require("./locales/fr_CA.json.res.js");
 											break;
 										default:
-											throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
+											return prevLoader.load(filename, options);
 									};
 								default:
-									throw new types.Error("Unknown resource file '~0~'.", [path.toString()]);
+									return prevLoader.load(filename, options);
 							};
 					//! END_REMOVE()
 							

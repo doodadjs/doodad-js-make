@@ -96,6 +96,8 @@ exports.add = function add(DD_MODULES) {
 					
 				// "getBuiltFileName"
 				stringReplace: global.String.prototype.replace,
+
+				windowRegExp: global.RegExp,
 			});
 					
 					
@@ -1335,8 +1337,8 @@ exports.add = function add(DD_MODULES) {
 					tools.append(ops, tools.map(resources, function(res) {
 						return {
 							'class': folder.Copy,
-							source: '%SOURCEDIR%/' + res.src,
-							destination: '%BUILDDIR%/' + res.src,
+							source: res.sourceBase + '/' + res.source,
+							destination: '%BUILDDIR%/' + res.source,
 						};
 					}));
 						
@@ -1459,8 +1461,8 @@ exports.add = function add(DD_MODULES) {
 					tools.append(ops, tools.map(resources, function(res) {
 						return {
 							'class': folder.Copy,
-							source: '%SOURCEDIR%/' + res.src,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.src,
+							source: res.sourceBase + '/' + res.source,
+							destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.source,
 						};
 					}));
 						
@@ -1823,11 +1825,12 @@ exports.add = function add(DD_MODULES) {
 							'class': browserify.Resources,
 							name: res.name,
 							namespace: res.namespace,
-							sourceBase: '%SOURCEDIR%',
-							source: res.src,
-							destination: "%BROWSERIFYDIR%/" + res.src,
+							sourceBase: res.sourceBase,
+							source: res.source,
+							destination: "%BROWSERIFYDIR%/" + res.source,
 							resourcesFile: 'resources.js',
 							resourcesTemplate: types.get(item, 'resourcesTemplate'),
+							filter: types.get(res, 'filter'),
 						};
 					}));
 						
@@ -1856,7 +1859,7 @@ exports.add = function add(DD_MODULES) {
 								resources: tools.map(resources, function(res, i) {
 									return {
 										//name: taskData.parseVariables('%PACKAGENAME%/res' + types.toString(i)),
-										source: taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+										source: taskData.parseVariables('%BROWSERIFYDIR%/' + res.source + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 										//namespace: res.namespace,
 									};
 								}),
@@ -1889,7 +1892,7 @@ exports.add = function add(DD_MODULES) {
 								resources: tools.map(resources, function(res, i) {
 									return {
 										//name: taskData.parseVariables('%PACKAGENAME%/res' + types.toString(i)),
-										source: taskData.parseVariables('%BROWSERIFYDIR%/' + res.src + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+										source: taskData.parseVariables('%BROWSERIFYDIR%/' + res.source + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 										//namespace: res.namespace,
 									};
 								}),
@@ -1977,6 +1980,8 @@ exports.add = function add(DD_MODULES) {
 						resourcesTemplate = modulePath.combine('res/resources.templ.js');
 					};
 
+					const filter = (types.get(item, 'filter', '') ? new _shared.Natives.windowRegExp(item.filter) : null);
+
 					const fullSource = sourceBase.combine(source);
 						
 					resFile = dest.combine(resFile);
@@ -1985,7 +1990,7 @@ exports.add = function add(DD_MODULES) {
 					function processDir(dir, index, resources) {
 						if (index < dir.length) {
 							const stats = dir[index];
-							if (stats.isFile) {
+							if (stats.isFile && (!filter || filter.test(stats.path.file))) {
 								const resource = {
 									source: source.combine(stats.path),
 									dest: stats.path.set({file: stats.path.file + '.res.js'}),
@@ -2052,7 +2057,8 @@ exports.add = function add(DD_MODULES) {
 									};
 									code += "\nbreak;";
 								});
-								code += "default: throw new types.Error(\"Unknown resource file '~0~'.\", [path.toString()]); };";
+								code += "default: return prevLoader.load(filename, options);";
+								code += "}";
 								return code;
 							};
 							
@@ -2063,9 +2069,9 @@ exports.add = function add(DD_MODULES) {
 									buildPatterns(0, sourceAr, destStr, result);
 									return result;
 							}, {});
-								
+							
 							const resBody = reducePatterns(0, result);
-								
+							
 							// Returns new operation
 							return {
 								'class': file.Javascript,
