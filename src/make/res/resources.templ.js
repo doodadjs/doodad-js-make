@@ -26,9 +26,9 @@
 
 "use strict";
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = DD_MODULES || {};
-	DD_MODULES[/*! INJECT(TO_SOURCE(VAR("name"))) */] = {
+exports.add = function add(modules) {
+	modules = modules || {};
+	modules[/*! INJECT(TO_SOURCE(VAR("name"))) */] = {
 		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 		type: 'Package',
 		dependencies: ['Doodad.Types', 'Doodad.Tools', 'Doodad.Tools.Files', 'Doodad.Namespaces', /*! INJECT(TO_SOURCE(VAR("namespace"))) */],
@@ -90,7 +90,7 @@ exports.add = function add(DD_MODULES) {
 			};
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE()

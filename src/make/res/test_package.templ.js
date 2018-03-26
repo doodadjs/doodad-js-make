@@ -26,9 +26,9 @@
 
 "use strict";
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = DD_MODULES || {};
-	DD_MODULES[/*! INJECT(TO_SOURCE(MANIFEST("name") + "/tests")) */] = {
+exports.add = function add(modules) {
+	modules = modules || {};
+	modules[/*! INJECT(TO_SOURCE(MANIFEST("name") + "/tests")) */] = {
 		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 		type: 'TestPackage',
 		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
@@ -76,7 +76,7 @@ exports.add = function add(DD_MODULES) {
 			//! END_IF()
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE()
