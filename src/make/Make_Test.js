@@ -36,9 +36,9 @@
 
 const nodeChildProcessSpawn = nodeChildProcess.spawn;
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Make.Test'] = {
+exports.add = function add(modules) {
+	modules = (modules || {});
+	modules['Make.Test'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		//dependencies: [],
 			
@@ -153,7 +153,7 @@ exports.add = function add(DD_MODULES) {
 			//};
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE()

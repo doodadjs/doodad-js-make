@@ -52,9 +52,9 @@ const nodeFsCreateReadStream = nodeFs.createReadStream,
 	npcListAsync = npc.listAsync;
 
 
-exports.add = function add(DD_MODULES) {
-	DD_MODULES = (DD_MODULES || {});
-	DD_MODULES['Make'] = {
+exports.add = function add(modules) {
+	modules = (modules || {});
+	modules['Make'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update', 'UUIDS', 'ESLint'],
 
@@ -2498,7 +2498,7 @@ exports.add = function add(DD_MODULES) {
 			});
 		},
 	};
-	return DD_MODULES;
+	return modules;
 };
 
 //! END_MODULE()
