@@ -32,16 +32,20 @@ export function add(mods) {
 		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 
 		create: function create(root, /*optional*/_options, _shared) {
-			const DD_MODULES = {};
-			const DD_EXPORTS = undefined;
-			const DD_BOOTSTRAP = undefined;
+			let DD_MODULES = {},
+				DD_EXPORTS = undefined;
 
+			// NOTE: The bundle will fill "DD_MODULES".
 			//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
 			return (function() {
 				const options = [/*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */, _options, {startup: {secret: _shared.SECRET}}];
 
-				return root.Doodad.Namespaces.load(DD_MODULES, options)
+				return root.Doodad.Namespaces.load((function() {
+						const modules = DD_MODULES;
+						DD_MODULES = null; // Free memory
+						return modules;
+					})(), options)
 					.then(function() {
 						// Returns nothing
 					});
