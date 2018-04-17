@@ -1269,15 +1269,28 @@ exports.add = function add(modules) {
 								mjs: false,
 								dependencies: tools.map(tools.prepend(tools.filter(dependencies, function(dep) {
 										return dep.test;
-									}), [{name: '@doodad-js/test', version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir), optional: false, path: null}]), function(dep) {
-										const baseName = __Internal__.getBaseName(dep.name);
-										return {
-											name: dep.name,
-											version: __Internal__.getVersion(baseName, taskData.packageDir),
-											optional: !!types.get(dep, 'optional', false),
-											path: types.get(dep, 'path', null),
-											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-										};
+									}), [
+											{
+												name: taskData.manifest.name,
+												version: taskData.manifest.version,
+												optional: false,
+												path: null
+											}, 
+											{
+												name: '@doodad-js/test',
+												version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
+												optional: false,
+												path: null
+											}
+										]), function(dep) {
+											const baseName = __Internal__.getBaseName(dep.name);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
+												optional: !!types.get(dep, 'optional', false),
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+											};
 									}),
 								modules: tools.map(tools.filter(modules, function(mod) {
 										return mod.test && !mod.exclude;
@@ -1304,7 +1317,20 @@ exports.add = function add(modules) {
 								mjs: false,
 								dependencies: tools.map(tools.prepend(tools.filter(dependencies, function(dep) {
 										return dep.test;
-									}), [{name: '@doodad-js/test', version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+									}), [
+										{
+											name: taskData.manifest.name,
+											version: taskData.manifest.version,
+											optional: false,
+											path: null
+										}, 
+										{
+											name: '@doodad-js/test',
+											version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
+											optional: false,
+											path: null
+										}
+									]), function(dep) {
 										const baseName = __Internal__.getBaseName(dep.name);
 										return {
 											name: dep.name,
@@ -1653,7 +1679,20 @@ exports.add = function add(modules) {
 								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
 								dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
 										return dep.test;
-									}), [{name: '@doodad-js/test', version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+									}), [
+											{
+												name: taskData.manifest.name,
+												version: taskData.manifest.version,
+												optional: false,
+												path: null
+											}, 
+											{
+												name: '@doodad-js/test',
+												version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
+												optional: false,
+												path: null
+											}
+									]), function(dep) {
 										const baseName = __Internal__.getBaseName(dep.name);
 										return {
 											name: dep.name,
@@ -1662,7 +1701,8 @@ exports.add = function add(modules) {
 											path: types.get(dep, 'path', null),
 											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 										};
-									}),
+									}
+								),
 							},
 						}
 					);
@@ -1697,7 +1737,20 @@ exports.add = function add(modules) {
 								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
 								dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
 										return dep.test;
-									}), [{name: '@doodad-js/test', version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir), optional: false, path: null}]), function(dep) {
+									}), [
+											{
+												name: taskData.manifest.name,
+												version: taskData.manifest.version,
+												optional: false,
+												path: null
+											}, 
+											{
+												name: '@doodad-js/test',
+												version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
+												optional: false,
+												path: null
+											}
+									]), function(dep) {
 										const baseName = __Internal__.getBaseName(dep.name);
 										return {
 											name: dep.name,
@@ -1706,7 +1759,8 @@ exports.add = function add(modules) {
 											path: types.get(dep, 'path', null),
 											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 										};
-									}),
+									}
+								),
 							},
 						}
 					);
