@@ -41,12 +41,12 @@ exports.add = function add(modules) {
 	modules['Make.Test'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
 		//dependencies: [],
-			
+
 		create: function create(root, /*optional*/_options, _shared) {
 			//===================================
 			// Get namespaces
 			//===================================
-					
+
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools,
@@ -54,21 +54,21 @@ exports.add = function add(modules) {
 				modules = doodad.Modules,
 				make = root.Make,
 				makeTest = make.Test;
-					
+
 			//===================================
 			// Natives
 			//===================================
-					
+
 			//tools.complete(_shared.Natives, {
 			//});
-					
+
 			//===================================
 			// Internal
 			//===================================
-					
+
 			//const __Internal__ = {
 			//};
-			
+
 
 			makeTest.REGISTER(make.Operation.$extend(
 			{
@@ -144,7 +144,7 @@ exports.add = function add(modules) {
 						});
 				}),
 			}));
-				
+
 
 			//===================================
 			// Init

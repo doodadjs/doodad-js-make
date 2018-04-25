@@ -84,30 +84,30 @@ exports.add = function add(modules) {
 				update = make.Update,
 				makeUUIDS = make.UUIDS,
 				makeESLint = make.ESLint,
-					
+
 				Promise = types.getPromise(),
-					
+
 				cwd = files.parsePath(process.cwd(), {file: ''}),
 				modulePath = files.parsePath(module.filename).set({file: null});
-			
+
 
 			tools.complete(_shared.Natives, {
 				arraySplice: global.Array.prototype.splice,
-					
+
 				// "getBuiltFileName"
 				stringReplace: global.String.prototype.replace,
 
 				windowRegExp: global.RegExp,
 			});
-					
-					
+
+
 			const __Internal__ = {
 				searchJsExtRegExp: /([.]js)$/,
 				pkgUUIDS: tools.nullObject(),
 				uuids: tools.nullObject(),
 			};
-					
-					
+
+
 			const __options__ = tools.depthExtend(15, {
 				unix: {
 					dataPath: "/var/lib/",
@@ -124,12 +124,12 @@ exports.add = function add(modules) {
 			make.ADD('getOptions', function() {
 				return __options__;
 			});
-				
+
 
 			__Internal__.addSearchPaths = function addSearchPaths() {
 				const cwdAr = cwd.toArray({trim: true});
 				let name;
-					
+
 				// The application of the current package (ex: '@doodad-js/test')
 				const pos = tools.indexOf(cwdAr, 'node_modules');
 				if ((cwd.os === 'windows' && (pos > 1)) || (cwd.os !== 'windows' && (pos > 0))) {
@@ -167,7 +167,7 @@ exports.add = function add(modules) {
 				};
 			};
 
-				
+
 			__Internal__.getManifest = function getManifest(pkg, currentPackageDir) {
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
@@ -232,10 +232,10 @@ exports.add = function add(modules) {
 				return manifest.version + (manifest.stage || 'd');
 			};
 
-				
+
 			make.REGISTER(minifiers.Javascript.$extend({
 				$TYPE_NAME: 'JavascriptBuilder',
-					
+
 				__knownDirectives: {
 					VERSION: function VERSION(pkg) {
 						return __Internal__.getVersion(pkg, this.options.taskData.packageDir);
@@ -388,18 +388,18 @@ exports.add = function add(modules) {
 					},
 				},
 			}));
-				
-					
+
+
 			make.REGISTER(doodad.BASE(doodad.Object.$extend(
 			{
 				$TYPE_NAME: 'Operation',
-					
+
 				taskData: doodad.PUBLIC( null ),
-					
+
 				execute: doodad.PUBLIC(doodad.ASYNC(doodad.MUST_OVERRIDE())), // function execute(command, item, /*optional*/options)
 			})));
-					
-					
+
+
 			make.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Task',
@@ -433,7 +433,7 @@ exports.add = function add(modules) {
 							} else {
 								this.packageDir = cwd;
 							};
-							
+
 							let manifestTemplate = types.get(item, 'manifestTemplate');
 							if (types.isString(manifestTemplate)) {
 								manifestTemplate = this.parseVariables(manifestTemplate, { isPath: true });
@@ -443,22 +443,22 @@ exports.add = function add(modules) {
 							};
 
 							const templ = JSON.parse(nodeFsReadFileSync(modules.resolve(manifestTemplate), 'utf-8'));
-							this.manifestPath = this.combineWithPackageDir('./package.json').toString();					
+							this.manifestPath = this.combineWithPackageDir('./package.json').toString();
 							this.manifest = JSON.parse(nodeFsReadFileSync(modules.resolve(this.manifestPath), 'utf-8'));
 							this.manifest = tools.depthExtend(extendFn, {}, templ, this.manifest);
 							delete this.manifest['//']; // remove comments
-								
+
 							const makeTempl = JSON.parse(nodeFsReadFileSync(modules.resolve(modulePath.combine('res/make.templ.json')), 'utf-8'));
 							this.makeManifest = JSON.parse(nodeFsReadFileSync(modules.resolve(this.combineWithPackageDir('./make.json')), 'utf-8'));
 							this.makeManifest = tools.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
 							delete this.makeManifest['//']; // remove comments
-								
+
 							this.sourceDir = this.combineWithPackageDir(types.get(this.makeManifest, 'sourceDir', './src'));
 							this.buildDir = this.combineWithPackageDir(types.get(this.makeManifest, 'buildDir', './build'));
 							this.installDir = this.combineWithPackageDir(types.get(this.makeManifest, 'installDir', './dist'));
 							this.browserifyDir = this.combineWithPackageDir(types.get(this.makeManifest, 'browserifyDir', './browserify'));
 						},
-							
+
 						combineWithPackageDir: function combineWithPackageDir(path, options) {
 							path = files.parsePath(path);
 							if (path.isRelative) {
@@ -466,7 +466,7 @@ exports.add = function add(modules) {
 							};
 							return path;
 						},
-							
+
 						parseVariables: function parseVariables(val, /*optional*/options) {
 							function solvePath(path, /*optional*/os) {
 								return files.parsePath(path, {
@@ -474,7 +474,7 @@ exports.add = function add(modules) {
 									dirChar: null,
 								});
 							};
-								
+
 							const isPath = types.get(options, 'isPath', false);
 
 							let path = val;
@@ -483,7 +483,7 @@ exports.add = function add(modules) {
 							} else {
 								path = [types.toString(path)];
 							};
-								
+
 							const os = tools.getOS();
 
 							if (path.length && (path[0][0] === '~')) {
@@ -596,7 +596,7 @@ exports.add = function add(modules) {
 											value = solvePath(value, os.type);
 										};
 									};
-										
+
 									if (value instanceof files.Path) {
 										if ((i > 0) && !value.isRelative) {
 											throw types.Error("Path in '~0~' can't be inserted because it is an absolute path.", [name]);
@@ -609,7 +609,7 @@ exports.add = function add(modules) {
 									} else {
 										result += types.toString(value);
 									};
-										
+
 									start = str.indexOf('%', end + 1);
 									if (start >= 0) {
 										result += str.slice(end + 1, start);
@@ -619,7 +619,7 @@ exports.add = function add(modules) {
 										end = -1;
 									};
 								};
-									
+
 								if (changed) {
 									if (isPath) {
 										path.splice.apply(path, tools.append([i, 1], solvePath(result, os.type).toArray()));
@@ -630,7 +630,7 @@ exports.add = function add(modules) {
 									i++;
 								};
 							};
-								
+
 							if (isPath) {
 								return files.parsePath(path);
 							} else {
@@ -639,7 +639,7 @@ exports.add = function add(modules) {
 						},
 					};
 				}),
-					
+
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 					if (!this.taskData || types.get(item, 'source')) {
 						this.taskData = this.createTaskData();
@@ -654,7 +654,7 @@ exports.add = function add(modules) {
 					const proceed = function proceed(index) {
 						if (index < task.operations.length) {
 							const op = task.operations[index];
-								
+
 							const clsName = op['class'];
 
 							let obj;
@@ -663,7 +663,7 @@ exports.add = function add(modules) {
 							} else {
 								obj = clsName;
 							};
-								
+
 							if (!types._implements(obj, make.Operation)) {
 								throw new types.Error("Invalid class '~0~'.", [clsName]);
 							};
@@ -673,13 +673,13 @@ exports.add = function add(modules) {
 							};
 
 							obj.taskData = this.taskData;
-								
+
 							let promise = obj.execute(name, op, options);
-								
+
 							if (!types.isPromise(promise)) {
 								promise = Promise.resolve(promise);
 							};
-								
+
 							return promise
 								.then(function(newOps) {
 									if (!types.isNothing(newOps)) {
@@ -694,14 +694,14 @@ exports.add = function add(modules) {
 
 						return undefined;
 					};
-						
+
 					tools.log(tools.LogLevels.Debug, "Starting task '~0~'...", [name]);
-						
+
 					return proceed.call(this, 0);
 				}),
 			}));
-					
-					
+
+
 			makeModules.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Load',
@@ -775,8 +775,8 @@ exports.add = function add(modules) {
 						});
 				}),
 			}));
-				
-				
+
+
 			file.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Delete',
@@ -964,7 +964,7 @@ exports.add = function add(modules) {
 			file.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Javascript',
-					
+
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 					let source = item.source;
 					if (types.isString(source)) {
@@ -1009,7 +1009,7 @@ exports.add = function add(modules) {
 									types.DESTROY(jsStream);
 									types.DESTROY(inputStream);
 									types.DESTROY(outputStream);
-										
+
 									if (err) {
 										throw err;
 									} else {
@@ -1023,12 +1023,12 @@ exports.add = function add(modules) {
 				}),
 			}));
 
-				
+
 /* TODO: Complete and test
 			spawn.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Node',
-					
+
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional* /options) {
 					let source = item.source;
 					if (types.isString(source)) {
@@ -1050,11 +1050,11 @@ exports.add = function add(modules) {
 				}),
 			}));
 */
-				
-				
+
+
 			generate.REGISTER(make.Operation.$extend({
 				$TYPE_NAME: 'Configuration',
-					
+
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 					let destination = item.destination;
 					if (types.isString(destination)) {
@@ -1084,7 +1084,7 @@ exports.add = function add(modules) {
 				}),
 			}));
 
-				
+
 			__Internal__.getBuiltFileName = function getBuiltFileName(fileName, /*optional*/mjs) {
 				return _shared.Natives.stringReplace.call(fileName, __Internal__.searchJsExtRegExp, (mjs ? ".min.mjs" : ".min.js"));
 			};
@@ -1093,16 +1093,16 @@ exports.add = function add(modules) {
 			__Internal__.getBaseName = function getBaseName(name) {
 				return ((name[0] === '@') ? name.split('/', 3).slice(0, 2).join('/') : name.split('/', 2)[0]);
 			};
-				
+
 
 			generate.REGISTER(make.Operation.$extend({
 				$TYPE_NAME: 'Package',
 
 				execute_MAKE: doodad.PROTECTED(function execute_MAKE(command, item, /*optional*/options) {
 					const ops = [];
-						
+
 					const taskData = this.taskData;
-						
+
 					let indexTemplate = types.get(item, 'indexTemplate');
 					if (types.isString(indexTemplate)) {
 						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
@@ -1110,7 +1110,7 @@ exports.add = function add(modules) {
 					if (!indexTemplate) {
 						indexTemplate = modulePath.combine('res/index.templ.js');
 					};
-						
+
 					let indexTemplateMjs = types.get(item, 'indexTemplateMjs');
 					if (types.isString(indexTemplateMjs)) {
 						indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isPath: true });
@@ -1118,7 +1118,7 @@ exports.add = function add(modules) {
 					if (!indexTemplateMjs) {
 						indexTemplateMjs = modulePath.combine('res/index.templ.mjs');
 					};
-						
+
 					let testTemplate = types.get(item, 'testTemplate');
 					if (types.isString(testTemplate)) {
 						testTemplate = taskData.parseVariables(testTemplate, { isPath: true });
@@ -1126,17 +1126,17 @@ exports.add = function add(modules) {
 					if (!testTemplate) {
 						testTemplate = modulePath.combine('res/test_package.templ.js');
 					};
-						
+
 					// Get server dependencies
 					const dependencies = tools.filter(taskData.makeManifest.dependencies, function(dep) {
 						return dep.server;
 					});
-						
+
 					// Get server modules
 					const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
 						return mod.server;
 					});
-						
+
 					// Get server resources
 					const resources = tools.filter(taskData.makeManifest.resources, function(res) {
 						return res.server;
@@ -1156,7 +1156,7 @@ exports.add = function add(modules) {
 							},
 						};
 					}));
-						
+
 					// Build modules (mjs)
 					if (taskData.makeManifest.mjs) {
 						tools.append(ops, tools.map(modules, function(mod) {
@@ -1173,7 +1173,7 @@ exports.add = function add(modules) {
 							};
 						}));
 					};
-						
+
 					// Build index (CommonJs)
 					ops.push(
 						{
@@ -1275,7 +1275,7 @@ exports.add = function add(modules) {
 												version: taskData.manifest.version,
 												optional: false,
 												path: null
-											}, 
+											},
 											{
 												name: '@doodad-js/test',
 												version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
@@ -1323,7 +1323,7 @@ exports.add = function add(modules) {
 											version: taskData.manifest.version,
 											optional: false,
 											path: null
-										}, 
+										},
 										{
 											name: '@doodad-js/test',
 											version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
@@ -1360,9 +1360,9 @@ exports.add = function add(modules) {
 							destination: '%BUILDDIR%/' + res.source,
 						};
 					}));
-						
+
 					// Copy license
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Copy,
 							source: '%PACKAGEDIR%/LICENSE',
@@ -1371,7 +1371,7 @@ exports.add = function add(modules) {
 					);
 
 					// Generate config file
-					ops.push( 
+					ops.push(
 						{
 							'class': generate.Configuration,
 							destination: '%PACKAGEDIR%/config.json',
@@ -1380,12 +1380,12 @@ exports.add = function add(modules) {
 
 					return ops;
 				}),
-					
+
 				execute_INSTALL: doodad.PROTECTED(function execute_INSTALL(command, item, /*optional*/options) {
 					const ops = [];
 
 					const taskData = this.taskData;
-						
+
 					let indexTemplate = types.get(item, 'indexTemplate');
 					if (types.isString(indexTemplate)) {
 						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
@@ -1393,7 +1393,7 @@ exports.add = function add(modules) {
 					if (!indexTemplate) {
 						indexTemplate = modulePath.combine('res/package.templ.js');
 					};
-						
+
 					let indexTemplateMjs = types.get(item, 'indexTemplateMjs');
 					if (types.isString(indexTemplateMjs)) {
 						indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isPath: true });
@@ -1401,7 +1401,7 @@ exports.add = function add(modules) {
 					if (!indexTemplateMjs) {
 						indexTemplateMjs = modulePath.combine('res/package.templ.mjs');
 					};
-						
+
 					let testTemplate = types.get(item, 'testTemplate');
 					if (types.isString(testTemplate)) {
 						testTemplate = taskData.parseVariables(testTemplate, { isPath: true });
@@ -1409,7 +1409,7 @@ exports.add = function add(modules) {
 					if (!testTemplate) {
 						testTemplate = modulePath.combine('res/test_package.templ.js');
 					};
-						
+
 					// Get full client dependencies graph for modules auto-load.
 					const MAX_GRAPH_LEVEL = 50;
 					const loopDeps = function _loopDeps(deps, result, level) {
@@ -1431,12 +1431,12 @@ exports.add = function add(modules) {
 					const depsGraph = tools.unique(function(dep1, dep2) {
 						return (dep1.name === dep2.name);
 					}, loopDeps(taskData.makeManifest.dependencies, [], 0));
-						
+
 					// Get client modules
 					const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
 						return mod.client;
 					});
-						
+
 					// Get client resources
 					const resources = tools.filter(taskData.makeManifest.resources, function(res) {
 						return res.client;
@@ -1459,7 +1459,7 @@ exports.add = function add(modules) {
 							},
 						};
 					}));
-						
+
 					// Build modules (build)
 					tools.append(ops, tools.map(modules, function(mod) {
 						return {
@@ -1475,7 +1475,7 @@ exports.add = function add(modules) {
 							},
 						};
 					}));
-						
+
 					// Copy resources
 					tools.append(ops, tools.map(resources, function(res) {
 						return {
@@ -1484,9 +1484,9 @@ exports.add = function add(modules) {
 							destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.source,
 						};
 					}));
-						
+
 					// Generate config file
-					ops.push( 
+					ops.push(
 						{
 							'class': generate.Configuration,
 							destination: '%INSTALLDIR%/%PACKAGENAME%/config.json',
@@ -1495,7 +1495,7 @@ exports.add = function add(modules) {
 
 					// Create bundle (debug)
 					// NOTE: Temporary file.
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Merge,
 							source: tools.map(tools.filter(modules, function(mod) {
@@ -1537,7 +1537,7 @@ exports.add = function add(modules) {
 							},
 						}
 					);
-						
+
 					// Create package (debug, mjs)
 					if (taskData.makeManifest.mjs) {
 						ops.push(
@@ -1569,10 +1569,10 @@ exports.add = function add(modules) {
 							}
 						);
 					};
-						
+
 					// Create bundle (build)
 					// NOTE: Temporary file.
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Merge,
 							source: tools.map(tools.filter(modules, function(mod) {
@@ -1586,7 +1586,7 @@ exports.add = function add(modules) {
 					);
 
 					// Create package (build, CommonJs)
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Javascript,
 							source: indexTemplate,
@@ -1617,7 +1617,7 @@ exports.add = function add(modules) {
 
 					// Create package (build, mjs)
 					if (taskData.makeManifest.mjs) {
-						ops.push( 
+						ops.push(
 							{
 								'class': file.Javascript,
 								source: indexTemplateMjs,
@@ -1649,7 +1649,7 @@ exports.add = function add(modules) {
 
 					// Create tests bundle (debug)
 					// NOTE: Temporary file.
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Merge,
 							source: tools.map(tools.filter(modules, function(mod) {
@@ -1685,7 +1685,7 @@ exports.add = function add(modules) {
 												version: taskData.manifest.version,
 												optional: false,
 												path: null
-											}, 
+											},
 											{
 												name: '@doodad-js/test',
 												version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
@@ -1706,10 +1706,10 @@ exports.add = function add(modules) {
 							},
 						}
 					);
-						
+
 					// Create tests bundle (build)
 					// NOTE: Temporary file.
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Merge,
 							source: tools.map(tools.filter(modules, function(mod) {
@@ -1743,7 +1743,7 @@ exports.add = function add(modules) {
 												version: taskData.manifest.version,
 												optional: false,
 												path: null
-											}, 
+											},
 											{
 												name: '@doodad-js/test',
 												version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
@@ -1764,9 +1764,9 @@ exports.add = function add(modules) {
 							},
 						}
 					);
-						
+
 					// Copy license file
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Copy,
 							source: '%PACKAGEDIR%/LICENSE',
@@ -1775,7 +1775,7 @@ exports.add = function add(modules) {
 					);
 
 					// Cleanup
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Delete,
 							source: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
@@ -1796,12 +1796,12 @@ exports.add = function add(modules) {
 
 					return ops;
 				}),
-					
+
 				execute_BROWSERIFY: doodad.PROTECTED(function execute_BROWSERIFY(command, item, /*optional*/options) {
 					const ops = [];
-						
+
 					const taskData = this.taskData;
-						
+
 					let indexTemplate = types.get(item, 'indexTemplate');
 					if (types.isString(indexTemplate)) {
 						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
@@ -1809,7 +1809,7 @@ exports.add = function add(modules) {
 					if (!indexTemplate) {
 						indexTemplate = modulePath.combine('res/browserify.templ.js');
 					};
-						
+
 					// Get browserify dependencies
 					const dependencies = tools.map(tools.filter(taskData.makeManifest.dependencies, function(dep) {
 							return dep.browserify && !dep.test;
@@ -1823,17 +1823,17 @@ exports.add = function add(modules) {
 								type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
 							};
 						});
-						
+
 					// Get browserify modules
 					const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
 						return mod.browserify && !mod.test;
 					});
-						
+
 					// Get browserify resources
 					const resources = tools.filter(taskData.makeManifest.resources, function(res) {
 						return res.browserify;
 					});
-						
+
 					// Build modules (build)
 					tools.append(ops, tools.map(modules, function(mod) {
 						return {
@@ -1847,7 +1847,7 @@ exports.add = function add(modules) {
 							},
 						};
 					}));
-						
+
 					// Build modules (debug)
 					tools.append(ops, tools.map(modules, function(mod) {
 						return {
@@ -1865,7 +1865,7 @@ exports.add = function add(modules) {
 							},
 						};
 					}));
-						
+
 					// Generate resources files for browserify
 					tools.append(ops, tools.map(resources, function(res) {
 						return {
@@ -1880,11 +1880,11 @@ exports.add = function add(modules) {
 							filter: types.get(res, 'filter'),
 						};
 					}));
-						
+
 					const browserifyDest = taskData.parseVariables('%BROWSERIFYDIR%', {isPath: true});
 
 					// Build main file (build)
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Javascript,
 							source: indexTemplate,
@@ -1913,9 +1913,9 @@ exports.add = function add(modules) {
 							},
 						}
 					);
-						
+
 					// Build main file (debug)
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Javascript,
 							source: indexTemplate,
@@ -1946,9 +1946,9 @@ exports.add = function add(modules) {
 							},
 						}
 					);
-						
+
 					// Copy license
-					ops.push( 
+					ops.push(
 						{
 							'class': file.Copy,
 							source: '%PACKAGEDIR%/LICENSE',
@@ -1958,7 +1958,7 @@ exports.add = function add(modules) {
 
 					return ops;
 				}),
-					
+
 				execute_WEBPACK: doodad.PROTECTED(function execute_WEBPACK(command, item, /*optional*/options) {
 					let configTemplate = types.get(item, 'configTemplate');
 					if (types.isString(configTemplate)) {
@@ -1994,8 +1994,8 @@ exports.add = function add(modules) {
 					};
 				}),
 			}));
-				
-				
+
+
 			browserify.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Resources',
@@ -2018,7 +2018,7 @@ exports.add = function add(modules) {
 					if (types.isString(resFile)) {
 						resFile = this.taskData.parseVariables(resFile, { isPath: true });
 					};
-						
+
 					let resourcesTemplate = types.get(item, 'resourcesTemplate');
 					if (types.isString(resourcesTemplate)) {
 						resourcesTemplate = this.taskData.parseVariables(resourcesTemplate, { isPath: true });
@@ -2030,7 +2030,7 @@ exports.add = function add(modules) {
 					const filter = (types.get(item, 'filter', '') ? new _shared.Natives.windowRegExp(item.filter) : null);
 
 					const fullSource = sourceBase.combine(source);
-						
+
 					resFile = dest.combine(resFile);
 					tools.log(tools.LogLevels.Info, "Preparing resources for 'browserify' from '~0~' to '~1~'...", [source, dest]);
 					const self = this;
@@ -2048,12 +2048,12 @@ exports.add = function add(modules) {
 									})
 									.then(function(content) {
 										return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
-											nodeFs.writeFile(dest.combine(resource.dest).toString(), 
+											nodeFs.writeFile(dest.combine(resource.dest).toString(),
 															// TODO: See how I can formulate this
-															//'// This file is built from the file \'' + resource.source.file + '\' from the project package named \'' + 
-															//	this.taskData.manifest.name + '\' hosted by the \'npmjs.com\' web site, ' + 
-															//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' + 
-															'// When not mentionned otherwise, the following is Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n' + 
+															//'// This file is built from the file \'' + resource.source.file + '\' from the project package named \'' +
+															//	this.taskData.manifest.name + '\' hosted by the \'npmjs.com\' web site, ' +
+															//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' +
+															'// When not mentionned otherwise, the following is Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n' +
 															'module.exports=' + tools.toSource(content), (item.encoding || 'utf-8'), function(err) {
 												if (err) {
 													reject(err);
@@ -2092,7 +2092,7 @@ exports.add = function add(modules) {
 								};
 								return result;
 							};
-								
+
 							function reducePatterns(level, pattern) {
 								let code = "switch(tmp[" + types.toString(level) + "]) {";
 								tools.forEach(pattern, function(val, key) {
@@ -2108,7 +2108,7 @@ exports.add = function add(modules) {
 								code += "}";
 								return code;
 							};
-							
+
 							const rp = files.parsePath('/', {os: 'linux'});
 							const result = tools.reduce(resources, function(result, resource) {
 								const sourceAr = rp.combine(resource.source).toArray({trim: true}),
@@ -2116,9 +2116,9 @@ exports.add = function add(modules) {
 									buildPatterns(0, sourceAr, destStr, result);
 									return result;
 							}, {});
-							
+
 							const resBody = reducePatterns(0, result);
-							
+
 							// Returns new operation
 							return {
 								'class': file.Javascript,
@@ -2207,7 +2207,7 @@ exports.add = function add(modules) {
 				}),
 			}));
 
-				
+
 			webpack.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Bundle',
@@ -2253,7 +2253,7 @@ exports.add = function add(modules) {
 				}),
 			}));
 
-				
+
 			update.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Manifest',
@@ -2262,9 +2262,9 @@ exports.add = function add(modules) {
 
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 					tools.log(tools.LogLevels.Info, "Updating manifest...");
-						
+
 					const taskData = this.taskData;
-						
+
 					const manifest = tools.depthExtend(15, {}, taskData.manifest, {
 						dependencies: tools.reduce(tools.filter(taskData.makeManifest.dependencies, function(dep) {
 								return !dep.test;
@@ -2273,7 +2273,7 @@ exports.add = function add(modules) {
 								return result;
 							}, {}),
 					});
-						
+
 					const getNodeVersion = function getVersion(pkg) {
 						let manifest = null;
 						try {
@@ -2294,14 +2294,14 @@ exports.add = function add(modules) {
 					};
 
 					manifest.version = getNodeVersion(manifest.name);
- 
+
 					manifest.files = tools.unique(manifest.files || [],
 						(taskData.makeManifest.sourceDir.isRelative ? [taskData.makeManifest.sourceDir.toString()] : undefined),
 						(taskData.makeManifest.buildDir.isRelative ? [taskData.makeManifest.buildDir.toString()] : undefined),
 						(taskData.makeManifest.browserifyDir.isRelative ? [taskData.makeManifest.browserifyDir.toString()] : undefined),
 						(taskData.makeManifest.installDir.isRelative ? [taskData.makeManifest.installDir.toString()] : undefined)
 					);
-						
+
 					for (let i = 0; i < this.DEPS_KEYS.length; i++) {
 						const depKey = this.DEPS_KEYS[i];
 						const deps = manifest[depKey];
@@ -2315,9 +2315,9 @@ exports.add = function add(modules) {
 							};
 						};
 					};
-						
+
 					const content = JSON.stringify(manifest, null, 4);
-						
+
 					return Promise.create(function writeManifestPromise(resolve, reject) {
 							nodeFs.writeFile(taskData.manifestPath, content, {encoding: 'utf-8'}, function(err, result) {
 								if (err) {
@@ -2333,7 +2333,7 @@ exports.add = function add(modules) {
 				}),
 			}));
 
-				
+
 			makeUUIDS.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Load',
@@ -2443,7 +2443,7 @@ exports.add = function add(modules) {
 				}),
 			}));
 
-				
+
 			makeUUIDS.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Forget',
