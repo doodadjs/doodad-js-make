@@ -26,12 +26,12 @@
 
 
 //! IF_SET("mjs")
-	//! INJECT("import {default as nodeChildProcess} from 'child_process';");
+//! INJECT("import {default as nodeChildProcess} from 'child_process';");
 
 //! ELSE()
-	"use strict";
+"use strict";
 
-	const nodeChildProcess = require('child_process');
+const nodeChildProcess = require('child_process');
 //! END_IF()
 
 const nodeChildProcessSpawn = nodeChildProcess.spawn;
@@ -71,79 +71,79 @@ exports.add = function add(modules) {
 
 
 			makeTest.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Run',
+				{
+					$TYPE_NAME: 'Run',
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					const TEST_PKG = "@doodad-js/test";
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						const TEST_PKG = "@doodad-js/test";
 
-					const Promise = types.getPromise();
+						const Promise = types.getPromise();
 
-					const taskData = this.taskData;
+						const taskData = this.taskData;
 
-					const packageDir = taskData.packageDir;
+						const packageDir = taskData.packageDir;
 
-					const install = function _install() {
-						return Promise.create(function nodeJsForkPromise(resolve, reject) {
-							tools.log(tools.LogLevels.Info, "Installing the test application...");
+						const install = function _install() {
+							return Promise.create(function nodeJsForkPromise(resolve, reject) {
+								tools.log(tools.LogLevels.Info, "Installing the test application...");
 
-							const options = {
-								shell: true,
-								env: tools.extend({}, process.env, {NODE_ENV: 'development'}),
-								stdio: [0, 1, 2],
-								cwd: packageDir.toApiString(),
-							};
-
-							const cp = nodeChildProcessSpawn("npm", ['install', TEST_PKG, '--no-save'], options);
-
-							cp.on('close', function cpOnClose(status) {
-								if (status !== 0) {
-									reject(new types.Error("'NPM' exited with code '~0~'.", [status]));
-								} else {
-									resolve();
+								const options = {
+									shell: true,
+									env: tools.extend({}, process.env, {NODE_ENV: 'development'}),
+									stdio: [0, 1, 2],
+									cwd: packageDir.toApiString(),
 								};
+
+								const cp = nodeChildProcessSpawn("npm", ['install', TEST_PKG, '--no-save'], options);
+
+								cp.on('close', function cpOnClose(status) {
+									if (status !== 0) {
+										reject(new types.Error("'NPM' exited with code '~0~'.", [status]));
+									} else {
+										resolve();
+									};
+								});
 							});
-						});
-					};
+						};
 
-					const launch = function _launch(firstAttempt) {
-						return Promise.create(function nodeJsForkPromise(resolve, reject) {
-							tools.log(tools.LogLevels.Info, "Launching the test application...");
+						const launch = function _launch(firstAttempt) {
+							return Promise.create(function nodeJsForkPromise(resolve, reject) {
+								tools.log(tools.LogLevels.Info, "Launching the test application...");
 
-							const appDir = files.Path.parse(modules.resolve(TEST_PKG)).set({file: ''});
+								const appDir = files.Path.parse(modules.resolve(TEST_PKG)).set({file: ''});
 
-							const options = {
-								shell: true,
-								env: tools.extend({}, process.env),
-								stdio: [0, 1, 2],
-								cwd: appDir.toApiString(),
-							};
-
-							const cp = nodeChildProcessSpawn("npm", ['run', 'test'], options);
-
-							cp.on('close', function cpOnClose(status) {
-								if (status !== 0) {
-									reject(new types.Error("'NPM' exited with code '~0~'.", [status]));
-								} else {
-									resolve();
+								const options = {
+									shell: true,
+									env: tools.extend({}, process.env),
+									stdio: [0, 1, 2],
+									cwd: appDir.toApiString(),
 								};
-							});
-						})
-						.catch(function catchLaunch(err) {
-							if (firstAttempt) {
-								return install()
-									.then(dummy => launch(false));
-							};
-							throw err;
-						});
-					};
 
-					return launch(true)
-						.then(function thenNothing(dummy) {
+								const cp = nodeChildProcessSpawn("npm", ['run', 'test'], options);
+
+								cp.on('close', function cpOnClose(status) {
+									if (status !== 0) {
+										reject(new types.Error("'NPM' exited with code '~0~'.", [status]));
+									} else {
+										resolve();
+									};
+								});
+							})
+								.catch(function catchLaunch(err) {
+									if (firstAttempt) {
+										return install()
+											.then(dummy => launch(false));
+									};
+									throw err;
+								});
+						};
+
+						return launch(true)
+							.then(function thenNothing(dummy) {
 							// Returns nothing
-						});
-				}),
-			}));
+							});
+					}),
+				}));
 
 
 			//===================================

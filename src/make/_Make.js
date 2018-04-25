@@ -26,22 +26,22 @@
 
 
 //! IF_SET("mjs")
-	//! INJECT("import {default as nodeFs} from 'fs';")
-	//! INJECT("import {default as npc} from 'npm-package-config';")
+//! INJECT("import {default as nodeFs} from 'fs';")
+//! INJECT("import {default as npc} from 'npm-package-config';")
 
-	// TODO: Make them optional again.
-	//! INJECT("import {default as nodeBrowserify} from 'browserify';")
-	//! INJECT("import {default as nodeWebpack} from 'webpack';")
-	//! INJECT("import {default as nodeESLint} from 'eslint';")
+// TODO: Make them optional again.
+//! INJECT("import {default as nodeBrowserify} from 'browserify';")
+//! INJECT("import {default as nodeWebpack} from 'webpack';")
+//! INJECT("import {default as nodeESLint} from 'eslint';")
 
 //! ELSE()
-	"use strict";
+"use strict";
 
-	const nodeFs = require('fs'),
-		npc = require('@doodad-js/npc'),
-		nodeBrowserify = require('browserify'),
-		nodeWebpack = require('webpack'),
-		nodeESLint = require('eslint');
+const nodeFs = require('fs'),
+	npc = require('@doodad-js/npc'),
+	nodeBrowserify = require('browserify'),
+	nodeWebpack = require('webpack'),
+	nodeESLint = require('eslint');
 //! END_IF()
 
 const nodeFsCreateReadStream = nodeFs.createReadStream,
@@ -391,481 +391,481 @@ exports.add = function add(modules) {
 
 
 			make.REGISTER(doodad.BASE(doodad.Object.$extend(
-			{
-				$TYPE_NAME: 'Operation',
+				{
+					$TYPE_NAME: 'Operation',
 
-				taskData: doodad.PUBLIC( null ),
+					taskData: doodad.PUBLIC( null ),
 
-				execute: doodad.PUBLIC(doodad.ASYNC(doodad.MUST_OVERRIDE())), // function execute(command, item, /*optional*/options)
-			})));
+					execute: doodad.PUBLIC(doodad.ASYNC(doodad.MUST_OVERRIDE())), // function execute(command, item, /*optional*/options)
+				})));
 
 
 			make.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Task',
+				{
+					$TYPE_NAME: 'Task',
 
-				createTaskData: doodad.PROTECTED(function createTaskData() {
-					return {
-						init: function init(command, item, /*optional*/options) {
-							const extendFn = function(result, val, key, extend) {
-								if (types.isArray(val)) {
-									result[key] = tools.unique(result[key], val);
-								} else if (types.isObject(val)) {
-									const resultVal = result[key];
-									if (types.isNothing(resultVal)) {
-										result[key] = extend({}, val);
-									} else if (types.isObjectLike(resultVal)) {
-										extend(resultVal, val);
+					createTaskData: doodad.PROTECTED(function createTaskData() {
+						return {
+							init: function init(command, item, /*optional*/options) {
+								const extendFn = function(result, val, key, extend) {
+									if (types.isArray(val)) {
+										result[key] = tools.unique(result[key], val);
+									} else if (types.isObject(val)) {
+										const resultVal = result[key];
+										if (types.isNothing(resultVal)) {
+											result[key] = extend({}, val);
+										} else if (types.isObjectLike(resultVal)) {
+											extend(resultVal, val);
+										} else {
+											result[key] = val;
+										};
 									} else {
 										result[key] = val;
 									};
-								} else {
-									result[key] = val;
 								};
-							};
 
-							this.command = command;
+								this.command = command;
 
-							const source = types.get(item, 'source');
-							if (source) {
-								this.packageDir = files.parsePath(source);
-								modules.addSearchPath(this.packageDir);
-							} else {
-								this.packageDir = cwd;
-							};
+								const source = types.get(item, 'source');
+								if (source) {
+									this.packageDir = files.parsePath(source);
+									modules.addSearchPath(this.packageDir);
+								} else {
+									this.packageDir = cwd;
+								};
 
-							let manifestTemplate = types.get(item, 'manifestTemplate');
-							if (types.isString(manifestTemplate)) {
-								manifestTemplate = this.parseVariables(manifestTemplate, { isPath: true });
-							};
-							if (!manifestTemplate) {
-								manifestTemplate = modulePath.combine('res/package.templ.json');
-							};
+								let manifestTemplate = types.get(item, 'manifestTemplate');
+								if (types.isString(manifestTemplate)) {
+									manifestTemplate = this.parseVariables(manifestTemplate, { isPath: true });
+								};
+								if (!manifestTemplate) {
+									manifestTemplate = modulePath.combine('res/package.templ.json');
+								};
 
-							const templ = JSON.parse(nodeFsReadFileSync(modules.resolve(manifestTemplate), 'utf-8'));
-							this.manifestPath = this.combineWithPackageDir('./package.json').toString();
-							this.manifest = JSON.parse(nodeFsReadFileSync(modules.resolve(this.manifestPath), 'utf-8'));
-							this.manifest = tools.depthExtend(extendFn, {}, templ, this.manifest);
-							delete this.manifest['//']; // remove comments
+								const templ = JSON.parse(nodeFsReadFileSync(modules.resolve(manifestTemplate), 'utf-8'));
+								this.manifestPath = this.combineWithPackageDir('./package.json').toString();
+								this.manifest = JSON.parse(nodeFsReadFileSync(modules.resolve(this.manifestPath), 'utf-8'));
+								this.manifest = tools.depthExtend(extendFn, {}, templ, this.manifest);
+								delete this.manifest['//']; // remove comments
 
-							const makeTempl = JSON.parse(nodeFsReadFileSync(modules.resolve(modulePath.combine('res/make.templ.json')), 'utf-8'));
-							this.makeManifest = JSON.parse(nodeFsReadFileSync(modules.resolve(this.combineWithPackageDir('./make.json')), 'utf-8'));
-							this.makeManifest = tools.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
-							delete this.makeManifest['//']; // remove comments
+								const makeTempl = JSON.parse(nodeFsReadFileSync(modules.resolve(modulePath.combine('res/make.templ.json')), 'utf-8'));
+								this.makeManifest = JSON.parse(nodeFsReadFileSync(modules.resolve(this.combineWithPackageDir('./make.json')), 'utf-8'));
+								this.makeManifest = tools.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
+								delete this.makeManifest['//']; // remove comments
 
-							this.sourceDir = this.combineWithPackageDir(types.get(this.makeManifest, 'sourceDir', './src'));
-							this.buildDir = this.combineWithPackageDir(types.get(this.makeManifest, 'buildDir', './build'));
-							this.installDir = this.combineWithPackageDir(types.get(this.makeManifest, 'installDir', './dist'));
-							this.browserifyDir = this.combineWithPackageDir(types.get(this.makeManifest, 'browserifyDir', './browserify'));
-						},
+								this.sourceDir = this.combineWithPackageDir(types.get(this.makeManifest, 'sourceDir', './src'));
+								this.buildDir = this.combineWithPackageDir(types.get(this.makeManifest, 'buildDir', './build'));
+								this.installDir = this.combineWithPackageDir(types.get(this.makeManifest, 'installDir', './dist'));
+								this.browserifyDir = this.combineWithPackageDir(types.get(this.makeManifest, 'browserifyDir', './browserify'));
+							},
 
-						combineWithPackageDir: function combineWithPackageDir(path, options) {
-							path = files.parsePath(path);
-							if (path.isRelative) {
-								path = this.packageDir.combine(path);
-							};
-							return path;
-						},
+							combineWithPackageDir: function combineWithPackageDir(path, options) {
+								path = files.parsePath(path);
+								if (path.isRelative) {
+									path = this.packageDir.combine(path);
+								};
+								return path;
+							},
 
-						parseVariables: function parseVariables(val, /*optional*/options) {
-							function solvePath(path, /*optional*/os) {
-								return files.parsePath(path, {
-									os: (os || 'linux'),
-									dirChar: null,
-								});
-							};
+							parseVariables: function parseVariables(val, /*optional*/options) {
+								function solvePath(path, /*optional*/os) {
+									return files.parsePath(path, {
+										os: (os || 'linux'),
+										dirChar: null,
+									});
+								};
 
-							const isPath = types.get(options, 'isPath', false);
+								const isPath = types.get(options, 'isPath', false);
 
-							let path = val;
-							if (isPath) {
-								path = solvePath(path).toArray();
-							} else {
-								path = [types.toString(path)];
-							};
+								let path = val;
+								if (isPath) {
+									path = solvePath(path).toArray();
+								} else {
+									path = [types.toString(path)];
+								};
 
-							const os = tools.getOS();
+								const os = tools.getOS();
 
-							if (path.length && (path[0][0] === '~')) {
-								const scoped = (path[0][1] === '@');
-								const module = (scoped ? path[0].slice(1) + '/' + path[1] : path[0].slice(1));
-								const resolved = modules.resolve(module + '/package.json');
-								path = solvePath(resolved, os.type).set({file: null}).combine(files.Path.parse(path.slice(scoped ? 2 : 1)));
-								path = path.toArray();
-							};
+								if (path.length && (path[0][0] === '~')) {
+									const scoped = (path[0][1] === '@');
+									const module = (scoped ? path[0].slice(1) + '/' + path[1] : path[0].slice(1));
+									const resolved = modules.resolve(module + '/package.json');
+									path = solvePath(resolved, os.type).set({file: null}).combine(files.Path.parse(path.slice(scoped ? 2 : 1)));
+									path = path.toArray();
+								};
 
-							for (let i = 0; i < path.length; ) {
-								const str = path[i];
+								for (let i = 0; i < path.length; ) {
+									const str = path[i];
 
-								let	start = str.indexOf('%'),
-									end = str.indexOf('%', start + 1),
-									result = ((start > 0) ? str.slice(0, start) : '');
+									let	start = str.indexOf('%'),
+										end = str.indexOf('%', start + 1),
+										result = ((start > 0) ? str.slice(0, start) : '');
 
-								const changed = (start >= 0);
+									const changed = (start >= 0);
 
-								while ((start >= 0) && (end >= 0)) {
-									const name = str.slice(start, end + 1),
-										nameLc = name.toLowerCase();
-									let value;
-									if (nameLc === '%command%') {
-										return this.command;
-									} else if (nameLc === '%packagename%') {
-										if (this.manifest && this.manifest.name) {
-											value = this.manifest.name;
-										} else {
-											throw new types.Error("Package name not specified.");
-										};
-									} else if (nameLc === '%packagename:scope%') {
-										if (this.manifest && this.manifest.name) {
-											value = ((this.manifest.name[0] === '@') ? this.manifest.name.slice(1).split('/')[0] : '');
-										} else {
-											throw new types.Error("Package name not specified.");
-										};
-									} else if (nameLc === '%packagename:name%') {
-										if (this.manifest && this.manifest.name) {
-											value = ((this.manifest.name[0] === '@') ? this.manifest.name.split('/')[1] : this.manifest.name);
-										} else {
-											throw new types.Error("Package name not specified.");
-										};
-									} else if (nameLc === '%packageversion%') {
-										if (this.manifest && this.manifest.version) {
-											value = this.manifest.version;
-										} else {
-											throw new types.Error("Package version not specified.");
-										};
-									} else if (nameLc === '%packagedir%') {
-										if (this.packageDir) {
-											value = solvePath(this.packageDir);
-										} else {
-											throw new types.Error("Package directory not specified.");
-										};
-									} else if (nameLc === '%sourcedir%') {
-										if (this.sourceDir) {
-											value = solvePath(this.sourceDir);
-										} else {
-											throw new types.Error("Source directory not specified.");
-										};
-									} else if (nameLc === '%builddir%') {
-										if (this.buildDir) {
-											value = solvePath(this.buildDir);
-										} else {
-											throw new types.Error("Build directory not specified.");
-										};
-									} else if (nameLc === '%installdir%') {
-										if (this.installDir) {
-											value = solvePath(this.installDir);
-										} else {
-											throw new types.Error("Installation directory not specified.");
-										};
-									} else if (nameLc === '%browserifydir%') {
-										if (this.browserifyDir) {
-											value = solvePath(this.browserifyDir);
-										} else {
-											throw new types.Error("Browserify directory not specified.");
-										};
-									} else if (nameLc === '%programdata%') {
-										if (os.type === 'windows') {
-											value = solvePath(process.env.programdata, os.type);
-										} else {
+									while ((start >= 0) && (end >= 0)) {
+										const name = str.slice(start, end + 1),
+											nameLc = name.toLowerCase();
+										let value;
+										if (nameLc === '%command%') {
+											return this.command;
+										} else if (nameLc === '%packagename%') {
+											if (this.manifest && this.manifest.name) {
+												value = this.manifest.name;
+											} else {
+												throw new types.Error("Package name not specified.");
+											};
+										} else if (nameLc === '%packagename:scope%') {
+											if (this.manifest && this.manifest.name) {
+												value = ((this.manifest.name[0] === '@') ? this.manifest.name.slice(1).split('/')[0] : '');
+											} else {
+												throw new types.Error("Package name not specified.");
+											};
+										} else if (nameLc === '%packagename:name%') {
+											if (this.manifest && this.manifest.name) {
+												value = ((this.manifest.name[0] === '@') ? this.manifest.name.split('/')[1] : this.manifest.name);
+											} else {
+												throw new types.Error("Package name not specified.");
+											};
+										} else if (nameLc === '%packageversion%') {
+											if (this.manifest && this.manifest.version) {
+												value = this.manifest.version;
+											} else {
+												throw new types.Error("Package version not specified.");
+											};
+										} else if (nameLc === '%packagedir%') {
+											if (this.packageDir) {
+												value = solvePath(this.packageDir);
+											} else {
+												throw new types.Error("Package directory not specified.");
+											};
+										} else if (nameLc === '%sourcedir%') {
+											if (this.sourceDir) {
+												value = solvePath(this.sourceDir);
+											} else {
+												throw new types.Error("Source directory not specified.");
+											};
+										} else if (nameLc === '%builddir%') {
+											if (this.buildDir) {
+												value = solvePath(this.buildDir);
+											} else {
+												throw new types.Error("Build directory not specified.");
+											};
+										} else if (nameLc === '%installdir%') {
+											if (this.installDir) {
+												value = solvePath(this.installDir);
+											} else {
+												throw new types.Error("Installation directory not specified.");
+											};
+										} else if (nameLc === '%browserifydir%') {
+											if (this.browserifyDir) {
+												value = solvePath(this.browserifyDir);
+											} else {
+												throw new types.Error("Browserify directory not specified.");
+											};
+										} else if (nameLc === '%programdata%') {
+											if (os.type === 'windows') {
+												value = solvePath(process.env.programdata, os.type);
+											} else {
 											// There is no environment variable for this purpose under Unix-like systems
 											// So I use "package.json"'s "config" section.
-											value = solvePath(__options__.unix.dataPath || "/var/lib/", os.type);
-										};
-									} else if (nameLc === '%programfiles%') {
-										if (os.type === 'windows') {
-											value = solvePath(process.env.programfiles, os.type);
-										} else {
+												value = solvePath(__options__.unix.dataPath || "/var/lib/", os.type);
+											};
+										} else if (nameLc === '%programfiles%') {
+											if (os.type === 'windows') {
+												value = solvePath(process.env.programfiles, os.type);
+											} else {
 											// There is no environment variable for this purpose under Unix-like systems
 											// So I use "package.json"'s "config" section.
-											value = solvePath(__options__.unix.libPath || "/usr/local/lib/", os.type);
-										};
-									} else if ((nameLc === '%appdata%') || (nameLc === '%localappdata%')) {
-										if (os.type === 'windows') {
-											value = solvePath(process.env.appdata || process.env.localappdata, os.type);
+												value = solvePath(__options__.unix.libPath || "/usr/local/lib/", os.type);
+											};
+										} else if ((nameLc === '%appdata%') || (nameLc === '%localappdata%')) {
+											if (os.type === 'windows') {
+												value = solvePath(process.env.appdata || process.env.localappdata, os.type);
+											} else {
+												value = solvePath(process.env.HOME, os.type);
+											};
+											//...
 										} else {
-											value = solvePath(process.env.HOME, os.type);
+											const tmp = name.slice(1, -1);
+											if (!types.has(process.env, tmp)) {
+												throw new types.Error("Invalid environment variable name: '~0~'.", [tmp]);
+											};
+											value = process.env[tmp];
+											if (value.indexOf(os.dirChar) >= 0) {
+												value = solvePath(value, os.type);
+											};
 										};
-									//...
-									} else {
-										const tmp = name.slice(1, -1);
-										if (!types.has(process.env, tmp)) {
-											throw new types.Error("Invalid environment variable name: '~0~'.", [tmp]);
+
+										if (value instanceof files.Path) {
+											if ((i > 0) && !value.isRelative) {
+												throw types.Error("Path in '~0~' can't be inserted because it is an absolute path.", [name]);
+											};
+											result += value.toString({
+												os: os.type,
+												dirChar: null,
+												shell: 'api',
+											});
+										} else {
+											result += types.toString(value);
 										};
-										value = process.env[tmp];
-										if (value.indexOf(os.dirChar) >= 0) {
-											value = solvePath(value, os.type);
+
+										start = str.indexOf('%', end + 1);
+										if (start >= 0) {
+											result += str.slice(end + 1, start);
+											end = str.indexOf('%', start + 1);
+										} else {
+											result += str.slice(end + 1);
+											end = -1;
 										};
 									};
 
-									if (value instanceof files.Path) {
-										if ((i > 0) && !value.isRelative) {
-											throw types.Error("Path in '~0~' can't be inserted because it is an absolute path.", [name]);
+									if (changed) {
+										if (isPath) {
+											path.splice.apply(path, tools.append([i, 1], solvePath(result, os.type).toArray()));
+										} else {
+											path[i] = result;
 										};
-										result += value.toString({
-											os: os.type,
-											dirChar: null,
-											shell: 'api',
-										});
 									} else {
-										result += types.toString(value);
-									};
-
-									start = str.indexOf('%', end + 1);
-									if (start >= 0) {
-										result += str.slice(end + 1, start);
-										end = str.indexOf('%', start + 1);
-									} else {
-										result += str.slice(end + 1);
-										end = -1;
+										i++;
 									};
 								};
 
-								if (changed) {
-									if (isPath) {
-										path.splice.apply(path, tools.append([i, 1], solvePath(result, os.type).toArray()));
-									} else {
-										path[i] = result;
-									};
+								if (isPath) {
+									return files.parsePath(path);
 								} else {
-									i++;
+									return path.join('');
 								};
-							};
+							},
+						};
+					}),
 
-							if (isPath) {
-								return files.parsePath(path);
-							} else {
-								return path.join('');
-							};
-						},
-					};
-				}),
-
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					if (!this.taskData || types.get(item, 'source')) {
-						this.taskData = this.createTaskData();
-						this.taskData.init(command, item, options);
-					};
-
-					let name = types.get(item, 'name');
-					name = this.taskData.parseVariables(name);
-
-					const task = types.get(this.taskData.makeManifest.tasks, name);
-
-					const proceed = function proceed(index) {
-						if (index < task.operations.length) {
-							const op = task.operations[index];
-
-							const clsName = op['class'];
-
-							let obj;
-							if (types.isString(clsName)) {
-								obj = namespaces.get(clsName);
-							} else {
-								obj = clsName;
-							};
-
-							if (!types._implements(obj, make.Operation)) {
-								throw new types.Error("Invalid class '~0~'.", [clsName]);
-							};
-
-							if (types.isType(obj)) {
-								obj = new obj();
-							};
-
-							obj.taskData = this.taskData;
-
-							let promise = obj.execute(name, op, options);
-
-							if (!types.isPromise(promise)) {
-								promise = Promise.resolve(promise);
-							};
-
-							return promise
-								.then(function(newOps) {
-									if (!types.isNothing(newOps)) {
-										if (!types.isArray(newOps)) {
-											newOps = [newOps];
-										};
-										_shared.Natives.arraySplice.apply(task.operations, tools.append([index + 1, 0], newOps));
-									};
-									return proceed.call(this, ++index);
-								}, null, this);
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						if (!this.taskData || types.get(item, 'source')) {
+							this.taskData = this.createTaskData();
+							this.taskData.init(command, item, options);
 						};
 
-						return undefined;
-					};
+						let name = types.get(item, 'name');
+						name = this.taskData.parseVariables(name);
 
-					tools.log(tools.LogLevels.Debug, "Starting task '~0~'...", [name]);
+						const task = types.get(this.taskData.makeManifest.tasks, name);
 
-					return proceed.call(this, 0);
-				}),
-			}));
+						const proceed = function proceed(index) {
+							if (index < task.operations.length) {
+								const op = task.operations[index];
+
+								const clsName = op['class'];
+
+								let obj;
+								if (types.isString(clsName)) {
+									obj = namespaces.get(clsName);
+								} else {
+									obj = clsName;
+								};
+
+								if (!types._implements(obj, make.Operation)) {
+									throw new types.Error("Invalid class '~0~'.", [clsName]);
+								};
+
+								if (types.isType(obj)) {
+									obj = new obj();
+								};
+
+								obj.taskData = this.taskData;
+
+								let promise = obj.execute(name, op, options);
+
+								if (!types.isPromise(promise)) {
+									promise = Promise.resolve(promise);
+								};
+
+								return promise
+									.then(function(newOps) {
+										if (!types.isNothing(newOps)) {
+											if (!types.isArray(newOps)) {
+												newOps = [newOps];
+											};
+											_shared.Natives.arraySplice.apply(task.operations, tools.append([index + 1, 0], newOps));
+										};
+										return proceed.call(this, ++index);
+									}, null, this);
+							};
+
+							return undefined;
+						};
+
+						tools.log(tools.LogLevels.Debug, "Starting task '~0~'...", [name]);
+
+						return proceed.call(this, 0);
+					}),
+				}));
 
 
 			makeModules.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Load',
+				{
+					$TYPE_NAME: 'Load',
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					tools.log(tools.LogLevels.Info, 'Loading required module files...');
-					return modules.load(types.get(item, 'files'), options)
-						.then(function(result) {
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						tools.log(tools.LogLevels.Info, 'Loading required module files...');
+						return modules.load(types.get(item, 'files'), options)
+							.then(function(result) {
 							// Returns nothing
-						});
-				}),
-			}));
-
-
-			folder.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Create',
-
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let dest = item.destination;
-					if (types.isString(dest)) {
-						dest = this.taskData.parseVariables(dest, {isPath: true});
-					};
-					tools.log(tools.LogLevels.Info, "Creating folder '~0~'...", [dest]);
-					return files.mkdir(dest, {async: true})
-						.then(function() {
-							// Returns nothing
-						});
-				}),
-			}));
-
-
-			folder.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Copy',
-
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let source = item.source;
-					if (types.isString(source)) {
-						source = this.taskData.parseVariables(source, { isPath: true });
-					};
-					let dest = item.destination;
-					if (types.isString(dest)) {
-						dest = this.taskData.parseVariables(dest, { isPath: true });
-					};
-					tools.log(tools.LogLevels.Info, "Copying folder '~0~' to '~1~'...", [source, dest]);
-					return files.mkdir(dest, {makeParents: true, async: true})
-						.then(function() {
-							return files.copy(source, dest, {recursive: true, override: true, async: true});
-						})
-						.then(function() {
-							// Returns nothing
-						});
-				}),
-			}));
-
-
-			folder.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Delete',
-
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let dest = item.destination;
-					if (types.isString(dest)) {
-						dest = this.taskData.parseVariables(dest, { isPath: true });
-					};
-					tools.log(tools.LogLevels.Info, "Deleting folder '~0~'...", [dest]);
-					return files.rmdir(dest, {force: true, async: true})
-						.then(function() {
-							// Returns nothing
-						});
-				}),
-			}));
-
-
-			file.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Delete',
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let source = item.source;
-					if (types.isString(source)) {
-						source = this.taskData.parseVariables(source, { isPath: true });
-					};
-					tools.log(tools.LogLevels.Info, "Deleting file '~0~'...", [source]);
-					return files.rm(source, {async: true})
-						.then(function() {
-							// Returns nothing
-						});
-				}),
-			}));
-
-
-			file.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Copy',
-
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let source = item.source;
-					if (types.isString(source)) {
-						source = this.taskData.parseVariables(source, { isPath: true });
-					};
-					let dest = item.destination;
-					if (types.isString(dest)) {
-						dest = this.taskData.parseVariables(dest, { isPath: true });
-					};
-					tools.log(tools.LogLevels.Info, "Copying file '~0~' to '~1~'...", [source, dest]);
-					return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
-						.then(function() {
-							return files.copy(source, dest, {override: true, async: true});
-						})
-						.then(function() {
-							// Returns nothing
-						});
-				}),
-			}));
-
-
-			file.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Merge',
-
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					const taskData = this.taskData;
-					let dest = item.destination;
-					if (types.isString(dest)) {
-						dest = taskData.parseVariables(dest, { isPath: true });
-					};
-					let source = item.source;
-					if (types.isArrayLike(source)) {
-						source = types.toArray(source);
-					} else {
-						source = [source];
-					};
-					const separator = item.separator;
-					const encoding = types.get(item, 'encoding', 'utf-8');
-					tools.log(tools.LogLevels.Info, "Merging files to '~0~'...", [dest]);
-					const createFile = function() {
-						return nodeFsCreateWriteStream(dest.toString({shell: 'api'}));
-					};
-					const writeSeparator = function(outputStream) {
-						if (separator) {
-							return Promise.create(function writePromise(resolve, reject) {
-								outputStream.write(separator, function(err, result) {
-									if (err) {
-										reject(err);
-									} else {
-										resolve(outputStream);
-									};
-								});
 							});
+					}),
+				}));
+
+
+			folder.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Create',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let dest = item.destination;
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, {isPath: true});
 						};
-						return outputStream;
-					};
-					const loopMerge = function(outputStream) {
-						if (source.length) {
-							let src = source.shift();
-							if (types.isString(src)) {
-								src = taskData.parseVariables(src, { isPath: true });
+						tools.log(tools.LogLevels.Info, "Creating folder '~0~'...", [dest]);
+						return files.mkdir(dest, {async: true})
+							.then(function() {
+							// Returns nothing
+							});
+					}),
+				}));
+
+
+			folder.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Copy',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = item.source;
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
+						let dest = item.destination;
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, { isPath: true });
+						};
+						tools.log(tools.LogLevels.Info, "Copying folder '~0~' to '~1~'...", [source, dest]);
+						return files.mkdir(dest, {makeParents: true, async: true})
+							.then(function() {
+								return files.copy(source, dest, {recursive: true, override: true, async: true});
+							})
+							.then(function() {
+							// Returns nothing
+							});
+					}),
+				}));
+
+
+			folder.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Delete',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let dest = item.destination;
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, { isPath: true });
+						};
+						tools.log(tools.LogLevels.Info, "Deleting folder '~0~'...", [dest]);
+						return files.rmdir(dest, {force: true, async: true})
+							.then(function() {
+							// Returns nothing
+							});
+					}),
+				}));
+
+
+			file.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Delete',
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = item.source;
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
+						tools.log(tools.LogLevels.Info, "Deleting file '~0~'...", [source]);
+						return files.rm(source, {async: true})
+							.then(function() {
+							// Returns nothing
+							});
+					}),
+				}));
+
+
+			file.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Copy',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = item.source;
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
+						let dest = item.destination;
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, { isPath: true });
+						};
+						tools.log(tools.LogLevels.Info, "Copying file '~0~' to '~1~'...", [source, dest]);
+						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
+							.then(function() {
+								return files.copy(source, dest, {override: true, async: true});
+							})
+							.then(function() {
+							// Returns nothing
+							});
+					}),
+				}));
+
+
+			file.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Merge',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						const taskData = this.taskData;
+						let dest = item.destination;
+						if (types.isString(dest)) {
+							dest = taskData.parseVariables(dest, { isPath: true });
+						};
+						let source = item.source;
+						if (types.isArrayLike(source)) {
+							source = types.toArray(source);
+						} else {
+							source = [source];
+						};
+						const separator = item.separator;
+						const encoding = types.get(item, 'encoding', 'utf-8');
+						tools.log(tools.LogLevels.Info, "Merging files to '~0~'...", [dest]);
+						const createFile = function() {
+							return nodeFsCreateWriteStream(dest.toString({shell: 'api'}));
+						};
+						const writeSeparator = function(outputStream) {
+							if (separator) {
+								return Promise.create(function writePromise(resolve, reject) {
+									outputStream.write(separator, function(err, result) {
+										if (err) {
+											reject(err);
+										} else {
+											resolve(outputStream);
+										};
+									});
+								});
 							};
-							src = src.toString({shell: 'api'});
+							return outputStream;
+						};
+						const loopMerge = function(outputStream) {
+							if (source.length) {
+								let src = source.shift();
+								if (types.isString(src)) {
+									src = taskData.parseVariables(src, { isPath: true });
+								};
+								src = src.toString({shell: 'api'});
 
-							tools.log(tools.LogLevels.Info, "    ~0~", [src]);
+								tools.log(tools.LogLevels.Info, "    ~0~", [src]);
 
-							return Promise.create(function pipeInputPromise(resolve, reject) {
+								return Promise.create(function pipeInputPromise(resolve, reject) {
 									const inputStream = nodeFsCreateReadStream(src);
 
 									if ((encoding === 'utf-8') || (encoding === 'utf8')) {
@@ -920,82 +920,82 @@ exports.add = function add(modules) {
 
 									};
 								})
-								.thenCreate(function(inputStream, resolve, reject) {
-									if (inputStream) {
-										inputStream
-											.on('error', reject)
-											.on('end', resolve)
-											.pipe(outputStream, {end: false});
-										return inputStream;
-									};
-									return undefined;
-								})
-								.then(function(inputStream) {
-									_shared.DESTROY(inputStream);
-									if (source.length) {
-										return Promise.resolve(outputStream)
-											.then(writeSeparator)
-											.then(loopMerge);
-									} else {
-										return Promise.resolve(outputStream)
-											.then(loopMerge);
-									};
-								});
+									.thenCreate(function(inputStream, resolve, reject) {
+										if (inputStream) {
+											inputStream
+												.on('error', reject)
+												.on('end', resolve)
+												.pipe(outputStream, {end: false});
+											return inputStream;
+										};
+										return undefined;
+									})
+									.then(function(inputStream) {
+										_shared.DESTROY(inputStream);
+										if (source.length) {
+											return Promise.resolve(outputStream)
+												.then(writeSeparator)
+												.then(loopMerge);
+										} else {
+											return Promise.resolve(outputStream)
+												.then(loopMerge);
+										};
+									});
+							};
+							return outputStream;
 						};
-						return outputStream;
-					};
-					const closeFile = function(err, outputStream) {
-						outputStream.end();
-						_shared.DESTROY(outputStream);
-						if (err) {
-							throw err;
-						} else {
-							return null;
+						const closeFile = function(err, outputStream) {
+							outputStream.end();
+							_shared.DESTROY(outputStream);
+							if (err) {
+								throw err;
+							} else {
+								return null;
+							};
 						};
-					};
-					return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
-						.then(createFile)
-						.then(loopMerge)
-						.nodeify(closeFile);
-				}),
-			}));
+						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
+							.then(createFile)
+							.then(loopMerge)
+							.nodeify(closeFile);
+					}),
+				}));
 
 
 			file.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Javascript',
+				{
+					$TYPE_NAME: 'Javascript',
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let source = item.source;
-					if (types.isString(source)) {
-						source = this.taskData.parseVariables(source, { isPath: true });
-					};
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = item.source;
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
 
-					let dest = item.destination;
-					if (types.isString(dest)) {
-						dest = this.taskData.parseVariables(dest, { isPath: true });
-					};
+						let dest = item.destination;
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, { isPath: true });
+						};
 
-					tools.log(tools.LogLevels.Info, "Minifying file '~0~' to '~1~'...", [source, dest]);
+						tools.log(tools.LogLevels.Info, "Minifying file '~0~' to '~1~'...", [source, dest]);
 
-					const variables = tools.extend({
-						task: command,
-					}, types.get(item, 'variables'), types.get(options, 'variables'));
+						const variables = tools.extend({
+							task: command,
+						}, types.get(item, 'variables'), types.get(options, 'variables'));
 
-					const taskData = this.taskData;
+						const taskData = this.taskData;
 
-					return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
-						.then(function() {
-							const jsStream = new make.JavascriptBuilder({taskData: taskData, runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
+						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
+							.then(function() {
+								const jsStream = new make.JavascriptBuilder({taskData: taskData, runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
 
-							tools.forEach(variables, function(value, name) {
-								jsStream.define(name, value);
-							});
+								tools.forEach(variables, function(value, name) {
+									jsStream.define(name, value);
+								});
 
-							const inputStream = nodeFsCreateReadStream(source.toString({shell: 'api'}));
-							const outputStream = nodeFsCreateWriteStream(dest.toString({shell: 'api'}));
+								const inputStream = nodeFsCreateReadStream(source.toString({shell: 'api'}));
+								const outputStream = nodeFsCreateWriteStream(dest.toString({shell: 'api'}));
 
-							return Promise.create(function pipePromise(resolve, reject) {
+								return Promise.create(function pipePromise(resolve, reject) {
 									const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.IWritable);
 									outputStream.on('close', resolve);
 									outputStream.on('error', reject);
@@ -1005,26 +1005,26 @@ exports.add = function add(modules) {
 									jsStream.pipe(outputStream);
 									inputStream.pipe(jsStreamTransform);
 								})
-								.nodeify(function(err, result) {
-									types.DESTROY(jsStream);
-									types.DESTROY(inputStream);
-									types.DESTROY(outputStream);
+									.nodeify(function(err, result) {
+										types.DESTROY(jsStream);
+										types.DESTROY(inputStream);
+										types.DESTROY(outputStream);
 
-									if (err) {
-										throw err;
-									} else {
-										return result;
-									};
-								});
-						})
-						.then(function() {
+										if (err) {
+											throw err;
+										} else {
+											return result;
+										};
+									});
+							})
+							.then(function() {
 							// Returns nothing
-						});
-				}),
-			}));
+							});
+					}),
+				}));
 
 
-/* TODO: Complete and test
+			/* TODO: Complete and test
 			spawn.REGISTER(make.Operation.$extend(
 			{
 				$TYPE_NAME: 'Node',
@@ -1186,33 +1186,33 @@ exports.add = function add(modules) {
 								serverSide: true,
 								mjs: false,
 								dependencies: tools.map(tools.filter(dependencies, function(dep) {
-										return !dep.test;
-									}), function(dep) {
-										const baseName = __Internal__.getBaseName(dep.name);
-										return {
-											name: dep.name,
-											version: __Internal__.getVersion(baseName, taskData.packageDir),
-											optional: !!types.get(dep, 'optional', false),
-											path: types.get(dep, 'path', null),
-											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-										};
-									}),
+									return !dep.test;
+								}), function(dep) {
+									const baseName = __Internal__.getBaseName(dep.name);
+									return {
+										name: dep.name,
+										version: __Internal__.getVersion(baseName, taskData.packageDir),
+										optional: !!types.get(dep, 'optional', false),
+										path: types.get(dep, 'path', null),
+										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+									};
+								}),
 								modules: tools.map(tools.filter(modules, function(mod) {
-										return !mod.test && !mod.exclude;
-									}), function(mod) {
-										return tools.extend({}, mod, {
-											dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-											optional: !!types.get(mod, 'optional', false),
-										});
-									}),
+									return !mod.test && !mod.exclude;
+								}), function(mod) {
+									return tools.extend({}, mod, {
+										dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+										optional: !!types.get(mod, 'optional', false),
+									});
+								}),
 								modulesSrc: tools.map(tools.filter(modules, function(mod) {
-										return !mod.test && !mod.exclude;
-									}), function(mod) {
-										return tools.extend({}, mod, {
-											dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-											optional: !!types.get(mod, 'optional', false),
-										});
-									}),
+									return !mod.test && !mod.exclude;
+								}), function(mod) {
+									return tools.extend({}, mod, {
+										dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+										optional: !!types.get(mod, 'optional', false),
+									});
+								}),
 							},
 						}
 					);
@@ -1230,25 +1230,25 @@ exports.add = function add(modules) {
 									serverSide: true,
 									mjs: true,
 									dependencies: tools.map(tools.filter(dependencies, function(dep) {
-											return !dep.test;
-										}), function(dep) {
-											const baseName = __Internal__.getBaseName(dep.name);
-											return {
-												name: dep.name,
-												version: __Internal__.getVersion(baseName, taskData.packageDir),
-												optional: !!types.get(dep, 'optional', false),
-												path: types.get(dep, 'path', null),
-												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-											};
-										}),
+										return !dep.test;
+									}), function(dep) {
+										const baseName = __Internal__.getBaseName(dep.name);
+										return {
+											name: dep.name,
+											version: __Internal__.getVersion(baseName, taskData.packageDir),
+											optional: !!types.get(dep, 'optional', false),
+											path: types.get(dep, 'path', null),
+											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+										};
+									}),
 									modules: tools.map(tools.filter(modules, function(mod) {
-											return !mod.test && !mod.exclude;
-										}), function(mod) {
-											return tools.extend({}, mod, {
-												dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest, true) : __Internal__.getBuiltFileName(mod.src, true)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-												optional: !!types.get(mod, 'optional', false),
-											});
-										}),
+										return !mod.test && !mod.exclude;
+									}), function(mod) {
+										return tools.extend({}, mod, {
+											dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest, true) : __Internal__.getBuiltFileName(mod.src, true)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+											optional: !!types.get(mod, 'optional', false),
+										});
+									}),
 								},
 							}
 						);
@@ -1268,38 +1268,38 @@ exports.add = function add(modules) {
 								serverSide: true,
 								mjs: false,
 								dependencies: tools.map(tools.prepend(tools.filter(dependencies, function(dep) {
-										return dep.test;
-									}), [
-											{
-												name: taskData.manifest.name,
-												version: taskData.manifest.version,
-												optional: false,
-												path: null
-											},
-											{
-												name: '@doodad-js/test',
-												version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
-												optional: false,
-												path: null
-											}
-										]), function(dep) {
-											const baseName = __Internal__.getBaseName(dep.name);
-											return {
-												name: dep.name,
-												version: __Internal__.getVersion(baseName, taskData.packageDir),
-												optional: !!types.get(dep, 'optional', false),
-												path: types.get(dep, 'path', null),
-												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-											};
-									}),
+									return dep.test;
+								}), [
+									{
+										name: taskData.manifest.name,
+										version: taskData.manifest.version,
+										optional: false,
+										path: null
+									},
+									{
+										name: '@doodad-js/test',
+										version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
+										optional: false,
+										path: null
+									}
+								]), function(dep) {
+									const baseName = __Internal__.getBaseName(dep.name);
+									return {
+										name: dep.name,
+										version: __Internal__.getVersion(baseName, taskData.packageDir),
+										optional: !!types.get(dep, 'optional', false),
+										path: types.get(dep, 'path', null),
+										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+									};
+								}),
 								modules: tools.map(tools.filter(modules, function(mod) {
-										return mod.test && !mod.exclude;
-									}), function(mod) {
-										return tools.extend({}, mod, {
-											dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-											optional: !!types.get(mod, 'optional', false),
-										});
-									}),
+									return mod.test && !mod.exclude;
+								}), function(mod) {
+									return tools.extend({}, mod, {
+										dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+										optional: !!types.get(mod, 'optional', false),
+									});
+								}),
 							},
 						}
 					);
@@ -1316,38 +1316,38 @@ exports.add = function add(modules) {
 								serverSide: true,
 								mjs: false,
 								dependencies: tools.map(tools.prepend(tools.filter(dependencies, function(dep) {
-										return dep.test;
-									}), [
-										{
-											name: taskData.manifest.name,
-											version: taskData.manifest.version,
-											optional: false,
-											path: null
-										},
-										{
-											name: '@doodad-js/test',
-											version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
-											optional: false,
-											path: null
-										}
-									]), function(dep) {
-										const baseName = __Internal__.getBaseName(dep.name);
-										return {
-											name: dep.name,
-											version: __Internal__.getVersion(baseName, taskData.packageDir),
-											optional: !!types.get(dep, 'optional', false),
-											path: types.get(dep, 'path', null),
-											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-										};
-									}),
+									return dep.test;
+								}), [
+									{
+										name: taskData.manifest.name,
+										version: taskData.manifest.version,
+										optional: false,
+										path: null
+									},
+									{
+										name: '@doodad-js/test',
+										version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
+										optional: false,
+										path: null
+									}
+								]), function(dep) {
+									const baseName = __Internal__.getBaseName(dep.name);
+									return {
+										name: dep.name,
+										version: __Internal__.getVersion(baseName, taskData.packageDir),
+										optional: !!types.get(dep, 'optional', false),
+										path: types.get(dep, 'path', null),
+										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+									};
+								}),
 								modules: tools.map(tools.filter(modules, function(mod) {
-										return mod.test && !mod.exclude;
-									}), function(mod) {
-										return tools.extend({}, mod, {
-											dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
-											optional: !!types.get(mod, 'optional', false),
-										});
-									}),
+									return mod.test && !mod.exclude;
+								}), function(mod) {
+									return tools.extend({}, mod, {
+										dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+										optional: !!types.get(mod, 'optional', false),
+									});
+								}),
 							},
 						}
 					);
@@ -1499,10 +1499,10 @@ exports.add = function add(modules) {
 						{
 							'class': file.Merge,
 							source: tools.map(tools.filter(modules, function(mod) {
-									return !mod.test && !mod.exclude;
-								}), function(mod) {
-									return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
-								}),
+								return !mod.test && !mod.exclude;
+							}), function(mod) {
+								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
+							}),
 							destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 							separator: ';',
 						}
@@ -1523,17 +1523,17 @@ exports.add = function add(modules) {
 								config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 								bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 								dependencies: tools.map(tools.filter(depsGraph, function(dep) {
-										return !dep.test;
-									}), function(dep) {
-										const baseName = __Internal__.getBaseName(dep.name);
-										return {
-											name: dep.name,
-											version: __Internal__.getVersion(baseName, taskData.packageDir),
-											optional: !!types.get(dep, 'optional', false),
-											path: types.get(dep, 'path', null),
-											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-										};
-									}),
+									return !dep.test;
+								}), function(dep) {
+									const baseName = __Internal__.getBaseName(dep.name);
+									return {
+										name: dep.name,
+										version: __Internal__.getVersion(baseName, taskData.packageDir),
+										optional: !!types.get(dep, 'optional', false),
+										path: types.get(dep, 'path', null),
+										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+									};
+								}),
 							},
 						}
 					);
@@ -1554,17 +1554,17 @@ exports.add = function add(modules) {
 									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
 									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
-											return !dep.test;
-										}), function(dep) {
-											const baseName = __Internal__.getBaseName(dep.name);
-											return {
-												name: dep.name,
-												version: __Internal__.getVersion(baseName, taskData.packageDir),
-												optional: !!types.get(dep, 'optional', false),
-												path: types.get(dep, 'path', null),
-												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-											};
-										}),
+										return !dep.test;
+									}), function(dep) {
+										const baseName = __Internal__.getBaseName(dep.name);
+										return {
+											name: dep.name,
+											version: __Internal__.getVersion(baseName, taskData.packageDir),
+											optional: !!types.get(dep, 'optional', false),
+											path: types.get(dep, 'path', null),
+											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+										};
+									}),
 								},
 							}
 						);
@@ -1576,10 +1576,10 @@ exports.add = function add(modules) {
 						{
 							'class': file.Merge,
 							source: tools.map(tools.filter(modules, function(mod) {
-									return !mod.test && !mod.exclude;
-								}), function(mod) {
-									return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
-								}),
+								return !mod.test && !mod.exclude;
+							}), function(mod) {
+								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
+							}),
 							destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
 							separator: ';',
 						}
@@ -1600,17 +1600,17 @@ exports.add = function add(modules) {
 								config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 								bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
 								dependencies: tools.map(tools.filter(depsGraph, function(dep) {
-										return !dep.test;
-									}), function(dep) {
-										const baseName = __Internal__.getBaseName(dep.name);
-										return {
-											name: dep.name,
-											version: __Internal__.getVersion(baseName, taskData.packageDir),
-											optional: !!types.get(dep, 'optional', false),
-											path: types.get(dep, 'path', null),
-											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-										};
-									}),
+									return !dep.test;
+								}), function(dep) {
+									const baseName = __Internal__.getBaseName(dep.name);
+									return {
+										name: dep.name,
+										version: __Internal__.getVersion(baseName, taskData.packageDir),
+										optional: !!types.get(dep, 'optional', false),
+										path: types.get(dep, 'path', null),
+										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+									};
+								}),
 							},
 						}
 					);
@@ -1631,17 +1631,17 @@ exports.add = function add(modules) {
 									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
 									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
-											return !dep.test;
-										}), function(dep) {
-											const baseName = __Internal__.getBaseName(dep.name);
-											return {
-												name: dep.name,
-												version: __Internal__.getVersion(baseName, taskData.packageDir),
-												optional: !!types.get(dep, 'optional', false),
-												path: types.get(dep, 'path', null),
-												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-											};
-										}),
+										return !dep.test;
+									}), function(dep) {
+										const baseName = __Internal__.getBaseName(dep.name);
+										return {
+											name: dep.name,
+											version: __Internal__.getVersion(baseName, taskData.packageDir),
+											optional: !!types.get(dep, 'optional', false),
+											path: types.get(dep, 'path', null),
+											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+										};
+									}),
 								},
 							}
 						);
@@ -1653,10 +1653,10 @@ exports.add = function add(modules) {
 						{
 							'class': file.Merge,
 							source: tools.map(tools.filter(modules, function(mod) {
-									return mod.test && !mod.exclude;
-								}), function(mod) {
-									return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
-								}),
+								return mod.test && !mod.exclude;
+							}), function(mod) {
+								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
+							}),
 							destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
 							separator: ';',
 						}
@@ -1678,30 +1678,30 @@ exports.add = function add(modules) {
 								mjs: false,
 								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
 								dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
-										return dep.test;
-									}), [
-											{
-												name: taskData.manifest.name,
-												version: taskData.manifest.version,
-												optional: false,
-												path: null
-											},
-											{
-												name: '@doodad-js/test',
-												version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
-												optional: false,
-												path: null
-											}
-									]), function(dep) {
-										const baseName = __Internal__.getBaseName(dep.name);
-										return {
-											name: dep.name,
-											version: __Internal__.getVersion(baseName, taskData.packageDir),
-											optional: !!types.get(dep, 'optional', false),
-											path: types.get(dep, 'path', null),
-											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-										};
+									return dep.test;
+								}), [
+									{
+										name: taskData.manifest.name,
+										version: taskData.manifest.version,
+										optional: false,
+										path: null
+									},
+									{
+										name: '@doodad-js/test',
+										version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
+										optional: false,
+										path: null
 									}
+								]), function(dep) {
+									const baseName = __Internal__.getBaseName(dep.name);
+									return {
+										name: dep.name,
+										version: __Internal__.getVersion(baseName, taskData.packageDir),
+										optional: !!types.get(dep, 'optional', false),
+										path: types.get(dep, 'path', null),
+										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+									};
+								}
 								),
 							},
 						}
@@ -1713,10 +1713,10 @@ exports.add = function add(modules) {
 						{
 							'class': file.Merge,
 							source: tools.map(tools.filter(modules, function(mod) {
-									return mod.test && !mod.exclude;
-								}), function(mod) {
-									return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
-								}),
+								return mod.test && !mod.exclude;
+							}), function(mod) {
+								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
+							}),
 							destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
 							separator: ';',
 						}
@@ -1736,30 +1736,30 @@ exports.add = function add(modules) {
 								mjs: false,
 								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
 								dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
-										return dep.test;
-									}), [
-											{
-												name: taskData.manifest.name,
-												version: taskData.manifest.version,
-												optional: false,
-												path: null
-											},
-											{
-												name: '@doodad-js/test',
-												version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
-												optional: false,
-												path: null
-											}
-									]), function(dep) {
-										const baseName = __Internal__.getBaseName(dep.name);
-										return {
-											name: dep.name,
-											version: __Internal__.getVersion(baseName, taskData.packageDir),
-											optional: !!types.get(dep, 'optional', false),
-											path: types.get(dep, 'path', null),
-											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-										};
+									return dep.test;
+								}), [
+									{
+										name: taskData.manifest.name,
+										version: taskData.manifest.version,
+										optional: false,
+										path: null
+									},
+									{
+										name: '@doodad-js/test',
+										version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
+										optional: false,
+										path: null
 									}
+								]), function(dep) {
+									const baseName = __Internal__.getBaseName(dep.name);
+									return {
+										name: dep.name,
+										version: __Internal__.getVersion(baseName, taskData.packageDir),
+										optional: !!types.get(dep, 'optional', false),
+										path: types.get(dep, 'path', null),
+										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+									};
+								}
 								),
 							},
 						}
@@ -1812,17 +1812,17 @@ exports.add = function add(modules) {
 
 					// Get browserify dependencies
 					const dependencies = tools.map(tools.filter(taskData.makeManifest.dependencies, function(dep) {
-							return dep.browserify && !dep.test;
-						}), function(dep) {
-							const baseName = __Internal__.getBaseName(dep.name);
-							return {
-								name: dep.name,
-								version: __Internal__.getVersion(baseName, taskData.packageDir),
-								optional: !!types.get(dep, 'optional', false),
-								path: types.get(dep, 'path', null),
-								type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-							};
-						});
+						return dep.browserify && !dep.test;
+					}), function(dep) {
+						const baseName = __Internal__.getBaseName(dep.name);
+						return {
+							name: dep.name,
+							version: __Internal__.getVersion(baseName, taskData.packageDir),
+							optional: !!types.get(dep, 'optional', false),
+							path: types.get(dep, 'path', null),
+							type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+						};
+					});
 
 					// Get browserify modules
 					const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
@@ -1897,12 +1897,12 @@ exports.add = function add(modules) {
 								mjs: false,
 								dependencies: dependencies,
 								modules: tools.map(tools.filter(modules, function(mod) {
-										return !mod.exclude;
-									}), function(mod) {
-										return tools.extend({}, mod, {
-											dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
-										});
-									}),
+									return !mod.exclude;
+								}), function(mod) {
+									return tools.extend({}, mod, {
+										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+									});
+								}),
 								resources: tools.map(resources, function(res, i) {
 									return {
 										//name: taskData.parseVariables('%PACKAGENAME%/res' + types.toString(i)),
@@ -1930,12 +1930,12 @@ exports.add = function add(modules) {
 								mjs: false,
 								dependencies: dependencies,
 								modules: tools.map(tools.filter(modules, function(mod) {
-										return !mod.exclude;
-									}), function(mod) {
-										return tools.extend({}, mod, {
-											dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
-										});
-									}),
+									return !mod.exclude;
+								}), function(mod) {
+									return tools.extend({}, mod, {
+										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+									});
+								}),
 								resources: tools.map(resources, function(res, i) {
 									return {
 										//name: taskData.parseVariables('%PACKAGENAME%/res' + types.toString(i)),
@@ -1997,162 +1997,162 @@ exports.add = function add(modules) {
 
 
 			browserify.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Resources',
+				{
+					$TYPE_NAME: 'Resources',
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let sourceBase = types.get(item, 'sourceBase', '%SOURCEDIR%/');
-					if (types.isString(sourceBase)) {
-						sourceBase = this.taskData.parseVariables(sourceBase, { isPath: true });
-					};
-					let source = item.source;
-					if (types.isString(source)) {
-						source = this.taskData.parseVariables(source, { isPath: true });
-					};
-					let dest = item.destination;
-					if (types.isString(dest)) {
-						dest = this.taskData.parseVariables(dest, { isPath: true });
-					};
-					dest = dest.pushFile();
-					let resFile = item.resourcesFile;
-					if (types.isString(resFile)) {
-						resFile = this.taskData.parseVariables(resFile, { isPath: true });
-					};
-
-					let resourcesTemplate = types.get(item, 'resourcesTemplate');
-					if (types.isString(resourcesTemplate)) {
-						resourcesTemplate = this.taskData.parseVariables(resourcesTemplate, { isPath: true });
-					};
-					if (!resourcesTemplate) {
-						resourcesTemplate = modulePath.combine('res/resources.templ.js');
-					};
-
-					const filter = (types.get(item, 'filter', '') ? new _shared.Natives.windowRegExp(item.filter) : null);
-
-					const fullSource = sourceBase.combine(source);
-
-					resFile = dest.combine(resFile);
-					tools.log(tools.LogLevels.Info, "Preparing resources for 'browserify' from '~0~' to '~1~'...", [source, dest]);
-					const self = this;
-					function processDir(dir, index, resources) {
-						if (index < dir.length) {
-							const stats = dir[index];
-							if (stats.isFile && (!filter || filter.test(stats.path.file))) {
-								const resource = {
-									source: source.combine(stats.path),
-									dest: stats.path.set({file: stats.path.file + '.res.js'}),
-								};
-								return files.mkdir(dest.combine(stats.path).set({file: null}), {async: true, makeParents: true})
-									.then(function() {
-										return files.readFile(fullSource.combine(stats.path), {encoding: (item.encoding || 'utf-8'), async: true});
-									})
-									.then(function(content) {
-										return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
-											nodeFs.writeFile(dest.combine(resource.dest).toString(),
-															// TODO: See how I can formulate this
-															//'// This file is built from the file \'' + resource.source.file + '\' from the project package named \'' +
-															//	this.taskData.manifest.name + '\' hosted by the \'npmjs.com\' web site, ' +
-															//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' +
-															'// When not mentionned otherwise, the following is Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n' +
-															'module.exports=' + tools.toSource(content), (item.encoding || 'utf-8'), function(err) {
-												if (err) {
-													reject(err);
-												} else {
-													resources.push(resource);
-													resolve();
-												};
-											});
-										});
-									})
-									.then(function() {
-										return processDir(dir, index + 1, resources);
-									});
-							} else {
-								return processDir(dir, index + 1, resources);
-							};
-						} else {
-							// Done
-							return Promise.resolve(resources);
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let sourceBase = types.get(item, 'sourceBase', '%SOURCEDIR%/');
+						if (types.isString(sourceBase)) {
+							sourceBase = this.taskData.parseVariables(sourceBase, { isPath: true });
 						};
-					};
-					return files.mkdir(dest, {makeParents: true, async: true})
-						.then(function() {
-							return files.readdir(fullSource, {async: true, depth: Infinity, relative: true});
-						})
-						.then(function(dir) {
-							return processDir(dir, 0, []);
-						})
-						.then(function(resources) {
-							function buildPatterns(index, sourceAr, destStr, result) {
-								const name = sourceAr[index];
-								if (index < sourceAr.length - 1) {
-									result[name] = buildPatterns(index + 1, sourceAr, destStr, types.get(result, name, {}));
-								} else {
-									result[name] = "result = require(" + tools.toSource('.' + destStr) + ");";
-								};
-								return result;
-							};
+						let source = item.source;
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
+						let dest = item.destination;
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, { isPath: true });
+						};
+						dest = dest.pushFile();
+						let resFile = item.resourcesFile;
+						if (types.isString(resFile)) {
+							resFile = this.taskData.parseVariables(resFile, { isPath: true });
+						};
 
-							function reducePatterns(level, pattern) {
-								let code = "switch(tmp[" + types.toString(level) + "]) {";
-								tools.forEach(pattern, function(val, key) {
-									code += "case " + tools.toSource(key) + ": ";
-									if (types.isString(val)) {
-										code += val;
-									} else {
-										code += reducePatterns(level + 1, val);
+						let resourcesTemplate = types.get(item, 'resourcesTemplate');
+						if (types.isString(resourcesTemplate)) {
+							resourcesTemplate = this.taskData.parseVariables(resourcesTemplate, { isPath: true });
+						};
+						if (!resourcesTemplate) {
+							resourcesTemplate = modulePath.combine('res/resources.templ.js');
+						};
+
+						const filter = (types.get(item, 'filter', '') ? new _shared.Natives.windowRegExp(item.filter) : null);
+
+						const fullSource = sourceBase.combine(source);
+
+						resFile = dest.combine(resFile);
+						tools.log(tools.LogLevels.Info, "Preparing resources for 'browserify' from '~0~' to '~1~'...", [source, dest]);
+						const self = this;
+						function processDir(dir, index, resources) {
+							if (index < dir.length) {
+								const stats = dir[index];
+								if (stats.isFile && (!filter || filter.test(stats.path.file))) {
+									const resource = {
+										source: source.combine(stats.path),
+										dest: stats.path.set({file: stats.path.file + '.res.js'}),
 									};
-									code += "\nbreak;";
-								});
-								code += "default: return prevLoader.load(filename, options);";
-								code += "}";
-								return code;
+									return files.mkdir(dest.combine(stats.path).set({file: null}), {async: true, makeParents: true})
+										.then(function() {
+											return files.readFile(fullSource.combine(stats.path), {encoding: (item.encoding || 'utf-8'), async: true});
+										})
+										.then(function(content) {
+											return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
+												nodeFs.writeFile(dest.combine(resource.dest).toString(),
+													// TODO: See how I can formulate this
+													//'// This file is built from the file \'' + resource.source.file + '\' from the project package named \'' +
+													//	this.taskData.manifest.name + '\' hosted by the \'npmjs.com\' web site, ' +
+													//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' +
+													'// When not mentionned otherwise, the following is Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n' +
+															'module.exports=' + tools.toSource(content), (item.encoding || 'utf-8'), function(err) {
+														if (err) {
+															reject(err);
+														} else {
+															resources.push(resource);
+															resolve();
+														};
+													});
+											});
+										})
+										.then(function() {
+											return processDir(dir, index + 1, resources);
+										});
+								} else {
+									return processDir(dir, index + 1, resources);
+								};
+							} else {
+							// Done
+								return Promise.resolve(resources);
 							};
+						};
+						return files.mkdir(dest, {makeParents: true, async: true})
+							.then(function() {
+								return files.readdir(fullSource, {async: true, depth: Infinity, relative: true});
+							})
+							.then(function(dir) {
+								return processDir(dir, 0, []);
+							})
+							.then(function(resources) {
+								function buildPatterns(index, sourceAr, destStr, result) {
+									const name = sourceAr[index];
+									if (index < sourceAr.length - 1) {
+										result[name] = buildPatterns(index + 1, sourceAr, destStr, types.get(result, name, {}));
+									} else {
+										result[name] = "result = require(" + tools.toSource('.' + destStr) + ");";
+									};
+									return result;
+								};
 
-							const rp = files.parsePath('/', {os: 'linux'});
-							const result = tools.reduce(resources, function(result, resource) {
-								const sourceAr = rp.combine(resource.source).toArray({trim: true}),
-									destStr = rp.combine(resource.dest).toString({os: 'linux', dirChar: '/'});
+								function reducePatterns(level, pattern) {
+									let code = "switch(tmp[" + types.toString(level) + "]) {";
+									tools.forEach(pattern, function(val, key) {
+										code += "case " + tools.toSource(key) + ": ";
+										if (types.isString(val)) {
+											code += val;
+										} else {
+											code += reducePatterns(level + 1, val);
+										};
+										code += "\nbreak;";
+									});
+									code += "default: return prevLoader.load(filename, options);";
+									code += "}";
+									return code;
+								};
+
+								const rp = files.parsePath('/', {os: 'linux'});
+								const result = tools.reduce(resources, function(result, resource) {
+									const sourceAr = rp.combine(resource.source).toArray({trim: true}),
+										destStr = rp.combine(resource.dest).toString({os: 'linux', dirChar: '/'});
 									buildPatterns(0, sourceAr, destStr, result);
 									return result;
-							}, {});
+								}, {});
 
-							const resBody = reducePatterns(0, result);
+								const resBody = reducePatterns(0, result);
 
-							// Returns new operation
-							return {
-								'class': file.Javascript,
-								source: resourcesTemplate,
-								destination: resFile,
-								runDirectives: true,
-								variables: {
-									serverSide: true,
-									browserify: true,
-									name: self.taskData.parseVariables(item.name),
-									namespace: self.taskData.parseVariables(item.namespace),
-									resources: resBody,
-								},
-							};
-						});
-				}),
-			}));
+								// Returns new operation
+								return {
+									'class': file.Javascript,
+									source: resourcesTemplate,
+									destination: resFile,
+									runDirectives: true,
+									variables: {
+										serverSide: true,
+										browserify: true,
+										name: self.taskData.parseVariables(item.name),
+										namespace: self.taskData.parseVariables(item.namespace),
+										resources: resBody,
+									},
+								};
+							});
+					}),
+				}));
 
 			browserify.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Bundle',
+				{
+					$TYPE_NAME: 'Bundle',
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let source = item.source;
-					if (types.isString(source)) {
-						source = this.taskData.parseVariables(source, { isPath: true });
-					};
-					let dest = item.destination;
-					if (types.isString(dest)) {
-						dest = this.taskData.parseVariables(dest, { isPath: true });
-					};
-					tools.log(tools.LogLevels.Info, "Browserifying '~0~' to '~1~'...", [source, dest]);
-					const taskData = this.taskData;
-					return Promise.create(function browserifyPromise(resolve, reject) {
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = item.source;
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
+						let dest = item.destination;
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, { isPath: true });
+						};
+						tools.log(tools.LogLevels.Info, "Browserifying '~0~' to '~1~'...", [source, dest]);
+						const taskData = this.taskData;
+						return Promise.create(function browserifyPromise(resolve, reject) {
 							if (nodeBrowserify) {
 								const b = nodeBrowserify();
 								if (item.fromOutside) {
@@ -2201,28 +2201,28 @@ exports.add = function add(modules) {
 								throw new types.Error('Can\'t browserify "' + source + '" to "' + dest + '" because "browserify" is not installed.');
 							};
 						})
-						.then(function() {
+							.then(function() {
 							// Returns nothing
-						});
-				}),
-			}));
+							});
+					}),
+				}));
 
 
 			webpack.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Bundle',
+				{
+					$TYPE_NAME: 'Bundle',
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let source = types.get(item, 'source');
-					if (types.isString(source)) {
-						source = this.taskData.parseVariables(source, { isPath: true });
-					};
-					let dest = types.get(item, 'destination');
-					if (types.isString(dest)) {
-						dest = this.taskData.parseVariables(dest, { isPath: true });
-					};
-					tools.log(tools.LogLevels.Info, "Making webpack bundle from '~0~' to '~1~'...", [source, dest]);
-					return Promise.create(function webpackPromise(resolve, reject) {
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = types.get(item, 'source');
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
+						let dest = types.get(item, 'destination');
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, { isPath: true });
+						};
+						tools.log(tools.LogLevels.Info, "Making webpack bundle from '~0~' to '~1~'...", [source, dest]);
+						return Promise.create(function webpackPromise(resolve, reject) {
 							if (nodeWebpack) {
 								const config = {
 									entry: source.toString(),
@@ -2247,78 +2247,78 @@ exports.add = function add(modules) {
 								throw new types.Error('Can\'t bundle "' + source + '" because "webpack" is not installed.');
 							};
 						})
-						.then(function(stats) {
+							.then(function(stats) {
 							// Returns nothing
-						});
-				}),
-			}));
+							});
+					}),
+				}));
 
 
 			update.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Manifest',
+				{
+					$TYPE_NAME: 'Manifest',
 
-				DEPS_KEYS: doodad.PROTECTED(doodad.ATTRIBUTE(['dependencies', 'optionalDependencies', 'devDependencies', 'peerDependencies'], extenders.UniqueArray)),
+					DEPS_KEYS: doodad.PROTECTED(doodad.ATTRIBUTE(['dependencies', 'optionalDependencies', 'devDependencies', 'peerDependencies'], extenders.UniqueArray)),
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					tools.log(tools.LogLevels.Info, "Updating manifest...");
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						tools.log(tools.LogLevels.Info, "Updating manifest...");
 
-					const taskData = this.taskData;
+						const taskData = this.taskData;
 
-					const manifest = tools.depthExtend(15, {}, taskData.manifest, {
-						dependencies: tools.reduce(tools.filter(taskData.makeManifest.dependencies, function(dep) {
+						const manifest = tools.depthExtend(15, {}, taskData.manifest, {
+							dependencies: tools.reduce(tools.filter(taskData.makeManifest.dependencies, function(dep) {
 								return !dep.test;
 							}), function(result, dep) {
 								result[dep.name] = '^0.0.0';
 								return result;
 							}, {}),
-					});
+						});
 
-					const getNodeVersion = function getVersion(pkg) {
-						let manifest = null;
-						try {
-							manifest = __Internal__.getMakeManifest(pkg, taskData.packageDir);
-						} catch(ex) {
-							manifest = __Internal__.getManifest(pkg, taskData.packageDir);
+						const getNodeVersion = function getVersion(pkg) {
+							let manifest = null;
+							try {
+								manifest = __Internal__.getMakeManifest(pkg, taskData.packageDir);
+							} catch(ex) {
+								manifest = __Internal__.getManifest(pkg, taskData.packageDir);
+							};
+							let version = manifest.version;
+							let stage = manifest.stage;
+							stage = stage && tools.Version.parse(stage, {identifiers: namespaces.VersionIdentifiers});
+							if (stage) {
+								const prelease = (stage.data[0] <= -3 ? 'alpha' : stage.data[0] === -2 ? 'beta' : '');
+								if (prelease) {
+									version += "-" + prelease + '.' + (stage.data[3] || "0");
+								};
+							};
+							return version;
 						};
-						let version = manifest.version;
-						let stage = manifest.stage;
-						stage = stage && tools.Version.parse(stage, {identifiers: namespaces.VersionIdentifiers});
-						if (stage) {
-							const prelease = (stage.data[0] <= -3 ? 'alpha' : stage.data[0] === -2 ? 'beta' : '');
-							if (prelease) {
-								version += "-" + prelease + '.' + (stage.data[3] || "0");
+
+						manifest.version = getNodeVersion(manifest.name);
+
+						manifest.files = tools.unique(manifest.files || [],
+							(taskData.makeManifest.sourceDir.isRelative ? [taskData.makeManifest.sourceDir.toString()] : undefined),
+							(taskData.makeManifest.buildDir.isRelative ? [taskData.makeManifest.buildDir.toString()] : undefined),
+							(taskData.makeManifest.browserifyDir.isRelative ? [taskData.makeManifest.browserifyDir.toString()] : undefined),
+							(taskData.makeManifest.installDir.isRelative ? [taskData.makeManifest.installDir.toString()] : undefined)
+						);
+
+						for (let i = 0; i < this.DEPS_KEYS.length; i++) {
+							const depKey = this.DEPS_KEYS[i];
+							const deps = manifest[depKey];
+							const names = types.keys(deps);
+							for (let j = 0; j < names.length; j++) {
+								const name = names[j];
+								if (name === taskData.manifest.name) {
+									delete deps[name];
+								} else {
+									deps[name] = deps[name][0] + getNodeVersion(__Internal__.getBaseName(name));
+								};
 							};
 						};
-						return version;
-					};
 
-					manifest.version = getNodeVersion(manifest.name);
+						const content = JSON.stringify(manifest, null, 4);
 
-					manifest.files = tools.unique(manifest.files || [],
-						(taskData.makeManifest.sourceDir.isRelative ? [taskData.makeManifest.sourceDir.toString()] : undefined),
-						(taskData.makeManifest.buildDir.isRelative ? [taskData.makeManifest.buildDir.toString()] : undefined),
-						(taskData.makeManifest.browserifyDir.isRelative ? [taskData.makeManifest.browserifyDir.toString()] : undefined),
-						(taskData.makeManifest.installDir.isRelative ? [taskData.makeManifest.installDir.toString()] : undefined)
-					);
-
-					for (let i = 0; i < this.DEPS_KEYS.length; i++) {
-						const depKey = this.DEPS_KEYS[i];
-						const deps = manifest[depKey];
-						const names = types.keys(deps);
-						for (let j = 0; j < names.length; j++) {
-							const name = names[j];
-							if (name === taskData.manifest.name) {
-								delete deps[name];
-							} else {
-								deps[name] = deps[name][0] + getNodeVersion(__Internal__.getBaseName(name));
-							};
-						};
-					};
-
-					const content = JSON.stringify(manifest, null, 4);
-
-					return Promise.create(function writeManifestPromise(resolve, reject) {
+						return Promise.create(function writeManifestPromise(resolve, reject) {
 							nodeFs.writeFile(taskData.manifestPath, content, {encoding: 'utf-8'}, function(err, result) {
 								if (err) {
 									reject(err);
@@ -2327,214 +2327,214 @@ exports.add = function add(modules) {
 								};
 							});
 						})
-						.then(function() {
-							// Returns nothing
-						});
-				}),
-			}));
-
-
-			makeUUIDS.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Load',
-
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let source = types.get(item, 'source');
-					if (types.isString(source)) {
-						source = this.taskData.parseVariables(source, { isPath: true });
-					};
-					const pkgName = this.taskData.manifest.name;
-					const pkgVersion = this.taskData.makeManifest.version;
-					if (types.get(item, 'global', false)) {
-						tools.log(tools.LogLevels.Info, "Loading global UUIDs from file '~0~'...", [source]);
-						return files.readFile(source, {async: true, encoding: 'utf-8'})
-							.then(function(uuids) {
-								__Internal__.uuids = tools.nullObject(JSON.parse(uuids));
-								tools.forEach(__Internal__.uuids, function(data, uuid) {
-									if (!types.has(data, 'tasks')) {
-										data.tasks = [this.taskData.command];
-									};
-									const version = tools.Version.parse(data.packageVersion, {identifiers: namespaces.VersionIdentifiers});
-									if ((data.packageName === pkgName) && (tools.indexOf(data.tasks, this.taskData.command) >= 0) && (version.compare(pkgVersion, {count: 1}) === 0)) {
-										data.hits = 0; // Reset number of hits
-									};
-								}, this);
-								tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) loaded.", [types.keys(__Internal__.uuids).length]);
-							}, null, this)
-							.catch({code: 'ENOENT'}, function(ex) {
-								tools.log(tools.LogLevels.Warning, "\tNo UUID loaded because file is missing.");
-							});
-					} else {
-						tools.log(tools.LogLevels.Info, "Loading package UUIDs from file '~0~'...", [source]);
-						return files.readFile(source, {async: true, encoding: 'utf-8'})
-							.then(function(uuids) {
-								uuids = JSON.parse(uuids);
-								let count = 0,
-									discarded = 0;
-								tools.forEach(uuids, function(uuid, name) {
-									if (uuid in __Internal__.uuids) {
-										const data = __Internal__.uuids[uuid],
-											version = tools.Version.parse(data.packageVersion, {identifiers: namespaces.VersionIdentifiers});
-										if ((data.packageName !== pkgName) || (data.name !== name)) {
-											throw new types.Error("Duplicated UUID : '~0~'.", [uuid]);
-										};
-										if (version.compare(pkgVersion, {count: 1}) === 0) {
-											__Internal__.pkgUUIDS[name] = uuid;
-											count++;
-										} else {
-											discarded++;
-										};
-									} else {
-										__Internal__.uuids[uuid] = {
-											packageName: pkgName,
-											packageVersion: pkgVersion.toString(),
-											name: name,
-											hits: 0,
-											tasks: [],
-										};
-										__Internal__.pkgUUIDS[name] = uuid;
-										count++;
-									};
-								});
-								tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) loaded.", [count]);
-								if (discarded > 0) {
-									tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) discarded because of package version.", [discarded]);
-								};
-							})
-							.catch({code: 'ENOENT'}, function(ex) {
-								tools.log(tools.LogLevels.Warning, "\tNo UUID loaded because file is missing.");
-							});
-					};
-				}),
-			}));
-
-			makeUUIDS.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Save',
-
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					let dest = types.get(item, 'destination');
-					if (types.isString(dest)) {
-						dest = this.taskData.parseVariables(dest, { isPath: true });
-					};
-					if (types.get(item, 'global', false)) {
-						tools.log(tools.LogLevels.Info, "Saving global UUIDs to file '~0~'...", [dest]);
-						const uuids = tools.filter(__Internal__.uuids, function(data, uuid) {
-							return (data.hits > 0);
-						});
-						return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
 							.then(function() {
-								tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) saved.", [types.keys(uuids).length]);
+							// Returns nothing
 							});
-					} else {
-						tools.log(tools.LogLevels.Info, "Saving package UUIDs to file '~0~'...", [dest]);
+					}),
+				}));
+
+
+			makeUUIDS.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Load',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = types.get(item, 'source');
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
 						const pkgName = this.taskData.manifest.name;
 						const pkgVersion = this.taskData.makeManifest.version;
-						const uuids = tools.filter(__Internal__.pkgUUIDS, function(uuid, key) {
-							const guuid = __Internal__.uuids[uuid];
-							const version = tools.Version.parse(guuid.packageVersion, {identifiers: namespaces.VersionIdentifiers});
-							return (guuid.hits > 0) && ((guuid.packageName === pkgName) && (version.compare(pkgVersion, {count: 1}) === 0));
-						});
-						return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
-							.then(function() {
-								tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) saved.", [types.keys(uuids).length]);
+						if (types.get(item, 'global', false)) {
+							tools.log(tools.LogLevels.Info, "Loading global UUIDs from file '~0~'...", [source]);
+							return files.readFile(source, {async: true, encoding: 'utf-8'})
+								.then(function(uuids) {
+									__Internal__.uuids = tools.nullObject(JSON.parse(uuids));
+									tools.forEach(__Internal__.uuids, function(data, uuid) {
+										if (!types.has(data, 'tasks')) {
+											data.tasks = [this.taskData.command];
+										};
+										const version = tools.Version.parse(data.packageVersion, {identifiers: namespaces.VersionIdentifiers});
+										if ((data.packageName === pkgName) && (tools.indexOf(data.tasks, this.taskData.command) >= 0) && (version.compare(pkgVersion, {count: 1}) === 0)) {
+											data.hits = 0; // Reset number of hits
+										};
+									}, this);
+									tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) loaded.", [types.keys(__Internal__.uuids).length]);
+								}, null, this)
+								.catch({code: 'ENOENT'}, function(ex) {
+									tools.log(tools.LogLevels.Warning, "\tNo UUID loaded because file is missing.");
+								});
+						} else {
+							tools.log(tools.LogLevels.Info, "Loading package UUIDs from file '~0~'...", [source]);
+							return files.readFile(source, {async: true, encoding: 'utf-8'})
+								.then(function(uuids) {
+									uuids = JSON.parse(uuids);
+									let count = 0,
+										discarded = 0;
+									tools.forEach(uuids, function(uuid, name) {
+										if (uuid in __Internal__.uuids) {
+											const data = __Internal__.uuids[uuid],
+												version = tools.Version.parse(data.packageVersion, {identifiers: namespaces.VersionIdentifiers});
+											if ((data.packageName !== pkgName) || (data.name !== name)) {
+												throw new types.Error("Duplicated UUID : '~0~'.", [uuid]);
+											};
+											if (version.compare(pkgVersion, {count: 1}) === 0) {
+												__Internal__.pkgUUIDS[name] = uuid;
+												count++;
+											} else {
+												discarded++;
+											};
+										} else {
+											__Internal__.uuids[uuid] = {
+												packageName: pkgName,
+												packageVersion: pkgVersion.toString(),
+												name: name,
+												hits: 0,
+												tasks: [],
+											};
+											__Internal__.pkgUUIDS[name] = uuid;
+											count++;
+										};
+									});
+									tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) loaded.", [count]);
+									if (discarded > 0) {
+										tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) discarded because of package version.", [discarded]);
+									};
+								})
+								.catch({code: 'ENOENT'}, function(ex) {
+									tools.log(tools.LogLevels.Warning, "\tNo UUID loaded because file is missing.");
+								});
+						};
+					}),
+				}));
+
+			makeUUIDS.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'Save',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let dest = types.get(item, 'destination');
+						if (types.isString(dest)) {
+							dest = this.taskData.parseVariables(dest, { isPath: true });
+						};
+						if (types.get(item, 'global', false)) {
+							tools.log(tools.LogLevels.Info, "Saving global UUIDs to file '~0~'...", [dest]);
+							const uuids = tools.filter(__Internal__.uuids, function(data, uuid) {
+								return (data.hits > 0);
 							});
-					};
-				}),
-			}));
+							return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
+								.then(function() {
+									tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) saved.", [types.keys(uuids).length]);
+								});
+						} else {
+							tools.log(tools.LogLevels.Info, "Saving package UUIDs to file '~0~'...", [dest]);
+							const pkgName = this.taskData.manifest.name;
+							const pkgVersion = this.taskData.makeManifest.version;
+							const uuids = tools.filter(__Internal__.pkgUUIDS, function(uuid, key) {
+								const guuid = __Internal__.uuids[uuid];
+								const version = tools.Version.parse(guuid.packageVersion, {identifiers: namespaces.VersionIdentifiers});
+								return (guuid.hits > 0) && ((guuid.packageName === pkgName) && (version.compare(pkgVersion, {count: 1}) === 0));
+							});
+							return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
+								.then(function() {
+									tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) saved.", [types.keys(uuids).length]);
+								});
+						};
+					}),
+				}));
 
 
 			makeUUIDS.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Forget',
+				{
+					$TYPE_NAME: 'Forget',
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					if (types.get(item, 'global', false)) {
-						tools.log(tools.LogLevels.Info, "Forgetting global UUIDs...");
-						__Internal__.uuids = tools.nullObject();
-					} else {
-						tools.log(tools.LogLevels.Info, "Forgetting package UUIDs...");
-						__Internal__.pkgUUIDS = tools.nullObject();
-					};
-				}),
-			}));
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						if (types.get(item, 'global', false)) {
+							tools.log(tools.LogLevels.Info, "Forgetting global UUIDs...");
+							__Internal__.uuids = tools.nullObject();
+						} else {
+							tools.log(tools.LogLevels.Info, "Forgetting package UUIDs...");
+							__Internal__.pkgUUIDS = tools.nullObject();
+						};
+					}),
+				}));
 
 
 			makeESLint.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Check',
+				{
+					$TYPE_NAME: 'Check',
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					const continueOnError = types.toBoolean(types.get(options, 'continueOnError', false));
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						const continueOnError = types.toBoolean(types.get(options, 'continueOnError', false));
 
-					if (!nodeESLint) {
-						throw new types.Error("Can't do '~0~' because the 'eslint' package is not installed.", [command]);
-					};
+						if (!nodeESLint) {
+							throw new types.Error("Can't do '~0~' because the 'eslint' package is not installed.", [command]);
+						};
 
-					const taskData = this.taskData;
+						const taskData = this.taskData;
 
-					const pkgDir = taskData.packageDir;
+						const pkgDir = taskData.packageDir;
 
-					let source = types.get(item, 'source');
-					if (types.isString(source)) {
-						source = this.taskData.parseVariables(source, { isPath: true });
-					};
+						let source = types.get(item, 'source');
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
 
-					const target = source.relative(pkgDir);
+						const target = source.relative(pkgDir);
 
-					tools.log(tools.LogLevels.Info, "Running ESLINT...");
+						tools.log(tools.LogLevels.Info, "Running ESLINT...");
 
-					const fix = types.toBoolean(types.get(options, 'fix', types.get(item, 'fix', false)));
+						const fix = types.toBoolean(types.get(options, 'fix', types.get(item, 'fix', false)));
 
-					const cli = new nodeESLint.CLIEngine({
-						reportUnusedDisableDirectives: true,
-						cwd: pkgDir.toApiString(),
-						fix: fix,
-					});
+						const cli = new nodeESLint.CLIEngine({
+							reportUnusedDisableDirectives: true,
+							cwd: pkgDir.toApiString(),
+							fix: fix,
+						});
 
-					const report = cli.executeOnFiles([
-						target.toApiString()
-					]);
+						const report = cli.executeOnFiles([
+							target.toApiString()
+						]);
 
-					if ((report.errorCount > 0) || (report.warningCount > 0)) {
-						const formatter = cli.getFormatter();
-						const text = formatter(report.results);
-						if (text) {
-							if (report.errorCount > 0) {
-								tools.log(tools.LogLevels.Error, text);
-							} else {
-								tools.log(tools.LogLevels.Warning, text);
+						if ((report.errorCount > 0) || (report.warningCount > 0)) {
+							const formatter = cli.getFormatter();
+							const text = formatter(report.results);
+							if (text) {
+								if (report.errorCount > 0) {
+									tools.log(tools.LogLevels.Error, text);
+								} else {
+									tools.log(tools.LogLevels.Warning, text);
+								};
 							};
 						};
-					};
 
-					if (!continueOnError && (report.errorCount > 0)) {
-						throw new types.Error("'ESLINT' failed with error(s).");
-					};
-
-					if (fix) {
-						const fixCount = tools.filter(report.results, file => types.has(file, 'output')).length;
-						if (fixCount > 0) {
-							tools.log(tools.LogLevels.Info, "Applying ~0~ fix(es) from ESLINT...", [fixCount]);
-							nodeESLint.CLIEngine.outputFixes(report);
+						if (!continueOnError && (report.errorCount > 0)) {
+							throw new types.Error("'ESLINT' failed with error(s).");
 						};
-					};
-				}),
-			}));
+
+						if (fix) {
+							const fixCount = tools.filter(report.results, file => types.has(file, 'output')).length;
+							if (fixCount > 0) {
+								tools.log(tools.LogLevels.Info, "Applying ~0~ fix(es) from ESLINT...", [fixCount]);
+								nodeESLint.CLIEngine.outputFixes(report);
+							};
+						};
+					}),
+				}));
 
 
 			make.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'If',
+				{
+					$TYPE_NAME: 'If',
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-					const taskData = this.taskData;
-					if (safeEval.eval(types.get(item, 'condition', "false"), {options, root, types, tools, command: taskData.command})) {
-						return item.operations;
-					};
-					return undefined;
-				}),
-			}));
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						const taskData = this.taskData;
+						if (safeEval.eval(types.get(item, 'condition', "false"), {options, root, types, tools, command: taskData.command})) {
+							return item.operations;
+						};
+						return undefined;
+					}),
+				}));
 
 
 			make.ADD('run', function run(command, /*optional*/options) {
