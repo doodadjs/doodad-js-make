@@ -567,16 +567,16 @@ exports.add = function add(modules) {
 											if (os.type === 'windows') {
 												value = solvePath(process.env.programdata, os.type);
 											} else {
-											// There is no environment variable for this purpose under Unix-like systems
-											// So I use "package.json"'s "config" section.
+												// There is no environment variable for this purpose under Unix-like systems
+												// So I use "package.json"'s "config" section.
 												value = solvePath(__options__.unix.dataPath || "/var/lib/", os.type);
 											};
 										} else if (nameLc === '%programfiles%') {
 											if (os.type === 'windows') {
 												value = solvePath(process.env.programfiles, os.type);
 											} else {
-											// There is no environment variable for this purpose under Unix-like systems
-											// So I use "package.json"'s "config" section.
+												// There is no environment variable for this purpose under Unix-like systems
+												// So I use "package.json"'s "config" section.
 												value = solvePath(__options__.unix.libPath || "/usr/local/lib/", os.type);
 											};
 										} else if ((nameLc === '%appdata%') || (nameLc === '%localappdata%')) {
@@ -710,7 +710,7 @@ exports.add = function add(modules) {
 						tools.log(tools.LogLevels.Info, 'Loading required module files...');
 						return modules.load(types.get(item, 'files'), options)
 							.then(function(result) {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));
@@ -728,7 +728,7 @@ exports.add = function add(modules) {
 						tools.log(tools.LogLevels.Info, "Creating folder '~0~'...", [dest]);
 						return files.mkdir(dest, {async: true})
 							.then(function() {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));
@@ -753,7 +753,7 @@ exports.add = function add(modules) {
 								return files.copy(source, dest, {recursive: true, override: true, async: true});
 							})
 							.then(function() {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));
@@ -771,7 +771,7 @@ exports.add = function add(modules) {
 						tools.log(tools.LogLevels.Info, "Deleting folder '~0~'...", [dest]);
 						return files.rmdir(dest, {force: true, async: true})
 							.then(function() {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));
@@ -788,7 +788,7 @@ exports.add = function add(modules) {
 						tools.log(tools.LogLevels.Info, "Deleting file '~0~'...", [source]);
 						return files.rm(source, {async: true})
 							.then(function() {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));
@@ -813,7 +813,7 @@ exports.add = function add(modules) {
 								return files.copy(source, dest, {override: true, async: true});
 							})
 							.then(function() {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));
@@ -1018,7 +1018,7 @@ exports.add = function add(modules) {
 									});
 							})
 							.then(function() {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));
@@ -2071,7 +2071,7 @@ exports.add = function add(modules) {
 									return processDir(dir, index + 1, resources);
 								};
 							} else {
-							// Done
+								// Done
 								return Promise.resolve(resources);
 							};
 						};
@@ -2202,7 +2202,7 @@ exports.add = function add(modules) {
 							};
 						})
 							.then(function() {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));
@@ -2248,7 +2248,7 @@ exports.add = function add(modules) {
 							};
 						})
 							.then(function(stats) {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));
@@ -2328,7 +2328,7 @@ exports.add = function add(modules) {
 							});
 						})
 							.then(function() {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));

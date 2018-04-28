@@ -140,7 +140,7 @@ exports.add = function add(modules) {
 
 						return launch(true)
 							.then(function thenNothing(dummy) {
-							// Returns nothing
+								// Returns nothing
 							});
 					}),
 				}));
