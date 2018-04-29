@@ -26,34 +26,33 @@
 
 "use strict";
 
-exports.add = function add(mods) {
-	mods = mods || {};
-	mods[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
+exports.add = function add(modules) {
+	modules = modules || {};
+	modules[/*! INJECT(TO_SOURCE(MANIFEST("name"))) */] = {
 		version: /*! INJECT(TO_SOURCE(VERSION(MANIFEST("name")))) */,
 		type: /*! INJECT(TO_SOURCE(MAKE_MANIFEST("type"))) */,
 		dependencies: /*! INJECT(TO_SOURCE(VAR("dependencies"), 2)) */,
 
 		create: function create(root, /*optional*/_options, _shared) {
 			let DD_MODULES = {},
-				DD_EXPORTS = undefined;
-		
+				DD_EXPORTS = null;
+
 			// NOTE: The bundle will fill "DD_MODULES".
 			//! INCLUDE(VAR("bundle"), 'utf-8', true)
 
-			return (function() {
+			return (function(mods) {
 				const options = [/*! (VAR("config") ? INCLUDE(VAR("config"), 'utf-8') : INJECT("null")) */, _options, {startup: {secret: _shared.SECRET}}];
 
-				return root.Doodad.Namespaces.load((function() {
-						const modules = DD_MODULES;
-						DD_MODULES = null; // Free memory
-						return modules;
-					})(), options)
+				DD_MODULES = null; // free memory
+				DD_EXPORTS = null; // free memory
+
+				return root.Doodad.Namespaces.load(mods, options)
 					.then(function() {
 						// Returns nothing
 					});
-			})();
+			})(DD_MODULES);
 		},
 	};
-	return mods;
+	return modules;
 };
 //! END_MODULE();
