@@ -261,18 +261,18 @@ exports.add = function add(modules) {
 						const mjs = types.get(this.variables, 'mjs', false);
 						if (types.get(this.variables, 'serverSide', false)) {
 							if (mjs) {
-								this.directives.INJECT("; " +
+								this.directives.INJECT(
 									"const exports = {}; "
 								);
 							};
 						} else {
 							if (mjs) {
-								this.directives.INJECT("; " +
+								this.directives.INJECT(
 									"const global = window, " +
 										"exports = {}; "
 								);
 							} else {
-								this.directives.INJECT("; " +
+								this.directives.INJECT(
 									"(function(/*global, exports*/) {" +
 										"const global = arguments[0], " +
 											"exports = arguments[1]; "
@@ -290,18 +290,17 @@ exports.add = function add(modules) {
 						const mjs = types.get(this.variables, 'mjs', false);
 						if (types.get(this.variables, 'serverSide', false)) {
 							if (mjs) {
-								this.directives.INJECT("; " +
+								this.directives.INJECT(
 									"export default exports; "
 								);
 							};
 						} else {
 							if (mjs) {
-								this.directives.INJECT("; " +
+								this.directives.INJECT(
 									"export default exports; "
 								);
 							} else {
-								this.directives.INJECT("; " +
-										(types.get(this.variables, 'autoAdd', false) ? "exports.add(DD_MODULES); " : "") + // NOTE: DD_MODULES is declared in "package.templ.js", "package.templ.mjs" and "test_package.templ.js"
+								this.directives.INJECT((types.get(this.variables, 'autoAdd', false) ? "exports.add(DD_MODULES); " : "") + // NOTE: DD_MODULES is declared in "package.templ.js", "package.templ.mjs" and "test_package.templ.js"
 									"}).call(undefined, ((typeof global === 'object') && (global !== null) ? global : window), ((typeof DD_EXPORTS === 'object') && (DD_EXPORTS !== null) ? DD_EXPORTS : {})); "
 								);
 							};
