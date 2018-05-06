@@ -29,14 +29,14 @@ function startup(root) {
 		types = doodad.Types,
 		modules = doodad.Modules,
 		//namespaces = doodad.Namespaces,
-		
+
 		Promise = types.getPromise();
 
 	const options = {
 		Make: {
 		},
 	};
-	
+
 	let command = '',
 		index = 2;
 
@@ -44,7 +44,7 @@ function startup(root) {
 
 	while (index < process.argv.length) {
 		const arg = tools.split((process.argv[index++] || ''), '=', 2);
-		
+
 		if (arg[0][0] === '-') {
 			const name = arg[0];
 			if ((name === '-O') || (name === '--option')) {
@@ -67,7 +67,7 @@ function startup(root) {
 			};
 		} else {
 			command = arg[0].toLowerCase();
-			
+
 			if (['make', 'install', 'test', 'custom'].indexOf(command) < 0) {
 				throw new types.Error("Invalid command. Available commands are : 'make', 'install', 'test' and 'custom'.");
 			};
@@ -81,11 +81,11 @@ function startup(root) {
 			};
 		};
 	};
-	
+
 	if (!command) {
 		throw new types.Error("Missing command.");
 	};
-	
+
 	function run(root) {
 		return root.Make.run(command, commandOptions);
 	};
