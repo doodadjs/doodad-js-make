@@ -51,7 +51,7 @@ exports.add = function add(modules) {
 				types = doodad.Types,
 				tools = doodad.Tools,
 				files = tools.Files,
-				modules = doodad.Modules,
+				//modules = doodad.Modules,
 				make = root.Make,
 				makeTest = make.Test;
 
@@ -102,9 +102,10 @@ exports.add = function add(modules) {
 									} else {
 										let location = '';
 										if (cp.stdout) {
-											let chunk;
-											while (chunk = cp.stdout.read()) {
+											let chunk = cp.stdout.read();
+											while (chunk) {
 												location += chunk.toString('utf-8');
+												chunk = cp.stdout.read();
 											};
 										};
 										resolve(location);
