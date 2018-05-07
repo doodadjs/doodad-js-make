@@ -83,8 +83,38 @@ exports.add = function add(modules) {
 
 						const packageDir = taskData.packageDir;
 
-						const install = function _install() {
-							return Promise.create(function nodeJsForkPromise(resolve, reject) {
+						const locate = function _locate(dummy) {
+							return Promise.create(function locatePromise(resolve, reject) {
+								tools.log(tools.LogLevels.Info, "Locating the test application...");
+
+								const options = {
+									shell: false,
+									env: tools.extend({}, process.env, {NODE_ENV: 'development'}),
+									stdio: [0, 'pipe', 2],
+									cwd: packageDir.toApiString(),
+								};
+
+								const cp = nodeChildProcessSpawn("node", ['-e', "console.log(require.resolve('" + TEST_PKG + "'))"], options);
+
+								cp.on('exit', function cpOnExit(code, signal) {
+									if (code !== 0) {
+										reject(new types.Error("Failed to locate package '~0~'.", [TEST_PKG]));
+									} else {
+										let location = '';
+										if (cp.stdout) {
+											let chunk;
+											while (chunk = cp.stdout.read()) {
+												location += chunk.toString('utf-8');
+											};
+										};
+										resolve(location);
+									};
+								});
+							});
+						};
+
+						const install = function _install(dummy) {
+							return Promise.create(function installPromise(resolve, reject) {
 								tools.log(tools.LogLevels.Info, "Installing the test application...");
 
 								const options = {
@@ -96,9 +126,9 @@ exports.add = function add(modules) {
 
 								const cp = nodeChildProcessSpawn("npm", ['install', TEST_PKG, '--no-save'], options);
 
-								cp.on('close', function cpOnClose(status) {
-									if (status !== 0) {
-										reject(new types.Error("'NPM' exited with code '~0~'.", [status]));
+								cp.on('exit', function cpOnExit(code, signal) {
+									if (code !== 0) {
+										reject(new types.Error("'NPM' exited with code '~0~'.", [code]));
 									} else {
 										resolve();
 									};
@@ -106,11 +136,12 @@ exports.add = function add(modules) {
 							});
 						};
 
-						const launch = function _launch(firstAttempt) {
-							return Promise.create(function nodeJsForkPromise(resolve, reject) {
+						const launch = function _launch(pkgLocation) {
+							return Promise.create(function launchPromise(resolve, reject) {
 								tools.log(tools.LogLevels.Info, "Launching the test application...");
 
-								const appDir = files.Path.parse(modules.resolve(TEST_PKG)).set({file: ''});
+								//const appDir = files.Path.parse(modules.resolve(TEST_PKG)).set({file: ''});
+								const appDir = files.Path.parse(pkgLocation).set({file: ''});
 
 								const options = {
 									shell: true,
@@ -121,24 +152,24 @@ exports.add = function add(modules) {
 
 								const cp = nodeChildProcessSpawn("npm", ['run', 'test'], options);
 
-								cp.on('close', function cpOnClose(status) {
-									if (status !== 0) {
-										reject(new types.Error("'NPM' exited with code '~0~'.", [status]));
+								cp.on('exit', function cpOnExit(code, signal) {
+									if (code !== 0) {
+										reject(new types.Error("'NPM' exited with code '~0~'.", [code]));
 									} else {
 										resolve();
 									};
 								});
-							})
-								.catch(function catchLaunch(err) {
-									if (firstAttempt) {
-										return install()
-											.then(dummy => launch(false));
-									};
-									throw err;
-								});
+							});
 						};
 
-						return launch(true)
+						return locate()
+							.catch(function catchLocate(err) {
+								return install()
+									.then(locate);
+							})
+							.then(function(pkgLocation) {
+								return launch(pkgLocation);
+							})
 							.then(function thenNothing(dummy) {
 								// Returns nothing
 							});
