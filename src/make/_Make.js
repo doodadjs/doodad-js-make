@@ -27,7 +27,8 @@
 
 //! IF_SET("mjs")
 	//! INJECT("import {default as nodeFs} from 'fs';")
-	//! INJECT("import {default as npc} from 'npm-package-config';")
+	//! INJECT("import {default as npc} from '@doodad-js/npc';")
+	//! INJECT("import {default as JSON5} from 'json5';")
 
 	// TODO: Make them optional again.
 	//! INJECT("import {default as nodeBrowserify} from 'browserify';")
@@ -39,6 +40,9 @@
 
 	const nodeFs = require('fs'),
 		npc = require('@doodad-js/npc'),
+		JSON5 = require('json5'),
+
+		// TODO: Make them optional again.
 		nodeBrowserify = require('browserify'),
 		nodeWebpack = require('webpack'),
 		nodeESLint = require('eslint');
@@ -213,9 +217,9 @@ exports.add = function add(modules) {
 				} else {
 					result = nodeFsReadFileSync(modules.resolve(file), 'utf-8');
 				};
-				result = JSON.parse(result);
+				result = JSON5.parse(result);
 				types.getDefault(result, 'type', 'Package');
-				delete result['//'];  // Remove comments
+				delete result['//'];  // Remove faked comments
 				return result;
 			};
 
@@ -314,8 +318,8 @@ exports.add = function add(modules) {
 								file = this.options.taskData.parseVariables(file, { isPath: true });
 							};
 							let content = nodeFsReadFileSync(file.toString(), encoding || this.options.encoding);
-							if (file.extension === 'json') {
-								content = this.directives.TO_SOURCE(JSON.parse(content), Infinity);
+							if ((file.extension === 'json') || (file.extension === 'json5')) {
+								content = this.directives.TO_SOURCE(JSON5.parse(content), Infinity);
 								raw = true;
 							} else if (raw) {
 								this.directives.INJECT(";", true); // add a separator
@@ -441,16 +445,16 @@ exports.add = function add(modules) {
 									manifestTemplate = modulePath.combine('res/package.templ.json');
 								};
 
-								const templ = JSON.parse(nodeFsReadFileSync(modules.resolve(manifestTemplate), 'utf-8'));
+								const templ = JSON5.parse(nodeFsReadFileSync(modules.resolve(manifestTemplate), 'utf-8'));
 								this.manifestPath = this.combineWithPackageDir('./package.json').toString();
-								this.manifest = JSON.parse(nodeFsReadFileSync(modules.resolve(this.manifestPath), 'utf-8'));
+								this.manifest = JSON5.parse(nodeFsReadFileSync(modules.resolve(this.manifestPath), 'utf-8'));
 								this.manifest = tools.depthExtend(extendFn, {}, templ, this.manifest);
-								delete this.manifest['//']; // remove comments
+								delete this.manifest['//']; // remove faked comments
 
-								const makeTempl = JSON.parse(nodeFsReadFileSync(modules.resolve(modulePath.combine('res/make.templ.json')), 'utf-8'));
-								this.makeManifest = JSON.parse(nodeFsReadFileSync(modules.resolve(this.combineWithPackageDir('./make.json')), 'utf-8'));
+								const makeTempl = JSON5.parse(nodeFsReadFileSync(modules.resolve(modulePath.combine('res/make.templ.json')), 'utf-8'));
+								this.makeManifest = JSON5.parse(nodeFsReadFileSync(modules.resolve(this.combineWithPackageDir('./make.json')), 'utf-8'));
 								this.makeManifest = tools.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
-								delete this.makeManifest['//']; // remove comments
+								delete this.makeManifest['//']; // remove faked comments
 
 								this.sourceDir = this.combineWithPackageDir(types.get(this.makeManifest, 'sourceDir', './src'));
 								this.buildDir = this.combineWithPackageDir(types.get(this.makeManifest, 'buildDir', './build'));
@@ -1067,7 +1071,7 @@ exports.add = function add(modules) {
 								.then(function(config) {
 									delete config['package'];
 									return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
-										nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(config, null, 4), {encoding: 'utf-8'}, function(ex) {
+										nodeFs.writeFile(destination.toString({shell: 'api'}), JSON5.stringify(config, null, 4), {encoding: 'utf-8'}, function(ex) {
 											if (ex) {
 												reject(ex);
 											} else {
@@ -2348,7 +2352,7 @@ exports.add = function add(modules) {
 							tools.log(tools.LogLevels.Info, "Loading global UUIDs from file '~0~'...", [source]);
 							return files.readFile(source, {async: true, encoding: 'utf-8'})
 								.then(function(uuids) {
-									__Internal__.uuids = tools.nullObject(JSON.parse(uuids));
+									__Internal__.uuids = tools.nullObject(JSON5.parse(uuids));
 									tools.forEach(__Internal__.uuids, function(data, uuid) {
 										if (!types.has(data, 'tasks')) {
 											data.tasks = [this.taskData.command];
@@ -2367,7 +2371,7 @@ exports.add = function add(modules) {
 							tools.log(tools.LogLevels.Info, "Loading package UUIDs from file '~0~'...", [source]);
 							return files.readFile(source, {async: true, encoding: 'utf-8'})
 								.then(function(uuids) {
-									uuids = JSON.parse(uuids);
+									uuids = JSON5.parse(uuids);
 									let count = 0,
 										discarded = 0;
 									tools.forEach(uuids, function(uuid, name) {
@@ -2421,7 +2425,7 @@ exports.add = function add(modules) {
 							const uuids = tools.filter(__Internal__.uuids, function(data, uuid) {
 								return (data.hits > 0);
 							});
-							return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
+							return files.writeFile(dest, JSON5.stringify(uuids, null, 4), {async: true, mode: 'update'})
 								.then(function() {
 									tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) saved.", [types.keys(uuids).length]);
 								});
@@ -2434,7 +2438,7 @@ exports.add = function add(modules) {
 								const version = tools.Version.parse(guuid.packageVersion, {identifiers: namespaces.VersionIdentifiers});
 								return (guuid.hits > 0) && ((guuid.packageName === pkgName) && (version.compare(pkgVersion, {count: 1}) === 0));
 							});
-							return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
+							return files.writeFile(dest, JSON5.stringify(uuids, null, 4), {async: true, mode: 'update'})
 								.then(function() {
 									tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) saved.", [types.keys(uuids).length]);
 								});

@@ -24,6 +24,7 @@
   "dependencies": {
     "browserify": "^14.4.0",
     "eslint": "^4.16.0",
+    "json5": "^0.5.1",
     "json-loader": "^0.5.7",
     "webpack": "^2.7.0",
     "@doodad-js/npc": "^0.8.0"
