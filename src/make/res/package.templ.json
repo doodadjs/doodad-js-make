@@ -21,7 +21,8 @@
     ".gitignore",
     ".npmignore",
     ".npmrc",
-    ".travis.yml"
+    ".travis.yml",
+    "appveyor.yml"
   ],
   "scripts": {
     "build": "ddmake make",
