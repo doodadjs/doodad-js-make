@@ -2424,7 +2424,7 @@ exports.add = function add(modules) {
 							const uuids = tools.filter(__Internal__.uuids, function(data, uuid) {
 								return (data.hits > 0);
 							});
-							return files.writeFile(dest, JSON5.stringify(uuids, null, 4), {async: true, mode: 'update'})
+							return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
 								.then(function() {
 									tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) saved.", [types.keys(uuids).length]);
 								});
@@ -2437,7 +2437,7 @@ exports.add = function add(modules) {
 								const version = tools.Version.parse(guuid.packageVersion, {identifiers: namespaces.VersionIdentifiers});
 								return (guuid.hits > 0) && ((guuid.packageName === pkgName) && (version.compare(pkgVersion, {count: 1}) === 0));
 							});
-							return files.writeFile(dest, JSON5.stringify(uuids, null, 4), {async: true, mode: 'update'})
+							return files.writeFile(dest, JSON.stringify(uuids, null, 4), {async: true, mode: 'update'})
 								.then(function() {
 									tools.log(tools.LogLevels.Info, "\t~0~ UUID(s) saved.", [types.keys(uuids).length]);
 								});
