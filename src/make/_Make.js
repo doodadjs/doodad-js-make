@@ -28,7 +28,6 @@
 //! IF_SET("mjs")
 	//! INJECT("import {default as nodeFs} from 'fs';")
 	//! INJECT("import {default as npc} from '@doodad-js/npc';")
-	//! INJECT("import {default as JSON5} from 'json5';")
 
 	// TODO: Make them optional again.
 	//! INJECT("import {default as nodeBrowserify} from 'browserify';")
@@ -40,7 +39,6 @@
 
 	const nodeFs = require('fs'),
 		npc = require('@doodad-js/npc'),
-		JSON5 = require('json5'),
 
 		// TODO: Make them optional again.
 		nodeBrowserify = require('browserify'),
@@ -77,6 +75,7 @@ exports.add = function add(modules) {
 				io = doodad.IO,
 				minifiers = io.Minifiers,
 				safeEval = tools.SafeEval,
+				JSON5 = tools.JSON5,
 				make = root.Make,
 				folder = make.Folder,
 				file = make.File,
