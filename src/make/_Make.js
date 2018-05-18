@@ -27,6 +27,7 @@
 
 //! IF_SET("mjs")
 	//! INJECT("import {default as nodeFs} from 'fs';")
+	//! INJECT("import {default as nodeCp} from 'child_process';")
 	//! INJECT("import {default as npc} from '@doodad-js/npc';")
 
 	// TODO: Make them optional again.
@@ -38,6 +39,7 @@
 	"use strict";
 
 	const nodeFs = require('fs'),
+		nodeCp = require('child_process'),
 		npc = require('@doodad-js/npc'),
 
 		// TODO: Make them optional again.
@@ -50,6 +52,8 @@ const nodeFsCreateReadStream = nodeFs.createReadStream,
 	nodeFsCreateWriteStream = nodeFs.createWriteStream,
 	nodeFsReadFileSync = nodeFs.readFileSync,
 	nodeFsStatSync = nodeFs.statSync,
+	nodeCpFork = nodeCp.fork,
+	nodeCpSpawn = nodeCp.spawn,
 
 	npcListAsync = npc.listAsync;
 
@@ -58,7 +62,7 @@ exports.add = function add(modules) {
 	modules = (modules || {});
 	modules['Make'] = {
 		version: /*! REPLACE_BY(TO_SOURCE(VERSION(MANIFEST("name")))) */ null /*! END_REPLACE()*/,
-		namespaces: ['Folder', 'File', 'File.Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update', 'UUIDS', 'ESLint'],
+		namespaces: ['Folder', 'File', 'Spawn', 'Generate', 'Browserify', 'Webpack', 'Modules', 'Update', 'UUIDS', 'ESLint'],
 
 		create: function create(root, /*optional*/_options, _shared) {
 			const doodad = root.Doodad,
@@ -79,7 +83,7 @@ exports.add = function add(modules) {
 				make = root.Make,
 				folder = make.Folder,
 				file = make.File,
-				//spawn = file.Spawn,
+				spawn = make.Spawn,
 				generate = make.Generate,
 				browserify = make.Browserify,
 				webpack = make.Webpack,
@@ -1026,32 +1030,86 @@ exports.add = function add(modules) {
 				}));
 
 
-			/* TODO: Complete and test
 			spawn.REGISTER(make.Operation.$extend(
-			{
-				$TYPE_NAME: 'Node',
+				{
+					$TYPE_NAME: 'Node',
 
-				execute: doodad.OVERRIDE(function execute(command, item, /*optional* /options) {
-					let source = item.source;
-					if (types.isString(source)) {
-						source = this.taskData.parseVariables(source, { isPath: true });
-					};
-					return Promise.create(function nodeJsForkPromise(resolve, reject) {
-							const cp = nodejs.fork(source, item.args, {stdio: ['pipe', 1, 2]});
-							cp.on('close', function(status) {
-								if (status !== 0) {
-									reject(new types.Error("Process exited with code '~0~'.", [status]));
-								} else {
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = item.source;
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
+						let target = item.target;
+						if (types.isString(target)) {
+							target = this.taskData.parseVariables(target, { isPath: true });
+						};
+						return Promise.create(function nodeJsForkPromise(resolve, reject) {
+							const opts = {
+								stdio: [0, 1, 2, 'ipc'],
+							};
+							if (target) {
+								opts.cwd = types.toString(target);
+							} else {
+								opts.cwd = types.toString(this.taskData.packageDir);
+							};
+							const cp = nodeCpFork(types.toString(source), item.args, opts);
+							cp.on('error', function(err) {
+								reject(err);
+							});
+							cp.on('exit', function(code, signal) {
+								if (code === 0) {
 									resolve();
+								} else {
+									reject(new types.Error("Process exited with code '~0~'.", [code]));
 								};
 							});
-						})
-						.then(function() {
-							// Returns nothing
 						});
-				}),
-			}));
-*/
+						//.then(function() {
+						//	// Returns nothing
+						//});
+					}),
+				}));
+
+			spawn.REGISTER(make.Operation.$extend(
+				{
+					$TYPE_NAME: 'File',
+
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+						let source = item.source;
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
+						};
+						let target = item.target;
+						if (types.isString(target)) {
+							target = this.taskData.parseVariables(target, { isPath: true });
+						};
+						return Promise.create(function nodeJsForkPromise(resolve, reject) {
+							const opts = {
+								stdio: [0, 1, 2],
+								shell: !!types.get(item, 'shell', false),
+							};
+							if (target) {
+								opts.cwd = types.toString(target);
+							} else {
+								opts.cwd = types.toString(this.taskData.packageDir);
+							};
+							const cp = nodeCpSpawn(types.toString(source), item.args, opts);
+							cp.on('error', function(err) {
+								reject(err);
+							});
+							cp.on('exit', function(code, signal) {
+								if (code === 0) {
+									resolve();
+								} else {
+									reject(new types.Error("Process exited with code '~0~'.", [code]));
+								};
+							});
+						});
+						//.then(function() {
+						//	// Returns nothing
+						//});
+					}),
+				}));
 
 
 			generate.REGISTER(make.Operation.$extend({
@@ -2530,11 +2588,14 @@ exports.add = function add(modules) {
 					$TYPE_NAME: 'If',
 
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-						const taskData = this.taskData;
-						if (safeEval.eval(types.get(item, 'condition', "false"), {options, root, types, tools, command: taskData.command})) {
-							return item.operations;
-						};
-						return undefined;
+						const Promise = types.getPromise();
+						return Promise.resolve(safeEval.eval(types.get(item, 'condition', "false"), {options, root, types, tools, taskData: this.taskData}))
+							.then(function(result) {
+								if (result) {
+									return types.get(item, 'operations');
+								};
+								return undefined;
+							});
 					}),
 				}));
 
