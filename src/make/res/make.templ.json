@@ -1,4 +1,5 @@
 {
+	// JSON5
 	// Encoding: utf8
 	//
 	// doodad-js  -  Object-oriented programming framework
@@ -39,7 +40,7 @@
 			"operations": [
 				{
 					"class": "Make.If",
-					"condition": "(['make'].indexOf(command) >= 0)",
+					"condition": "(['make'].indexOf(taskData.command) >= 0)",
 					"operations": [
 						{
 							"class": "Make.Task",
@@ -62,7 +63,7 @@
 			"operations": [
 				{
 					"class": "Make.If",
-					"condition": "(['make'].indexOf(command) >= 0)",
+					"condition": "(['make'].indexOf(taskData.command) >= 0)",
 					"operations": [
 						{
 							"class": "Make.Folder.Create",
