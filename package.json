@@ -22,10 +22,9 @@
     "make"
   ],
   "dependencies": {
-    "browserify": "^14.4.0",
-    "eslint": "^4.16.0",
-    "json-loader": "^0.5.7",
-    "webpack": "^2.7.0",
+    "browserify": "^16.2.2",
+    "eslint": "^4.19.1",
+    "webpack": "^4.8.3",
     "@doodad-js/npc": "^0.8.0"
   },
   "devDependencies": {
