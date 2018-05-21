@@ -69,7 +69,7 @@ function startup(root) {
 			command = arg[0].toLowerCase();
 
 			if (['make', 'install', 'test', 'custom'].indexOf(command) < 0) {
-				throw new types.Error("Invalid command. Available commands are : 'make', 'install', 'test' and 'custom'.");
+				throw new types.Error("Invalid command '~0~'. Available commands are : 'make', 'install', 'test' and 'custom'.", [command]);
 			};
 
 			if (command === 'custom') {
