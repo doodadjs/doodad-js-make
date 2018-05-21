@@ -25,11 +25,11 @@
     "appveyor.yml"
   ],
   "scripts": {
-    "build": "ddmake make",
-    "dist": "ddmake install",
-    "browserify": "ddmake custom=browserify",
-    "test": "ddmake custom=test",
-    "lint": "ddmake custom=lint"
+    "build": "node -r \"@doodad-js/make/make\" . make",
+    "dist": "node -r \"@doodad-js/make/make\" . install",
+    "browserify": "node -r \"@doodad-js/make/make\" . custom=browserify",
+    "test": "node -r \"@doodad-js/make/make\" . custom=test",
+    "lint": "node -r \"@doodad-js/make/make\" . custom=lint",
   },
   "devDependencies": {
     "@doodad-js/eslint-config-base": "^0.0.0",
