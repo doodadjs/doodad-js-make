@@ -1051,7 +1051,7 @@ exports.add = function add(modules) {
 							} else {
 								opts.cwd = types.toString(this.taskData.packageDir);
 							};
-							const cp = nodeCpSpawn('node', types.append([types.toString(source)], item.args), opts);
+							const cp = nodeCpSpawn('node', tools.append([types.toString(source)], item.args), opts);
 							cp.on('error', function(err) {
 								reject(err);
 							});
