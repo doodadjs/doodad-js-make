@@ -52,7 +52,6 @@ const nodeFsCreateReadStream = nodeFs.createReadStream,
 	nodeFsCreateWriteStream = nodeFs.createWriteStream,
 	nodeFsReadFileSync = nodeFs.readFileSync,
 	nodeFsStatSync = nodeFs.statSync,
-	nodeCpFork = nodeCp.fork,
 	nodeCpSpawn = nodeCp.spawn,
 
 	npcListAsync = npc.listAsync;
@@ -1043,16 +1042,16 @@ exports.add = function add(modules) {
 						if (types.isString(target)) {
 							target = this.taskData.parseVariables(target, { isPath: true });
 						};
-						return Promise.create(function nodeJsForkPromise(resolve, reject) {
+						return Promise.create(function nodeJsSpawnPromise(resolve, reject) {
 							const opts = {
-								stdio: [0, 1, 2, 'ipc'],
+								stdio: [0, 1, 2],
 							};
 							if (target) {
 								opts.cwd = types.toString(target);
 							} else {
 								opts.cwd = types.toString(this.taskData.packageDir);
 							};
-							const cp = nodeCpFork(types.toString(source), item.args, opts);
+							const cp = nodeCpSpawn('node', types.append([types.toString(source)], item.args), opts);
 							cp.on('error', function(err) {
 								reject(err);
 							});
