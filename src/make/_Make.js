@@ -1128,7 +1128,7 @@ exports.add = function add(modules) {
 								.then(function(config) {
 									delete config['package'];
 									return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
-										nodeFs.writeFile(destination.toString({shell: 'api'}), JSON5.stringify(config, null, 4), {encoding: 'utf-8'}, function(ex) {
+										nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(config, null, 4), {encoding: 'utf-8'}, function(ex) {
 											if (ex) {
 												reject(ex);
 											} else {
@@ -2258,7 +2258,7 @@ exports.add = function add(modules) {
 										reject(err);
 									});
 							} else {
-								throw new types.Error('Can\'t browserify "' + source + '" to "' + dest + '" because "browserify" is not installed.');
+								throw new types.Error("Can't bundle '" + source + "' to '" + dest + "' because 'browserify' is not installed.");
 							};
 						})
 							.then(function() {
@@ -2285,26 +2285,29 @@ exports.add = function add(modules) {
 						return Promise.create(function webpackPromise(resolve, reject) {
 							if (nodeWebpack) {
 								const config = {
+									target: 'web',
 									entry: source.toString(),
 									output: {
 										path: dest.set({file: null}).toString(),
 										filename: dest.file,
 									},
-									module: {
-										loaders: [
-											{ test: /\.json$/, loader: "json" }
-										],
-									},
 								};
 								nodeWebpack(config, function(err, stats) {
-									if (err) {
-										reject(err);
-									} else {
-										resolve(stats);
+									try {
+										if (err) {
+											reject(err);
+										} else if (stats.hasErrors()) {
+											tools.log(tools.LogLevels.Error, stats.compilation.errors);
+											reject(new types.Error("Webpack bundler failed with errors."));
+										} else {
+											resolve(stats);
+										};
+									} catch(ex) {
+										reject(ex);
 									};
 								});
 							} else {
-								throw new types.Error('Can\'t bundle "' + source + '" because "webpack" is not installed.');
+								throw new types.Error("Can't bundle '" + source + "' to '" + dest + "' because 'webpack' is not installed.");
 							};
 						})
 							.then(function(stats) {
