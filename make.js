@@ -50,11 +50,10 @@ function startup(root) {
 			if ((name === '-O') || (name === '--option')) {
 				const keyValArg = (arg[1] ? arg[1] : process.argv[index++]);
 				const keyVal = tools.split(keyValArg, '=', 2);
-				if (!keyVal[0]) {
-					console.error("Missing key argument.");
-					tools.abortScript(1);
-				};
 				const key = keyVal[0];
+				if (!key) {
+					throw new types.Error("Invalid option '~0~'.", [keyValArg]);
+				};
 				const val = (keyVal.length > 1 ? keyVal[1] : process.argv[index++]);
 				commandOptions[key] = val;
 			} else if ((name === '-v') || (name === '--verbose')) {
@@ -62,8 +61,7 @@ function startup(root) {
 			} else if (name === '-vv') {
 				tools.setOptions({logLevel: 0});
 			} else {
-				console.error("Invalid options.");
-				tools.abortScript(1);
+				throw new types.Error("Invalid argument '~0~'.", [name]);
 			};
 		} else {
 			command = arg[0].toLowerCase();
