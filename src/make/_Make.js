@@ -2512,10 +2512,10 @@ exports.add = function add(modules) {
 
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						if (types.get(item, 'global', false)) {
-							tools.log(tools.LogLevels.Info, "Forgetting global UUIDs...");
+							tools.log(tools.LogLevels.Debug, "Forgetting global UUIDs...");
 							__Internal__.uuids = tools.nullObject();
 						} else {
-							tools.log(tools.LogLevels.Info, "Forgetting package UUIDs...");
+							tools.log(tools.LogLevels.Debug, "Forgetting package UUIDs...");
 							__Internal__.pkgUUIDS = tools.nullObject();
 						};
 					}),
