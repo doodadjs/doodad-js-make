@@ -2344,12 +2344,16 @@ exports.add = function add(modules) {
 								manifest = __Internal__.getManifest(pkg, taskData.packageDir);
 							};
 							let version = manifest.version;
-							let stage = manifest.stage;
-							stage = stage && tools.Version.parse(stage, {identifiers: namespaces.VersionIdentifiers});
-							if (stage) {
-								const prelease = (stage.data[0] <= -3 ? 'alpha' : stage.data[0] === -2 ? 'beta' : '');
-								if (prelease) {
-									version += "-" + prelease + '.' + (stage.data[3] || "0");
+							const [pre, preRev] = (manifest.stage ? tools.Version.parse(manifest.stage, {identifiers: namespaces.VersionIdentifiers}).slice(0, 2) : []);
+							if (pre) {
+								const preName = (pre <= -3 ? 'alpha' : pre === -2 ? 'beta' : '');
+								if (preName) {
+									if (preRev) {
+										version += "-" + preName + '.' + preRev;
+									} else {
+										const [maj, min, rev] = tools.Version.parse(version).slice(0, 3);
+										version = maj + "." + min + ".0-" + preName + '.' + rev;
+									};
 								};
 							};
 							return version;
