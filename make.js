@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // doodad-js - Object-oriented programming framework
-// File: make.js - Make command
+// File: make.js - Make command worker
 // Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
@@ -23,7 +23,7 @@
 
 "use strict";
 
-function startup(root) {
+const startup = function _startup(root, args) {
 	const doodad = root.Doodad,
 		tools = doodad.Tools,
 		types = doodad.Types,
@@ -38,23 +38,23 @@ function startup(root) {
 	};
 
 	let command = '',
-		index = 2;
+		index = 0;
 
 	const commandOptions = {};
 
-	while (index < process.argv.length) {
-		const arg = tools.split((process.argv[index++] || ''), '=', 2);
+	while (index < args.length) {
+		const arg = tools.split((args[index++] || ''), '=', 2);
 
 		if (arg[0][0] === '-') {
 			const name = arg[0];
 			if ((name === '-O') || (name === '--option')) {
-				const keyValArg = (arg[1] ? arg[1] : process.argv[index++]);
+				const keyValArg = (arg[1] ? arg[1] : args[index++]);
 				const keyVal = tools.split(keyValArg, '=', 2);
 				const key = keyVal[0];
 				if (!key) {
 					throw new types.Error("Invalid option '~0~'.", [keyValArg]);
 				};
-				const val = (keyVal.length > 1 ? keyVal[1] : process.argv[index++]);
+				const val = (keyVal.length > 1 ? keyVal[1] : args[index++]);
 				commandOptions[key] = val;
 			} else if ((name === '-v') || (name === '--verbose')) {
 				tools.setOptions({logLevel: 1});
@@ -71,7 +71,7 @@ function startup(root) {
 			};
 
 			if (command === 'custom') {
-				let name = arg[1] || process.argv[index++];
+				let name = arg[1] || args[index++];
 				if (!name) {
 					throw new types.Error("Missing argument to command 'custom'.");
 				};
@@ -96,9 +96,19 @@ function startup(root) {
 		.then(run);
 };
 
-require('@doodad-js/core').createRoot(null, {startup: {fromSource: true}, 'Doodad.Tools': {logLevel: 2, noWatch: true}})
-	.then(startup)
-	.catch(ex => {
-		console.error(ex.stack);
-		process.exit(1);
-	});
+const main = function _main(args) {
+	require('@doodad-js/core').createRoot(null, {startup: {fromSource: true}, 'Doodad.Tools': {logLevel: 2, noWatch: true}})
+		.then(function(root) {
+			return startup(root, args);
+		})
+		.catch(ex => {
+			console.error(ex.stack);
+			process.exit(1);
+		});
+};
+
+if (require.main === module) {
+	main(process.argv.slice(2));
+} else {
+	module.exports = main;
+};
