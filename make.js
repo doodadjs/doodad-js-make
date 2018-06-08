@@ -63,10 +63,18 @@ const spawnWorker = function _spawnWorker(args) {
 	global.setImmediate(function _go() {
 		const execArgv = filterExecArgv(process.execArgv);
 		const workerPath = require.resolve('./make_worker.js');
-		cp.spawn(process.execPath, execArgv.concat([workerPath], args), {
+		const child = cp.spawn(process.execPath, execArgv.concat([workerPath], args), {
 			env: process.env,
 			cwd: process.cwd(),
 			stdio: 'inherit',
+		});
+		child.on('exit', function(code, signal) {
+			if (code) {
+				process.exitCode = code;
+			} else if (signal) {
+				console.error("Worker exited with '${signal}' signal.");
+				process.exitCode = 1;
+			};
 		});
 	});
 };
