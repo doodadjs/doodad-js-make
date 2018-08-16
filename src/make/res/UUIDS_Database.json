@@ -6734,15 +6734,6 @@
             "make"
         ]
     },
-    "97238e30-41b4-48f8-995f-2adfe05a9b80": {
-        "packageName": "@doodad-js/core",
-        "packageVersion": "9.0.0",
-        "name": "SYMBOL_CREATOR",
-        "hits": 6,
-        "tasks": [
-            "make"
-        ]
-    },
     "50068e7b-0bf6-4066-8b88-97d9c409b7e3": {
         "packageName": "@doodad-js/http",
         "packageVersion": "1.1.0",
@@ -6864,15 +6855,6 @@
         "packageName": "@doodad-js/core",
         "packageVersion": "9.0.0",
         "name": "SYMBOL_CLONED_STACK",
-        "hits": 6,
-        "tasks": [
-            "make"
-        ]
-    },
-    "23f2ad5a-36aa-432d-8052-c5f51dd9ce9a": {
-        "packageName": "@doodad-js/core",
-        "packageVersion": "9.0.0",
-        "name": "SYMBOL_EVENT_INSIDE",
         "hits": 6,
         "tasks": [
             "make"
