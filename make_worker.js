@@ -101,7 +101,7 @@ const main = function _main(args) {
 		.then(function(root) {
 			return startup(root, args);
 		})
-		.catch(ex => {
+		.catch(function(ex) {
 			console.error(ex.stack);
 			process.exit(1);
 		});
