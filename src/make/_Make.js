@@ -2429,7 +2429,7 @@ exports.add = function add(modules) {
 								}, null, this)
 								.catch({code: 'ENOENT'}, function(ex) {
 									tools.log(tools.LogLevels.Warning, "\tNo UUID loaded because file is missing.");
-								});
+								}, this);
 						} else {
 							tools.log(tools.LogLevels.Info, "Loading package UUIDs from file '~0~'...", [source]);
 							return files.readFile(source, {async: true, encoding: 'utf-8'})
