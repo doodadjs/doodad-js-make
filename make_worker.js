@@ -27,10 +27,7 @@ const startup = function _startup(root, args) {
 	const doodad = root.Doodad,
 		tools = doodad.Tools,
 		types = doodad.Types,
-		modules = doodad.Modules,
-		//namespaces = doodad.Namespaces,
-
-		Promise = types.getPromise();
+		modules = doodad.Modules;
 
 	const options = {
 		Make: {
@@ -85,7 +82,11 @@ const startup = function _startup(root, args) {
 	};
 
 	function run(root) {
-		return root.Make.run(command, commandOptions);
+		root.Doodad.Tools.trapUnhandledErrors();
+		return root.Make.run(command, commandOptions)
+			.then(function(dummy) {
+				root.Doodad.Tools.abortScript(0);
+			});
 	};
 
 	return modules.load([
@@ -100,11 +101,13 @@ const main = function _main(args) {
 	require('@doodad-js/core').createRoot(null, {startup: {fromSource: true}, 'Doodad.Tools': {logLevel: 2, noWatch: true}})
 		.then(function(root) {
 			return startup(root, args);
-		})
-		.catch(function(ex) {
-			console.error(ex.stack);
-			process.exit(1);
 		});
+		//.catch(function(err) {
+		//	if (!err.bubble) {
+		//		console.error(err.stack);
+		//	};
+		//	process.exit(1);
+		//});
 };
 
 if (require.main === module) {
