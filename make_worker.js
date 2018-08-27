@@ -24,90 +24,91 @@
 "use strict";
 
 const startup = function _startup(root, args) {
-	const doodad = root.Doodad,
-		tools = doodad.Tools,
-		types = doodad.Types,
-		modules = doodad.Modules;
+	const Promise = root.Doodad.Types.getPromise();
+	return Promise.try(function tryStartupPromise() {
+		const doodad = root.Doodad,
+			tools = doodad.Tools,
+			types = doodad.Types,
+			modules = doodad.Modules;
 
-	const options = {
-		Make: {
-		},
-	};
+		tools.trapUnhandledErrors();
 
-	let command = '',
-		index = 0;
+		const options = {
+			Make: {
+			},
+		};
 
-	const commandOptions = {};
+		let command = '',
+			index = 0;
 
-	while (index < args.length) {
-		const arg = tools.split((args[index++] || ''), '=', 2);
+		const commandOptions = {};
 
-		if (arg[0][0] === '-') {
-			const name = arg[0];
-			if ((name === '-O') || (name === '--option')) {
-				const keyValArg = (arg[1] ? arg[1] : args[index++]);
-				const keyVal = tools.split(keyValArg, '=', 2);
-				const key = keyVal[0];
-				if (!key) {
-					throw new types.Error("Invalid option '~0~'.", [keyValArg]);
+		while (index < args.length) {
+			const arg = tools.split((args[index++] || ''), '=', 2);
+
+			if (arg[0][0] === '-') {
+				const name = arg[0];
+				if ((name === '-O') || (name === '--option')) {
+					const keyValArg = (arg[1] ? arg[1] : args[index++]);
+					const keyVal = tools.split(keyValArg, '=', 2);
+					const key = keyVal[0];
+					if (!key) {
+						throw new types.Error("Invalid option '~0~'.", [keyValArg]);
+					};
+					const val = (keyVal.length > 1 ? keyVal[1] : args[index++]);
+					commandOptions[key] = val;
+				} else if ((name === '-v') || (name === '--verbose')) {
+					tools.setOptions({logLevel: 1});
+				} else if (name === '-vv') {
+					tools.setOptions({logLevel: 0});
+				} else {
+					throw new types.Error("Invalid argument '~0~'.", [name]);
 				};
-				const val = (keyVal.length > 1 ? keyVal[1] : args[index++]);
-				commandOptions[key] = val;
-			} else if ((name === '-v') || (name === '--verbose')) {
-				tools.setOptions({logLevel: 1});
-			} else if (name === '-vv') {
-				tools.setOptions({logLevel: 0});
 			} else {
-				throw new types.Error("Invalid argument '~0~'.", [name]);
-			};
-		} else {
-			command = arg[0].toLowerCase();
+				command = arg[0].toLowerCase();
 
-			if (['make', 'install', 'test', 'custom'].indexOf(command) < 0) {
-				throw new types.Error("Invalid command '~0~'. Available commands are : 'make', 'install', 'test' and 'custom'.", [command]);
-			};
-
-			if (command === 'custom') {
-				let name = arg[1] || args[index++];
-				if (!name) {
-					throw new types.Error("Missing argument to command 'custom'.");
+				if (['make', 'install', 'test', 'custom'].indexOf(command) < 0) {
+					throw new types.Error("Invalid command '~0~'. Available commands are : 'make', 'install', 'test' and 'custom'.", [command]);
 				};
-				command = name;
+
+				if (command === 'custom') {
+					let name = arg[1] || args[index++];
+					if (!name) {
+						throw new types.Error("Missing argument to command 'custom'.");
+					};
+					command = name;
+				};
 			};
 		};
-	};
 
-	if (!command) {
-		throw new types.Error("Missing command.");
-	};
+		if (!command) {
+			throw new types.Error("Missing command.");
+		};
 
-	function run(root) {
-		root.Doodad.Tools.trapUnhandledErrors();
-		return root.Make.run(command, commandOptions)
-			.then(function(dummy) {
-				root.Doodad.Tools.abortScript(0);
-			});
-	};
+		function run(root) {
+			return root.Make.run(command, commandOptions);
+		};
 
-	return modules.load([
-				{
-					module: '@doodad-js/make',
-				},
-			], options)
-		.then(run);
+		return modules.load([
+					{
+						module: '@doodad-js/make',
+					},
+				], options)
+			.then(run);
+	});
 };
 
 const main = function _main(args) {
 	require('@doodad-js/core').createRoot(null, {startup: {fromSource: true}, 'Doodad.Tools': {logLevel: 2, noWatch: true}})
 		.then(function(root) {
-			return startup(root, args);
+			return startup(root, args)
+				.catch(function(err) {
+					root.Doodad.Tools.catchAndExit(err);
+				})
+				.then(function(dummy) {
+					root.Doodad.Tools.abortScript(0);
+				});
 		});
-		//.catch(function(err) {
-		//	if (!err.bubble) {
-		//		console.error(err.stack);
-		//	};
-		//	process.exit(1);
-		//});
 };
 
 if (require.main === module) {
