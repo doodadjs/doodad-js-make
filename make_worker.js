@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // doodad-js - Object-oriented programming framework
-// File: make.js - Make command worker
+// File: make_worker.js - Make command worker
 // Project home: https://github.com/doodadjs/
 // Author: Claude Petit, Quebec city
 // Contact: doodadjs [at] gmail.com
@@ -42,6 +42,7 @@ const startup = function _startup(root, args) {
 			index = 0;
 
 		const commandOptions = {};
+		let alive = false;
 
 		while (index < args.length) {
 			const arg = tools.split((args[index++] || ''), '=', 2);
@@ -61,6 +62,19 @@ const startup = function _startup(root, args) {
 					tools.setOptions({logLevel: 1});
 				} else if (name === '-vv') {
 					tools.setOptions({logLevel: 0});
+				} else if (name === '--alive') {
+					// <PRB> Since ???, Travis times out after 10 minutes of silence (in stdout/stderr)...
+					if (!alive) {
+						alive = true;
+						const setAliveSignal = function _setAliveSignal() {
+							const timeout = setTimeout(function aliveSignal() {
+								process.stdout.write(".");
+								setAliveSignal();
+							}, 1000 * 60 * 2);
+							timeout.unref();
+						};
+						setAliveSignal();
+					};
 				} else {
 					throw new types.Error("Invalid argument '~0~'.", [name]);
 				};
