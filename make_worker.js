@@ -41,7 +41,9 @@ const startup = function _startup(root, args) {
 		let command = '',
 			index = 0;
 
-		const commandOptions = {};
+		const commandOptions = {
+			config: {},
+		};
 		let alive = false;
 
 		while (index < args.length) {
@@ -54,10 +56,22 @@ const startup = function _startup(root, args) {
 					const keyVal = tools.split(keyValArg, '=', 2);
 					const key = keyVal[0];
 					if (!key) {
-						throw new types.Error("Invalid option '~0~'.", [keyValArg]);
+						throw new types.ValueError("Invalid option '~0~'.", [keyValArg]);
+					};
+					if (key === 'config') {
+						throw new types.ValueError("Invalid option '~0~'. Please use '--config' instead.", [keyValArg]);
 					};
 					const val = (keyVal.length > 1 ? keyVal[1] : args[index++]);
 					commandOptions[key] = val;
+				} else if ((name === '-C') || (name === '--config')) {
+					const keyValArg = (arg[1] ? arg[1] : args[index++]);
+					const keyVal = tools.split(keyValArg, '=', 2);
+					const key = keyVal[0];
+					if (!key) {
+						throw new types.ValueError("Invalid configuration '~0~'.", [keyValArg]);
+					};
+					const val = (keyVal.length > 1 ? keyVal[1] : args[index++]);
+					commandOptions.config[key] = val;
 				} else if ((name === '-v') || (name === '--verbose')) {
 					tools.setOptions({logLevel: 1});
 				} else if (name === '-vv') {
@@ -76,19 +90,19 @@ const startup = function _startup(root, args) {
 						setAliveSignal();
 					};
 				} else {
-					throw new types.Error("Invalid argument '~0~'.", [name]);
+					throw new types.ValueError("Invalid argument '~0~'.", [name]);
 				};
 			} else {
 				command = arg[0].toLowerCase();
 
 				if (['make', 'install', 'test', 'custom'].indexOf(command) < 0) {
-					throw new types.Error("Invalid command '~0~'. Available commands are : 'make', 'install', 'test' and 'custom'.", [command]);
+					throw new types.ValueError("Invalid command '~0~'. Available commands are : 'make', 'install', 'test' and 'custom'.", [command]);
 				};
 
 				if (command === 'custom') {
 					let name = arg[1] || args[index++];
 					if (!name) {
-						throw new types.Error("Missing argument to command 'custom'.");
+						throw new types.ValueError("Missing argument to command 'custom'.");
 					};
 					command = name;
 				};
@@ -96,7 +110,7 @@ const startup = function _startup(root, args) {
 		};
 
 		if (!command) {
-			throw new types.Error("Missing command.");
+			throw new types.ValueError("Missing command.");
 		};
 
 		function run(root) {
@@ -107,7 +121,7 @@ const startup = function _startup(root, args) {
 					{
 						module: '@doodad-js/make',
 					},
-				], options)
+				], [options, commandOptions.config])
 			.then(run);
 	});
 };
