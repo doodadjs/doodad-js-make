@@ -713,7 +713,7 @@ exports.add = function add(modules) {
 
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						tools.log(tools.LogLevels.Info, 'Loading required module files...');
-						return modules.load(types.get(item, 'files'), options)
+						return modules.load(types.get(item, 'files'), options.config)
 							.then(function(result) {
 								// Returns nothing
 							});
