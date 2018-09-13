@@ -2534,7 +2534,7 @@ exports.add = function add(modules) {
 						const continueOnError = types.toBoolean(types.get(options, 'continueOnError', false));
 
 						if (!nodeESLint) {
-							throw new types.Error("Can't do '~0~' because the 'eslint' package is not installed.", [command]);
+							throw new types.Error("Can't lint the code because the 'eslint' package is not installed.");
 						};
 
 						const taskData = this.taskData;
@@ -2548,7 +2548,7 @@ exports.add = function add(modules) {
 
 						const target = source.relative(pkgDir);
 
-						tools.log(tools.LogLevels.Info, "Running ESLINT...");
+						tools.log(tools.LogLevels.Info, "Running ESLINT on '~0~'...", [source]);
 
 						const fix = types.toBoolean(types.get(options, 'fix', types.get(item, 'fix', false)));
 
