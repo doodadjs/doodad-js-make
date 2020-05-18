@@ -8529,7 +8529,16 @@
         "packageName": "@doodad-js/xml",
         "packageVersion": "5.1.2",
         "name": "Libxml2AbortError",
-        "hits": 5,
+        "hits": 8,
+        "tasks": [
+            "make"
+        ]
+    },
+    "4f43b115-7c80-417b-bea2-96518e7834f8": {
+        "packageName": "@doodad-js/core",
+        "packageVersion": "9.1.4",
+        "name": "SYMBOL_CLONABLE",
+        "hits": 6,
         "tasks": [
             "make"
         ]
