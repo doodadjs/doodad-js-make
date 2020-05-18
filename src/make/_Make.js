@@ -307,7 +307,7 @@ exports.add = function add(modules) {
 								);
 							} else {
 								this.directives.INJECT((types.get(this.variables, 'autoAdd', false) ? "exports.add(DD_MODULES); " : "") + // NOTE: DD_MODULES is declared in "package.templ.js", "package.templ.mjs" and "test_package.templ.js"
-									"}).call(undefined, ((typeof global === 'object') && (global !== null) ? global : window), ((typeof DD_EXPORTS === 'object') && (DD_EXPORTS !== null) ? DD_EXPORTS : {})); "
+									"}).call(undefined, (((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : (typeof global === 'object') && (global !== null) ? global : window)), ((typeof DD_EXPORTS === 'object') && (DD_EXPORTS !== null) ? DD_EXPORTS : {})); "
 								);
 							};
 						};
