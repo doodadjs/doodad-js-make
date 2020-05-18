@@ -43,13 +43,18 @@ const startup = function _startup(root, args) {
 
 		const commandOptions = {
 			config: {},
+			args: null,
 		};
 		let alive = false;
+		let isVerbose = false;
 
 		while (index < args.length) {
 			const arg = tools.split((args[index++] || ''), '=', 2);
 
-			if (arg[0][0] === '-') {
+			if (arg[0] === '--') {
+				commandOptions.args = args.slice(index);
+				break;
+			} else if (arg[0][0] === '-') {
 				const name = arg[0];
 				if ((name === '-O') || (name === '--option')) {
 					const keyValArg = (arg[1] ? arg[1] : args[index++]);
@@ -74,8 +79,10 @@ const startup = function _startup(root, args) {
 					commandOptions.config[key] = val;
 				} else if ((name === '-v') || (name === '--verbose')) {
 					tools.setOptions({logLevel: 1});
+					isVerbose = true;
 				} else if (name === '-vv') {
 					tools.setOptions({logLevel: 0});
+					isVerbose = true;
 				} else if (name === '--alive') {
 					// <PRB> Since ???, Travis times out after 10 minutes of silence (in stdout/stderr)...
 					if (!alive) {
@@ -100,7 +107,7 @@ const startup = function _startup(root, args) {
 				};
 
 				if (command === 'custom') {
-					let name = arg[1] || args[index++];
+					const name = arg[1] || args[index++];
 					if (!name) {
 						throw new types.ValueError("Missing argument to command 'custom'.");
 					};
@@ -111,6 +118,10 @@ const startup = function _startup(root, args) {
 
 		if (!command) {
 			throw new types.ValueError("Missing command.");
+		};
+
+		if (isVerbose) {
+			commandOptions.args = [...(commandOptions.args || []), "logLevel=" + tools.toString(tools.getOptions().logLevel)];
 		};
 
 		function run(root) {

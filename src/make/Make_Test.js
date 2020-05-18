@@ -74,7 +74,7 @@ exports.add = function add(modules) {
 				{
 					$TYPE_NAME: 'Run',
 
-					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
+					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/_options) {
 						const TEST_PKG = "@doodad-js/test";
 
 						const Promise = types.getPromise();
@@ -151,7 +151,7 @@ exports.add = function add(modules) {
 									cwd: appDir.toApiString(),
 								};
 
-								const cp = nodeChildProcessSpawn("npm", ['run', 'test'], options);
+								const cp = nodeChildProcessSpawn("npm", ['run', 'test', '--', ...(_options.args || [])], options);
 
 								cp.on('exit', function cpOnExit(code, signal) {
 									if (code !== 0) {
