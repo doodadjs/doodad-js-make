@@ -264,26 +264,28 @@ exports.add = function add(modules) {
 						this.pushDirective({
 							name: 'MODULE',
 						});
+
 						const mjs = types.get(this.variables, 'mjs', false);
-						if (types.get(this.variables, 'serverSide', false)) {
-							if (mjs) {
-								this.directives.INJECT(
-									"const exports = {}; "
-								);
-							};
+						if (mjs) {
+							this.directives.INJECT(
+								"const exports = {}; " +
+								"export default exports; " +
+								"(function(/*global*/) {" +
+									"const global = arguments[0]"
+							);
+						} else if (types.get(this.variables, 'serverSide', false)) {
+							this.directives.INJECT(
+								"(function(/*global*/) {" +
+									"const global = arguments[0]"
+							);
 						} else {
-							if (mjs) {
-								this.directives.INJECT(
-									"const global = window, " +
-										"exports = {}; "
-								);
-							} else {
-								this.directives.INJECT(
-									"(function(/*global, exports*/) {" +
-										"const global = arguments[0], " +
-											"exports = arguments[1]; "
-								);
-							};
+							// NOTE: "global" is defined in "package.templ.js"
+
+							this.directives.INJECT(
+								"(function(/*exports*/) {" +
+									"const exports = arguments[0];"
+							);
+
 						};
 					},
 					END_MODULE: function END_MODULE() {
@@ -293,23 +295,31 @@ exports.add = function add(modules) {
 						if (!block || (block.name !== 'MODULE')) {
 							throw new types.Error("Invalid 'END_MODULE' directive.");
 						};
+
 						const mjs = types.get(this.variables, 'mjs', false);
-						if (types.get(this.variables, 'serverSide', false)) {
+						if (mjs || types.get(this.variables, 'serverSide', false)) {
 							if (mjs) {
 								this.directives.INJECT(
-									"export default exports; "
+									"types.freeze(exports);"
+								);
+							};
+							if (types.get(this.variables, 'serverSide', false)) {
+								this.directives.INJECT(
+									"})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : global); "
+								);
+							} else {
+								this.directives.INJECT(
+									"})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : window); "
 								);
 							};
 						} else {
-							if (mjs) {
-								this.directives.INJECT(
-									"export default exports; "
-								);
-							} else {
-								this.directives.INJECT((types.get(this.variables, 'autoAdd', false) ? "exports.add(DD_MODULES); " : "") + // NOTE: DD_MODULES is declared in "package.templ.js", "package.templ.mjs" and "test_package.templ.js"
-									"}).call(undefined, (((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : (typeof global === 'object') && (global !== null) ? global : window)), ((typeof DD_EXPORTS === 'object') && (DD_EXPORTS !== null) ? DD_EXPORTS : {})); "
-								);
-							};
+							// NOTE: DD_MODULES is declared in "package.templ.js", "package.templ.mjs" and "test_package.templ.js"
+							this.directives.INJECT(
+								"if ((typeof DD_MODULES === 'object') && (DD_MODULES !== null)) {" +
+									"exports.add(DD_MODULES);" +
+								"};" +
+								"})((typeof DD_EXPORTS === 'object') && (DD_EXPORTS !== null) ? DD_EXPORTS : ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? {} : null));"
+							);
 						};
 					},
 					INCLUDE: function INCLUDE(file, /*optional*/encoding, /*optional*/raw) {
@@ -1513,7 +1523,6 @@ exports.add = function add(modules) {
 							variables: {
 								debug: true,
 								serverSide: false,
-								autoAdd: true,
 								mjs: false,
 							},
 						};
@@ -1529,7 +1538,6 @@ exports.add = function add(modules) {
 							variables: {
 								debug: false,
 								serverSide: false,
-								autoAdd: true,
 								mjs: false,
 							},
 						};
@@ -1577,7 +1585,6 @@ exports.add = function add(modules) {
 							variables: {
 								debug: true,
 								serverSide: false,
-								autoAdd: true,
 								mjs: false,
 								config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 								bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
@@ -1608,7 +1615,6 @@ exports.add = function add(modules) {
 								variables: {
 									debug: true,
 									serverSide: false,
-									autoAdd: true,
 									mjs: true,
 									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
@@ -1654,7 +1660,6 @@ exports.add = function add(modules) {
 							variables: {
 								debug: false,
 								serverSide: false,
-								autoAdd: false,
 								mjs: false,
 								config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 								bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
@@ -1685,7 +1690,6 @@ exports.add = function add(modules) {
 								variables: {
 									debug: false,
 									serverSide: false,
-									autoAdd: false,
 									mjs: true,
 									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
@@ -1733,7 +1737,6 @@ exports.add = function add(modules) {
 							variables: {
 								serverSide: false,
 								debug: true,
-								autoAdd: true,
 								mjs: false,
 								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
 								dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
@@ -1791,7 +1794,6 @@ exports.add = function add(modules) {
 							variables: {
 								debug: false,
 								serverSide: false,
-								autoAdd: false,
 								mjs: false,
 								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
 								dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
