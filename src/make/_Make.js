@@ -279,11 +279,9 @@ exports.add = function add(modules) {
 									"const global = arguments[0]"
 							);
 						} else {
-							// NOTE: "global" is defined in "package.templ.js"
-
 							this.directives.INJECT(
-								"(function(/*exports*/) {" +
-									"const exports = arguments[0];"
+								"(function(/*global,exports*/) {" +
+									"const global = arguments[0], exports = arguments[1];"
 							);
 
 						};
@@ -318,7 +316,7 @@ exports.add = function add(modules) {
 								"if ((typeof DD_MODULES === 'object') && (DD_MODULES !== null)) {" +
 									"exports.add(DD_MODULES);" +
 								"};" +
-								"})((typeof DD_EXPORTS === 'object') && (DD_EXPORTS !== null) ? DD_EXPORTS : ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? {} : null));"
+								"})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : window, (typeof DD_EXPORTS === 'object') && (DD_EXPORTS !== null) ? DD_EXPORTS : ((typeof DD_MODULES === 'object') && (DD_MODULES !== null) ? {} : null));"
 							);
 						};
 					},
