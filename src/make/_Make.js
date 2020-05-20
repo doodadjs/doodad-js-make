@@ -271,12 +271,12 @@ exports.add = function add(modules) {
 								"const exports = {}; " +
 								"export default exports; " +
 								"(function(/*global*/) {" +
-									"const global = arguments[0]"
+									"const global = arguments[0];"
 							);
 						} else if (types.get(this.variables, 'serverSide', false)) {
 							this.directives.INJECT(
 								"(function(/*global*/) {" +
-									"const global = arguments[0]"
+									"const global = arguments[0];"
 							);
 						} else {
 							this.directives.INJECT(
