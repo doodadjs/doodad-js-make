@@ -270,8 +270,7 @@ exports.add = function add(modules) {
 							this.directives.INJECT(
 								"const exports = {}; " +
 								"export default exports; " +
-								"(function(/*global*/) {" +
-									"const global = arguments[0];"
+								"const global = globalThis;"
 							);
 						} else if (types.get(this.variables, 'serverSide', false)) {
 							this.directives.INJECT(
@@ -295,21 +294,14 @@ exports.add = function add(modules) {
 						};
 
 						const mjs = types.get(this.variables, 'mjs', false);
-						if (mjs || types.get(this.variables, 'serverSide', false)) {
-							if (mjs) {
-								this.directives.INJECT(
-									"types.freeze(exports);"
-								);
-							};
-							if (types.get(this.variables, 'serverSide', false)) {
-								this.directives.INJECT(
-									"})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : global); "
-								);
-							} else {
-								this.directives.INJECT(
-									"})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : window); "
-								);
-							};
+						if (mjs) {
+							this.directives.INJECT(
+								"global.Object.freeze(exports);"
+							);
+						} else if (types.get(this.variables, 'serverSide', false)) {
+							this.directives.INJECT(
+								"})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : global); "
+							);
 						} else {
 							// NOTE: DD_MODULES is declared in "package.templ.js", "package.templ.mjs" and "test_package.templ.js"
 							this.directives.INJECT(
