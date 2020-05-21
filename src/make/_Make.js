@@ -466,6 +466,10 @@ exports.add = function add(modules) {
 								this.makeManifest = tools.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
 								delete this.makeManifest['//']; // remove faked comments
 
+								if (types.has(this.makeManifest, 'packageExports')) {
+									this.manifest.exports = tools.extend({}, this.manifest.exports, this.makeManifest.packageExports);
+								};
+
 								this.sourceDir = this.combineWithPackageDir(types.get(this.makeManifest, 'sourceDir', './src'));
 								this.buildDir = this.combineWithPackageDir(types.get(this.makeManifest, 'buildDir', './build'));
 								this.installDir = this.combineWithPackageDir(types.get(this.makeManifest, 'installDir', './dist'));

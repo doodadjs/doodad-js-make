@@ -35,8 +35,23 @@
     "@doodad-js/eslint-config-base": "^0.0.0",
     "@doodad-js/make": "^0.0.0"
   },
-  "main": "index.js",
+  "main": "index",
   "browser": "./browserify/browserify.min.js",
+  "type": "commonjs",
+  "exports": {
+    ".": [
+      {
+        "browser": "./browserify/browserify.min.js",
+        "import": "./index.mjs",
+        "default": "./index.js"
+      },
+      "./index.js"
+    ],
+    "./package": "./package.json",
+    "./package.json": "./package.json",
+    "./make.json": "./make.json",
+    "./lib/": "./lib/"
+  },
   "engines": {
     "node": ">=6.0.0"
   }
