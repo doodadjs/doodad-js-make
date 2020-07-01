@@ -8542,5 +8542,23 @@
         "tasks": [
             "make"
         ]
+    },
+    "fa387c53-898b-4502-867e-758b07b7ff93": {
+        "packageName": "@doodad-js/core",
+        "packageVersion": "9.1.4",
+        "name": "SYMBOL_CALLER",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
+    },
+    "2bb15f23-f3e6-4126-b5f3-48edb40fe05d": {
+        "packageName": "@doodad-js/core",
+        "packageVersion": "9.1.4",
+        "name": "SYMBOL_CALLBACK",
+        "hits": 6,
+        "tasks": [
+            "make"
+        ]
     }
 }
