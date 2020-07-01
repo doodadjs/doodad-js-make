@@ -448,7 +448,8 @@ exports.add = function add(modules) {
 								};
 
 								const templ = JSON5.parse(nodeFsReadFileSync(modules.resolve(manifestTemplate), 'utf-8'));
-								this.manifestPath = this.combineWithPackageDir('./package.json').toString();
+								this.manifestPath = this.combineWithPackageDir('./_package.json').toString();
+								this.mainManifestPath = this.combineWithPackageDir('./package.json').toString();
 								this.manifest = JSON5.parse(nodeFsReadFileSync(modules.resolve(this.manifestPath), 'utf-8'));
 								this.manifest = tools.depthExtend(extendFn, {}, templ, this.manifest);
 								delete this.manifest['//']; // remove faked comments
@@ -2381,7 +2382,7 @@ exports.add = function add(modules) {
 						const content = JSON.stringify(manifest, null, 4);
 
 						return Promise.create(function writeManifestPromise(resolve, reject) {
-							nodeFs.writeFile(taskData.manifestPath, content, {encoding: 'utf-8'}, function(err, result) {
+							nodeFs.writeFile(taskData.mainManifestPath, content, {encoding: 'utf-8'}, function(err, result) {
 								if (err) {
 									reject(err);
 								} else {
