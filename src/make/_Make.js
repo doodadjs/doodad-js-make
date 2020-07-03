@@ -272,7 +272,7 @@ exports.add = function add(modules) {
 								"export default exports; " +
 								"const global = globalThis;"
 							);
-						} else if (types.get(this.variables, 'serverSide', false)) {
+						} else if (types.get(this.variables, 'serverSide', false) || types.get(this.variables, 'browserify', false)) {
 							this.directives.INJECT(
 								"(function(/*global*/) {" +
 									"const global = arguments[0];"
@@ -298,7 +298,7 @@ exports.add = function add(modules) {
 							this.directives.INJECT(
 								"global.Object.freeze(exports);"
 							);
-						} else if (types.get(this.variables, 'serverSide', false)) {
+						} else if (types.get(this.variables, 'serverSide', false) || types.get(this.variables, 'browserify', false)) {
 							this.directives.INJECT(
 								"})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : global); "
 							);
@@ -1206,6 +1206,15 @@ exports.add = function add(modules) {
 						return res.server;
 					});
 
+					// Copy resources
+					tools.append(ops, tools.map(resources, function(res) {
+						return {
+							'class': folder.Copy,
+							source: types.get(res, 'sourceBase', '%SOURCEDIR%/') + '/' + res.source,
+							destination: '%BUILDDIR%/' + res.source,
+						};
+					}));
+
 					// Build modules (CommonJs)
 					tools.append(ops, tools.map(modules, function(mod) {
 						return {
@@ -1416,15 +1425,6 @@ exports.add = function add(modules) {
 						}
 					);
 
-					// Copy resources
-					tools.append(ops, tools.map(resources, function(res) {
-						return {
-							'class': folder.Copy,
-							source: types.get(res, 'sourceBase', '%SOURCEDIR%/') + '/' + res.source,
-							destination: '%BUILDDIR%/' + res.source,
-						};
-					}));
-
 					// Copy license
 					ops.push(
 						{
@@ -1506,6 +1506,15 @@ exports.add = function add(modules) {
 						return res.client;
 					});
 
+					// Copy resources
+					tools.append(ops, tools.map(resources, function(res) {
+						return {
+							'class': folder.Copy,
+							source: types.get(res, 'sourceBase', '%SOURCEDIR%/') + '/' + res.source,
+							destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.source,
+						};
+					}));
+
 					// Build modules (debug)
 					tools.append(ops, tools.map(modules, function(mod) {
 						return {
@@ -1528,22 +1537,13 @@ exports.add = function add(modules) {
 						return {
 							'class': file.Javascript,
 							source: '%SOURCEDIR%/' + mod.src,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)),
+							destination: '%INSTALLDIR%/%PACKAGENAME%/' + (mod.exclude ? (mod.dest ? mod.dest : mod.src) : __Internal__.getBuiltFileName(mod.dest ? mod.dest : mod.src)),
 							runDirectives: true,
 							variables: {
 								debug: false,
 								serverSide: false,
 								mjs: false,
 							},
-						};
-					}));
-
-					// Copy resources
-					tools.append(ops, tools.map(resources, function(res) {
-						return {
-							'class': folder.Copy,
-							source: types.get(res, 'sourceBase', '%SOURCEDIR%/') + '/' + res.source,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.source,
 						};
 					}));
 
@@ -1890,15 +1890,24 @@ exports.add = function add(modules) {
 						return res.browserify;
 					});
 
+					// Copy resources
+					tools.append(ops, tools.map(resources, function(res) {
+						return {
+							'class': folder.Copy,
+							source: types.get(res, 'sourceBase', '%SOURCEDIR%/') + '/' + res.source,
+							destination: '%BROWSERIFYDIR%/' + res.source,
+						};
+					}));
+
 					// Build modules (build)
 					tools.append(ops, tools.map(modules, function(mod) {
 						return {
 							'class': file.Javascript,
 							source: '%SOURCEDIR%/' + mod.src,
-							destination: '%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)),
+							destination: '%BROWSERIFYDIR%/' + (mod.exclude ? (mod.dest ? mod.dest : mod.src) : __Internal__.getBuiltFileName(mod.dest ? mod.dest : mod.src)),
 							runDirectives: true,
 							variables: {
-								serverSide: true,
+								serverSide: false,
 								browserify: true,
 							},
 						};
@@ -1915,25 +1924,10 @@ exports.add = function add(modules) {
 							keepSpaces: true,
 							variables: {
 								debug: true,
-								serverSide: true,
+								serverSide: false,
 								browserify: true,
 								mjs: false,
 							},
-						};
-					}));
-
-					// Generate resources files for browserify
-					tools.append(ops, tools.map(resources, function(res) {
-						return {
-							'class': browserify.Resources,
-							name: res.name,
-							namespace: res.namespace,
-							sourceBase: types.get(res, 'sourceBase', '%SOURCEDIR%/'),
-							source: res.source,
-							destination: "%BROWSERIFYDIR%/" + res.source,
-							resourcesFile: 'resources.js',
-							resourcesTemplate: types.get(item, 'resourcesTemplate'),
-							filter: types.get(res, 'filter'),
 						};
 					}));
 
@@ -1948,7 +1942,7 @@ exports.add = function add(modules) {
 							runDirectives: true,
 							variables: {
 								debug: false,
-								serverSide: true,
+								serverSide: false,
 								browserify: true,
 								mjs: false,
 								dependencies: dependencies,
@@ -1958,13 +1952,6 @@ exports.add = function add(modules) {
 									return tools.extend({}, mod, {
 										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 									});
-								}),
-								resources: tools.map(resources, function(res, i) {
-									return {
-										//name: taskData.parseVariables('%PACKAGENAME%/res' + types.toString(i)),
-										source: taskData.parseVariables('%BROWSERIFYDIR%/' + res.source + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
-										//namespace: res.namespace,
-									};
 								}),
 							},
 						}
@@ -1981,7 +1968,7 @@ exports.add = function add(modules) {
 							keepSpaces: true,
 							variables: {
 								debug: true,
-								serverSide: true,
+								serverSide: false,
 								browserify: true,
 								mjs: false,
 								dependencies: dependencies,
@@ -1991,13 +1978,6 @@ exports.add = function add(modules) {
 									return tools.extend({}, mod, {
 										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
 									});
-								}),
-								resources: tools.map(resources, function(res, i) {
-									return {
-										//name: taskData.parseVariables('%PACKAGENAME%/res' + types.toString(i)),
-										source: taskData.parseVariables('%BROWSERIFYDIR%/' + res.source + '/resources.js', { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
-										//namespace: res.namespace,
-									};
 								}),
 							},
 						}
@@ -2050,148 +2030,6 @@ exports.add = function add(modules) {
 					};
 				}),
 			}));
-
-
-			browserify.REGISTER(make.Operation.$extend(
-				{
-					$TYPE_NAME: 'Resources',
-
-					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-						let sourceBase = types.get(item, 'sourceBase', '%SOURCEDIR%/');
-						if (types.isString(sourceBase)) {
-							sourceBase = this.taskData.parseVariables(sourceBase, { isPath: true });
-						};
-						let source = item.source;
-						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
-						};
-						let dest = item.destination;
-						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true });
-						};
-						dest = dest.pushFile();
-						let resFile = item.resourcesFile;
-						if (types.isString(resFile)) {
-							resFile = this.taskData.parseVariables(resFile, { isPath: true });
-						};
-
-						let resourcesTemplate = types.get(item, 'resourcesTemplate');
-						if (types.isString(resourcesTemplate)) {
-							resourcesTemplate = this.taskData.parseVariables(resourcesTemplate, { isPath: true });
-						};
-						if (!resourcesTemplate) {
-							resourcesTemplate = modulePath.combine('res/resources.templ.js');
-						};
-
-						const filter = (types.get(item, 'filter', '') ? new _shared.Natives.windowRegExp(item.filter) : null);
-
-						const fullSource = sourceBase.combine(source);
-
-						resFile = dest.combine(resFile);
-						tools.log(tools.LogLevels.Info, "Preparing resources for 'browserify' from '~0~' to '~1~'...", [source, dest]);
-						const self = this;
-						function processDir(dir, index, resources) {
-							if (index < dir.length) {
-								const stats = dir[index];
-								if (stats.isFile && (!filter || filter.test(stats.path.file))) {
-									const resource = {
-										source: source.combine(stats.path),
-										dest: stats.path.set({file: stats.path.file + '.res.js'}),
-									};
-									return files.mkdir(dest.combine(stats.path).set({file: null}), {async: true, makeParents: true})
-										.then(function() {
-											return files.readFile(fullSource.combine(stats.path), {encoding: (item.encoding || 'utf-8'), async: true});
-										})
-										.then(function(content) {
-											return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
-												nodeFs.writeFile(dest.combine(resource.dest).toString(),
-													// TODO: See how I can formulate this
-													//'// This file is built from the file \'' + resource.source.file + '\' from the project package named \'' +
-													//	this.taskData.manifest.name + '\' hosted by the \'npmjs.com\' web site, ' +
-													//	'also hosted by the \'sourceforge.net\' web site under the name \'doodad-js\'.\n' +
-													'// When not mentionned otherwise, the following is Copyright 2015-2018 Claude Petit, licensed under Apache License version 2.0\n' +
-															'module.exports=' + tools.toSource(content), (item.encoding || 'utf-8'), function(err) {
-														if (err) {
-															reject(err);
-														} else {
-															resources.push(resource);
-															resolve();
-														};
-													});
-											});
-										})
-										.then(function() {
-											return processDir(dir, index + 1, resources);
-										});
-								} else {
-									return processDir(dir, index + 1, resources);
-								};
-							} else {
-								// Done
-								return Promise.resolve(resources);
-							};
-						};
-						return files.mkdir(dest, {makeParents: true, async: true})
-							.then(function() {
-								return files.readdir(fullSource, {async: true, depth: Infinity, relative: true});
-							})
-							.then(function(dir) {
-								return processDir(dir, 0, []);
-							})
-							.then(function(resources) {
-								function buildPatterns(index, sourceAr, destStr, result) {
-									const name = sourceAr[index];
-									if (index < sourceAr.length - 1) {
-										result[name] = buildPatterns(index + 1, sourceAr, destStr, types.get(result, name, {}));
-									} else {
-										result[name] = "result = require(" + tools.toSource('.' + destStr) + ");";
-									};
-									return result;
-								};
-
-								function reducePatterns(level, pattern) {
-									let code = "switch(tmp[" + types.toString(level) + "]) {";
-									tools.forEach(pattern, function(val, key) {
-										code += "case " + tools.toSource(key) + ": ";
-										if (types.isString(val)) {
-											code += val;
-										} else {
-											code += reducePatterns(level + 1, val);
-										};
-										code += "\nbreak;";
-									});
-									code += "default: return prevLoader.load(filename, options);";
-									code += "}";
-									return code;
-								};
-
-								const rp = files.parsePath('/', {os: 'linux'});
-								const result = tools.reduce(resources, function(result, resource) {
-									const sourceAr = rp.combine(resource.source).toArray({trim: true}),
-										destStr = rp.combine(resource.dest).toString({os: 'linux', dirChar: '/'});
-									buildPatterns(0, sourceAr, destStr, result);
-									return result;
-								}, {});
-
-								const resBody = reducePatterns(0, result);
-
-								// Returns new operation
-								return {
-									'class': file.Javascript,
-									source: resourcesTemplate,
-									destination: resFile,
-									runDirectives: true,
-									variables: {
-										serverSide: true,
-										browserify: true,
-										name: self.taskData.parseVariables(item.name),
-										namespace: self.taskData.parseVariables(item.namespace),
-										resources: resBody,
-									},
-								};
-							});
-					}),
-				}));
 
 			browserify.REGISTER(make.Operation.$extend(
 				{

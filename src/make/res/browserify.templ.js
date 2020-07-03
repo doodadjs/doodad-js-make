@@ -51,10 +51,6 @@ module.exports = {
 				
 				const pkgModules = {};
 				
-				//! FOR_EACH(VAR("resources"), "res")
-					require(/*! INJECT(TO_SOURCE(VAR("res.source"))) */).add(pkgModules);
-				//! END_FOR()
-
 				//! FOR_EACH(VAR("modules"), "mod")
 					//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
 						require(/*! INJECT(TO_SOURCE(VAR("mod.dest"))) */).add(pkgModules);
