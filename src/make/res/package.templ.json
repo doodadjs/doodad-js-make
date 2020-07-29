@@ -1,7 +1,27 @@
 {
-  "homepage": "https://github.com/doodadjs/",
   "author": "Claude Petit <doodadjs@gmail.com> (https://github.com/doodadjs/)",
-  "license": "Apache-2.0",
+  "browser": "./browserify/browserify.min.js",
+  "devDependencies": {
+    "@doodad-js/eslint-config-base": "^0.0.0",
+    "@doodad-js/make": "^0.0.0"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "exports": {
+    ".": [
+      {
+        "browser": "./browserify/browserify.min.js",
+        "import": "./index.mjs",
+        "default": "./index.js"
+      },
+      "./index.js"
+    ],
+    "./package": "./package.json",
+    "./package.json": "./package.json",
+    "./make.json": "./make.json",
+    "./lib/": "./lib/"
+  },
   "files": [
     "src",
     "lib",
@@ -24,6 +44,9 @@
     ".travis.yml",
     "appveyor.yml"
   ],
+  "homepage": "https://github.com/doodadjs/",
+  "license": "Apache-2.0",
+  "main": "index",
   "scripts": {
     "build": "node -r \"@doodad-js/make/make\" . make",
     "dist": "node -r \"@doodad-js/make/make\" . install",
@@ -31,28 +54,5 @@
     "test": "node -r \"@doodad-js/make/make\" . test",
     "lint": "node -r \"@doodad-js/make/make\" . custom=lint"
   },
-  "devDependencies": {
-    "@doodad-js/eslint-config-base": "^0.0.0",
-    "@doodad-js/make": "^0.0.0"
-  },
-  "main": "index",
-  "browser": "./browserify/browserify.min.js",
-  "type": "commonjs",
-  "exports": {
-    ".": [
-      {
-        "browser": "./browserify/browserify.min.js",
-        "import": "./index.mjs",
-        "default": "./index.js"
-      },
-      "./index.js"
-    ],
-    "./package": "./package.json",
-    "./package.json": "./package.json",
-    "./make.json": "./make.json",
-    "./lib/": "./lib/"
-  },
-  "engines": {
-    "node": ">=6.0.0"
-  }
+  "type": "commonjs"
 }
