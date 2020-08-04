@@ -1537,7 +1537,7 @@ exports.add = function add(modules) {
 						return {
 							'class': file.Javascript,
 							source: '%SOURCEDIR%/' + mod.src,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/' + (mod.exclude ? (mod.dest ? mod.dest : mod.src) : __Internal__.getBuiltFileName(mod.dest ? mod.dest : mod.src)),
+							destination: '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.dest ? mod.dest : mod.src),
 							runDirectives: true,
 							variables: {
 								debug: false,
@@ -1904,7 +1904,7 @@ exports.add = function add(modules) {
 						return {
 							'class': file.Javascript,
 							source: '%SOURCEDIR%/' + mod.src,
-							destination: '%BROWSERIFYDIR%/' + (mod.exclude ? (mod.dest ? mod.dest : mod.src) : __Internal__.getBuiltFileName(mod.dest ? mod.dest : mod.src)),
+							destination: '%BROWSERIFYDIR%/' + __Internal__.getBuiltFileName(mod.dest ? mod.dest : mod.src),
 							runDirectives: true,
 							variables: {
 								serverSide: false,
