@@ -774,12 +774,12 @@ exports.add = function add(modules) {
 					$TYPE_NAME: 'Delete',
 
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
-						let dest = item.destination;
-						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true });
+						let source = item.source;
+						if (types.isString(source)) {
+							source = this.taskData.parseVariables(source, { isPath: true });
 						};
-						tools.log(tools.LogLevels.Info, "Deleting folder '~0~'...", [dest]);
-						return files.rmdir(dest, {force: true, async: true})
+						tools.log(tools.LogLevels.Info, "Deleting folder '~0~'...", [source]);
+						return files.rmdir(source, {force: true, async: true})
 							.then(function() {
 								// Returns nothing
 							});

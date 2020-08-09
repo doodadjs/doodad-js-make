@@ -136,19 +136,19 @@
 			"operations": [
 				{
 					"class": "Make.Folder.Delete",
-					"destination": "%PACKAGEDIR%/browserify"
+					"source": "%PACKAGEDIR%/browserify"
 				},
 				{
 					"class": "Make.Folder.Delete",
-					"destination": "%PACKAGEDIR%/build"
+					"source": "%PACKAGEDIR%/build"
 				},
 				{
 					"class": "Make.Folder.Delete",
-					"destination": "%PACKAGEDIR%/dist"
+					"source": "%PACKAGEDIR%/dist"
 				},
 				{
 					"class": "Make.Folder.Delete",
-					"destination": "%PACKAGEDIR%/test"
+					"source": "%PACKAGEDIR%/test"
 				},
 				{
 					"class": "Make.File.Delete",
