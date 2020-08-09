@@ -131,6 +131,44 @@
 					"name": "postExecute"
 				}
 			]
-		}
+		},
+		"clean": {
+			"operations": [
+				{
+					"class": "Make.Folder.Delete",
+					"destination": "%PACKAGEDIR%/browserify"
+				},
+				{
+					"class": "Make.Folder.Delete",
+					"destination": "%PACKAGEDIR%/build"
+				},
+				{
+					"class": "Make.Folder.Delete",
+					"destination": "%PACKAGEDIR%/dist"
+				},
+				{
+					"class": "Make.Folder.Delete",
+					"destination": "%PACKAGEDIR%/test"
+				},
+				{
+					"class": "Make.File.Copy",
+					"source": "%PACKAGEDIR%/_index.js",
+					"destination": "%PACKAGEDIR%/index.js"
+				},
+				{
+					"class": "Make.File.Delete",
+					"source": "%PACKAGEDIR%/index.mjs"
+				},
+				{
+					"class": "Make.File.Copy",
+					"source": "%PACKAGEDIR%/_package.json",
+					"destination": "%PACKAGEDIR%/package.json"
+				},
+				{
+					"class": "Make.File.Delete",
+					"source": "%PACKAGEDIR%/webpack.config.js"
+				}
+			]
+		},
 	}
 }

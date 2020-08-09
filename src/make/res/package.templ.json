@@ -52,7 +52,8 @@
     "dist": "node -r \"@doodad-js/make/make\" . install",
     "browserify": "node -r \"@doodad-js/make/make\" . custom=browserify",
     "test": "node -r \"@doodad-js/make/make\" . test",
-    "lint": "node -r \"@doodad-js/make/make\" . custom=lint"
+    "lint": "node -r \"@doodad-js/make/make\" . custom=lint",
+    "clean": "node -r \"@doodad-js/make/make\" . custom=clean"
   },
   "type": "commonjs"
 }
