@@ -151,6 +151,10 @@
 					"destination": "%PACKAGEDIR%/test"
 				},
 				{
+					"class": "Make.File.Delete",
+					"source": "%PACKAGEDIR%/config.json"
+				},
+				{
 					"class": "Make.File.Copy",
 					"source": "%PACKAGEDIR%/_index.js",
 					"destination": "%PACKAGEDIR%/index.js"
