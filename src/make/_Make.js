@@ -487,16 +487,16 @@ exports.add = function add(modules) {
 
 								const isPath = types.get(options, 'isPath', false);
 
-								let path = val;
+								let path;
 								if (isPath) {
-									path = solvePath(path).toArray();
+									path = solvePath(val).toArray();
 								} else {
-									path = [types.toString(path)];
+									path = [types.toString(val)];
 								};
 
 								const os = tools.getOS();
 
-								if (path.length && (path[0][0] === '~')) {
+								if (isPath && path.length && (path[0][0] === '~')) {
 									const scoped = (path[0][1] === '@');
 									const module = (scoped ? path[0].slice(1) + '/' + path[1] : path[0].slice(1));
 									const resolved = modules.resolve(module + '/package.json');
