@@ -1131,8 +1131,32 @@ exports.add = function add(modules) {
 							return npcListAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise, module: modules.getLocator()})
 								.then(function(config) {
 									delete config['package'];
+									const prettify = function _prettify(namespace, obj, section, newConfig) {
+										const keys = types.keys(obj),
+											keysLen = keys.length;
+										for (let i = 0; i < keysLen; i++) {
+											const key = keys[i];
+											const val = obj[key];
+											if (types.isJsObject(val)) {
+												prettify(namespace + '.' + key, val, null, newConfig);
+											} else {
+												if (!section) {
+													const ns = namespace.slice(1);
+													if (types.has(newConfig, ns)) {
+														section = newConfig[ns];
+													} else {
+														section = {};
+														newConfig[ns] = section;
+													};
+												};
+												section[key] = val;
+											};
+										};
+									};
+									const newConfig = {};
+									prettify('', config, newConfig, newConfig)
 									return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
-										nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(config, null, 4), {encoding: 'utf-8'}, function(ex) {
+										nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(newConfig, null, 4), {encoding: 'utf-8'}, function(ex) {
 											if (ex) {
 												reject(ex);
 											} else {
