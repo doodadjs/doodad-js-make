@@ -30,7 +30,9 @@
 	//! END_IF()
 //! END_FOR()
 
-import {default as config} from './config.json';
+// TODO: Find a way to import JSON files.
+//import {default as config} from './config.json';
+const config = {};
 
 export function add(modules) {
 	modules = modules || {};
