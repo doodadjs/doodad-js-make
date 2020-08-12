@@ -24,15 +24,16 @@
 //	limitations under the License.
 //! END_REPLACE()
 
+import { createRequire } from 'module';
+
 //! FOR_EACH(VAR("modules"), "mod", "index")
 	//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
 		import {add as /*! INJECT("module" + VAR("index")) */} from /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */;
 	//! END_IF()
 //! END_FOR()
 
-// TODO: Find a way to import JSON files.
-//import {default as config} from './config.json';
-const config = {};
+const require = createRequire(import.meta.url);
+const config = require('./config.json');
 
 export function add(modules) {
 	modules = modules || {};
