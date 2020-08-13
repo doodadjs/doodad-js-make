@@ -1128,7 +1128,8 @@ exports.add = function add(modules) {
 					return files.mkdir(destination.set({file: null}), {makeParents: true, async: true})
 						.then(function() {
 							tools.log(tools.LogLevels.Info, "Saving configuration to '~0~'...", [destination]);
-							return npcListAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise, module: modules.getLocator()})
+							//return npcListAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise, module: modules.getLocator()})
+							return npcListAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise})
 								.then(function(config) {
 									delete config['package'];
 									const prettify = function _prettify(namespace, obj, section, newConfig) {
@@ -1154,7 +1155,7 @@ exports.add = function add(modules) {
 										};
 									};
 									const newConfig = {};
-									prettify('', config, newConfig, newConfig)
+									prettify('', config, newConfig, newConfig);
 									return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
 										nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(newConfig, null, 4), {encoding: 'utf-8'}, function(ex) {
 											if (ex) {
