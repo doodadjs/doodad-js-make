@@ -1540,7 +1540,7 @@ exports.add = function add(modules) {
 						};
 					}));
 
-					// Build modules (debug)
+					// Build modules (debug, CommonJS)
 					tools.append(ops, tools.map(modules, function(mod) {
 						return {
 							'class': file.Javascript,
@@ -1557,7 +1557,7 @@ exports.add = function add(modules) {
 						};
 					}));
 
-					// Build modules (build)
+					// Build modules (build, CommonJS)
 					tools.append(ops, tools.map(modules, function(mod) {
 						return {
 							'class': file.Javascript,
@@ -1572,13 +1572,39 @@ exports.add = function add(modules) {
 						};
 					}));
 
-					// Generate config file
-					ops.push(
-						{
-							'class': generate.Configuration,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-						}
-					);
+					if (taskData.makeManifest.mjs) {
+						// Build modules (debug, mjs)
+						tools.append(ops, tools.map(modules, function(mod) {
+							return {
+								'class': file.Javascript,
+								source: '%SOURCEDIR%/' + mod.src,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "mjs"}).toApiString(),
+								runDirectives: true,
+								keepComments: true,
+								keepSpaces: true,
+								variables: {
+									debug: true,
+									serverSide: false,
+									mjs: true,
+								},
+							};
+						}));
+
+						// Build modules (build, mjs)
+						tools.append(ops, tools.map(modules, function(mod) {
+							return {
+								'class': file.Javascript,
+								source: '%SOURCEDIR%/' + mod.src,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "min.mjs"}).toApiString(),
+								runDirectives: true,
+								variables: {
+									debug: false,
+									serverSide: false,
+									mjs: true,
+								},
+							};
+						}));
+					};
 
 					// Create bundle (debug)
 					// NOTE: Temporary file.
@@ -1594,6 +1620,53 @@ exports.add = function add(modules) {
 							separator: ';',
 						}
 					);
+
+					// Create bundle (build, CommonJs)
+					// NOTE: Temporary file.
+					ops.push(
+						{
+							'class': file.Merge,
+							source: tools.map(tools.filter(modules, function(mod) {
+								return !mod.test && !mod.exclude;
+							}), function(mod) {
+								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
+							}),
+							destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
+							separator: ';',
+						}
+					);
+
+					if (taskData.makeManifest.mjs) {
+						// Create bundle (debug, mjs)
+						// NOTE: Temporary file.
+						ops.push(
+							{
+								'class': file.Merge,
+								source: tools.map(tools.filter(modules, function(mod) {
+									return !mod.test && !mod.exclude;
+								}), function(mod) {
+									return '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "mjs"}).toApiString();
+								}),
+								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.mjs',
+								separator: ';',
+							}
+						);
+
+						// Create bundle (build, mjs)
+						// NOTE: Temporary file.
+						ops.push(
+							{
+								'class': file.Merge,
+								source: tools.map(tools.filter(modules, function(mod) {
+									return !mod.test && !mod.exclude;
+								}), function(mod) {
+									return '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "min.mjs"}).toApiString();
+								}),
+								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.mjs',
+								separator: ';',
+							}
+						);
+					};
 
 					// Create package (debug, CommonJs)
 					ops.push(
@@ -1621,52 +1694,6 @@ exports.add = function add(modules) {
 									};
 								}),
 							},
-						}
-					);
-
-					// Create package (debug, mjs)
-					if (taskData.makeManifest.mjs) {
-						ops.push(
-							{
-								'class': file.Javascript,
-								source: indexTemplateMjs,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.mjs',
-								runDirectives: true,
-								variables: {
-									debug: true,
-									serverSide: false,
-									mjs: true,
-									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
-									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
-										return !dep.test;
-									}), function(dep) {
-										const baseName = __Internal__.getBaseName(dep.name);
-										return {
-											name: dep.name,
-											version: __Internal__.getVersion(baseName, taskData.packageDir),
-											optional: !!types.get(dep, 'optional', false),
-											path: types.get(dep, 'path', null),
-											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-										};
-									}),
-								},
-							}
-						);
-					};
-
-					// Create bundle (build)
-					// NOTE: Temporary file.
-					ops.push(
-						{
-							'class': file.Merge,
-							source: tools.map(tools.filter(modules, function(mod) {
-								return !mod.test && !mod.exclude;
-							}), function(mod) {
-								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
-							}),
-							destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
-							separator: ';',
 						}
 					);
 
@@ -1699,8 +1726,37 @@ exports.add = function add(modules) {
 						}
 					);
 
-					// Create package (build, mjs)
 					if (taskData.makeManifest.mjs) {
+						// Create package (debug, mjs)
+						ops.push(
+							{
+								'class': file.Javascript,
+								source: indexTemplateMjs,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.mjs',
+								runDirectives: true,
+								variables: {
+									debug: true,
+									serverSide: false,
+									mjs: true,
+									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.mjs',
+									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
+										return !dep.test;
+									}), function(dep) {
+										const baseName = __Internal__.getBaseName(dep.name);
+										return {
+											name: dep.name,
+											version: __Internal__.getVersion(baseName, taskData.packageDir),
+											optional: !!types.get(dep, 'optional', false),
+											path: types.get(dep, 'path', null),
+											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+										};
+									}),
+								},
+							}
+						);
+
+						// Create package (build, mjs)
 						ops.push(
 							{
 								'class': file.Javascript,
@@ -1712,7 +1768,7 @@ exports.add = function add(modules) {
 									serverSide: false,
 									mjs: true,
 									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
+									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.mjs',
 									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
 										return !dep.test;
 									}), function(dep) {
@@ -1730,6 +1786,14 @@ exports.add = function add(modules) {
 						);
 					};
 
+					// Generate config file
+					ops.push(
+						{
+							'class': generate.Configuration,
+							destination: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+						}
+					);
+
 					// Create tests bundle (debug)
 					// NOTE: Temporary file.
 					ops.push(
@@ -1741,6 +1805,21 @@ exports.add = function add(modules) {
 								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
 							}),
 							destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
+							separator: ';',
+						}
+					);
+
+					// Create tests bundle (build)
+					// NOTE: Temporary file.
+					ops.push(
+						{
+							'class': file.Merge,
+							source: tools.map(tools.filter(modules, function(mod) {
+								return mod.test && !mod.exclude;
+							}), function(mod) {
+								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
+							}),
+							destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
 							separator: ';',
 						}
 					);
@@ -1786,21 +1865,6 @@ exports.add = function add(modules) {
 								}
 								),
 							},
-						}
-					);
-
-					// Create tests bundle (build)
-					// NOTE: Temporary file.
-					ops.push(
-						{
-							'class': file.Merge,
-							source: tools.map(tools.filter(modules, function(mod) {
-								return mod.test && !mod.exclude;
-							}), function(mod) {
-								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
-							}),
-							destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
-							separator: ';',
 						}
 					);
 
@@ -1864,6 +1928,14 @@ exports.add = function add(modules) {
 						{
 							'class': file.Delete,
 							source: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
+						},
+						{
+							'class': file.Delete,
+							source: '%INSTALLDIR%/%PACKAGENAME%/bundle.mjs',
+						},
+						{
+							'class': file.Delete,
+							source: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.mjs',
 						},
 						{
 							'class': file.Delete,
@@ -2410,41 +2482,42 @@ exports.add = function add(modules) {
 
 						tools.log(tools.LogLevels.Info, "Running ESLINT on '~0~'...", [source]);
 
-						const fix = types.toBoolean(types.get(options, 'fix', types.get(item, 'fix', false)));
+						//const fix = types.toBoolean(types.get(options, 'fix', types.get(item, 'fix', false)));
 
-						const cli = new nodeESLint.CLIEngine({
-							reportUnusedDisableDirectives: true,
+						const cli = new nodeESLint.ESLint({
+							reportUnusedDisableDirectives: "warn",
 							cwd: pkgDir.toApiString(),
-							fix: fix,
+							//fix: fix,
 						});
 
-						const report = cli.executeOnFiles([
+						return cli.lintFiles([
 							target.toApiString()
-						]);
-
-						if ((report.errorCount > 0) || (report.warningCount > 0)) {
-							const formatter = cli.getFormatter();
-							const text = formatter(report.results);
-							if (text) {
-								if (report.errorCount > 0) {
-									tools.log(tools.LogLevels.Error, text);
-								} else {
-									tools.log(tools.LogLevels.Warning, text);
+						])
+							.then(function(report) {
+								if ((report.errorCount > 0) || (report.warningCount > 0)) {
+									const formatter = cli.getFormatter();
+									const text = formatter(report.results);
+									if (text) {
+										if (report.errorCount > 0) {
+											tools.log(tools.LogLevels.Error, text);
+										} else {
+											tools.log(tools.LogLevels.Warning, text);
+										};
+									};
 								};
-							};
-						};
-
-						if (!continueOnError && (report.errorCount > 0)) {
-							throw new types.Error("'ESLINT' failed with error(s).");
-						};
-
-						if (fix) {
-							const fixCount = tools.filter(report.results, file => types.has(file, 'output')).length;
-							if (fixCount > 0) {
-								tools.log(tools.LogLevels.Info, "Applying ~0~ fix(es) from ESLINT...", [fixCount]);
-								nodeESLint.CLIEngine.outputFixes(report);
-							};
-						};
+		
+								if (!continueOnError && (report.errorCount > 0)) {
+									throw new types.Error("'ESLINT' failed with error(s).");
+								};
+		
+								//if (fix) {
+								//	const fixCount = tools.filter(report.results, file => types.has(file, 'output')).length;
+								//	if (fixCount > 0) {
+								//		tools.log(tools.LogLevels.Info, "Applying ~0~ fix(es) from ESLINT...", [fixCount]);
+								//		nodeESLint.CLIEngine.outputFixes(report);
+								//	};
+								//};
+							});
 					}),
 				}));
 

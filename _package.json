@@ -23,12 +23,12 @@
   ],
   "dependencies": {
     "browserify": "^16.2.2",
-    "eslint": "^4.19.1",
+    "eslint": "^7.6.0",
     "webpack": "^4.8.3",
-    "@doodad-js/npc": "^0.8.0"
+    "@doodad-js/npc": "^0.10.0"
   },
   "devDependencies": {
-    "@doodad-js/eslint-config-base": "^1.2.1"
+    "@doodad-js/eslint-config-base": "^2.0.0"
   },
   "repository": {
     "type": "git",
