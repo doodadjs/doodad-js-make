@@ -2506,10 +2506,10 @@ exports.add = function add(modules) {
 									});
 							})
 							.then(function(report) {
-								if (!continueOnError && report.some(file => file.errorCount > 0)) {
+								if (!continueOnError && report.some((file) => file.errorCount > 0)) {
 									throw new types.Error("'ESLINT' failed with error(s).");
 								};
-		
+
 								//if (fix) {
 								//	const fixCount = tools.filter(report.results, file => types.has(file, 'output')).length;
 								//	if (fixCount > 0) {
