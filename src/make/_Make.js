@@ -2494,19 +2494,19 @@ exports.add = function add(modules) {
 							target.toApiString()
 						])
 							.then(function(report) {
-								if ((report.errorCount > 0) || (report.warningCount > 0)) {
-									const formatter = cli.getFormatter();
-									const text = formatter(report.results);
-									if (text) {
-										if (report.errorCount > 0) {
+								return cli.loadFormatter("stylish")
+									.then(function(formatter) {
+										const text = formatter.format(report);
+										if (text) {
 											tools.log(tools.LogLevels.Error, text);
-										} else {
-											tools.log(tools.LogLevels.Warning, text);
 										};
-									};
-								};
-		
-								if (!continueOnError && (report.errorCount > 0)) {
+									})
+									.then(function() {
+										return report;
+									});
+							})
+							.then(function(report) {
+								if (!continueOnError && report.some(file => file.errorCount > 0)) {
 									throw new types.Error("'ESLINT' failed with error(s).");
 								};
 		
