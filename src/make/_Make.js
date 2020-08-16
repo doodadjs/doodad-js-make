@@ -187,12 +187,12 @@ exports.add = function add(modules) {
 				if (currentPackageDir) {
 					try {
 						const path = currentPackageDir.combine('../' + file, {allowTraverse: true});
-						result = nodeFsReadFileSync(modules.resolve(path.toString()), 'utf-8');
+						result = nodeFsReadFileSync(modules.resolve(path.toString()).toApiString(), 'utf-8');
 					} catch(o) {
-						result = nodeFsReadFileSync(modules.resolve(file), 'utf-8');
+						result = nodeFsReadFileSync(modules.resolve(file).toApiString(), 'utf-8');
 					};
 				} else {
-					result = nodeFsReadFileSync(modules.resolve(file), 'utf-8');
+					result = nodeFsReadFileSync(modules.resolve(file).toApiString(), 'utf-8');
 				};
 				result = JSON.parse(result);
 				delete result['//'];  // Remove comments
@@ -212,12 +212,12 @@ exports.add = function add(modules) {
 				if (currentPackageDir) {
 					try {
 						const path = currentPackageDir.combine('../' + file, {allowTraverse: true});
-						result = nodeFsReadFileSync(modules.resolve(path), 'utf-8');
+						result = nodeFsReadFileSync(modules.resolve(path).toApiString(), 'utf-8');
 					} catch(o) {
-						result = nodeFsReadFileSync(modules.resolve(file), 'utf-8');
+						result = nodeFsReadFileSync(modules.resolve(file).toApiString(), 'utf-8');
 					};
 				} else {
-					result = nodeFsReadFileSync(modules.resolve(file), 'utf-8');
+					result = nodeFsReadFileSync(modules.resolve(file).toApiString(), 'utf-8');
 				};
 				result = JSON5.parse(result);
 				types.getDefault(result, 'type', 'Package');
@@ -447,15 +447,15 @@ exports.add = function add(modules) {
 									manifestTemplate = modulePath.combine('res/package.templ.json');
 								};
 
-								const templ = JSON5.parse(nodeFsReadFileSync(modules.resolve(manifestTemplate), 'utf-8'));
+								const templ = JSON5.parse(nodeFsReadFileSync(modules.resolve(manifestTemplate).toApiString(), 'utf-8'));
 								this.manifestPath = this.combineWithPackageDir('./_package.json').toString();
 								this.mainManifestPath = this.combineWithPackageDir('./package.json').toString();
-								this.manifest = JSON5.parse(nodeFsReadFileSync(modules.resolve(this.manifestPath), 'utf-8'));
+								this.manifest = JSON5.parse(nodeFsReadFileSync(modules.resolve(this.manifestPath).toApiString(), 'utf-8'));
 								this.manifest = tools.depthExtend(extendFn, {}, templ, this.manifest);
 								delete this.manifest['//']; // remove faked comments
 
-								const makeTempl = JSON5.parse(nodeFsReadFileSync(modules.resolve(modulePath.combine('res/make.templ.json')), 'utf-8'));
-								this.makeManifest = JSON5.parse(nodeFsReadFileSync(modules.resolve(this.combineWithPackageDir('./make.json')), 'utf-8'));
+								const makeTempl = JSON5.parse(nodeFsReadFileSync(modules.resolve(modulePath.combine('res/make.templ.json')).toApiString(), 'utf-8'));
+								this.makeManifest = JSON5.parse(nodeFsReadFileSync(modules.resolve(this.combineWithPackageDir('./make.json')).toApiString(), 'utf-8'));
 								this.makeManifest = tools.depthExtend(extendFn, {}, makeTempl, this.makeManifest);
 								delete this.makeManifest['//']; // remove faked comments
 
@@ -500,7 +500,7 @@ exports.add = function add(modules) {
 									const scoped = (path[0][1] === '@');
 									const module = (scoped ? path[0].slice(1) + '/' + path[1] : path[0].slice(1));
 									const resolved = modules.resolve(module + '/package.json');
-									path = solvePath(resolved, os.type).set({file: null}).combine(files.Path.parse(path.slice(scoped ? 2 : 1)));
+									path = resolved.set({file: null}).combine(files.Path.parse(path.slice(scoped ? 2 : 1)));
 									path = path.toArray();
 								};
 
