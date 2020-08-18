@@ -317,7 +317,7 @@ exports.add = function add(modules) {
 						if (!block.remove) {
 							// TODO: Read file async (if possible !)
 							if (types.isString(file)) {
-								file = this.options.taskData.parseVariables(file, { isPath: true });
+								file = this.options.taskData.parseVariables(file, { isPath: true, pushFile: false });
 							};
 							let content = nodeFsReadFileSync(file.toString(), encoding || this.options.encoding);
 							if ((file.extension === 'json') || (file.extension === 'json5')) {
@@ -389,7 +389,7 @@ exports.add = function add(modules) {
 						};
 					},
 					PATH: function PATH(name) {
-						return this.options.taskData.parseVariables(name, {isPath: true});
+						return this.options.taskData.parseVariables(name, {isPath: true, pushFile: true});
 					},
 				},
 			}));
@@ -441,7 +441,7 @@ exports.add = function add(modules) {
 
 								let manifestTemplate = types.get(item, 'manifestTemplate');
 								if (types.isString(manifestTemplate)) {
-									manifestTemplate = this.parseVariables(manifestTemplate, { isPath: true });
+									manifestTemplate = this.parseVariables(manifestTemplate, { isPath: true, pushFile: false });
 								};
 								if (!manifestTemplate) {
 									manifestTemplate = modulePath.combine('res/package.templ.json');
@@ -499,8 +499,8 @@ exports.add = function add(modules) {
 									});
 								};
 
-								const pushFile = types.get(options, 'pushFile', false);
-								const isPath = pushFile || types.get(options, 'isPath', false);
+								const pushFile = types.get(options, 'pushFile', null);
+								const isPath = !types.isNothing(pushFile) || types.get(options, 'isPath', false);
 
 								let path;
 								if (isPath) {
@@ -655,12 +655,7 @@ exports.add = function add(modules) {
 								};
 
 								if (isPath) {
-									if (pushFile) {
-										return files.parsePath(path);
-									} else {
-										const file = path.pop();
-										return files.parsePath(path, {file});
-									};
+									return files.parsePath(path, {pushFile});
 								} else {
 									return path.join('');
 								};
@@ -751,7 +746,7 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, {isPath: true});
+							dest = this.taskData.parseVariables(dest, {isPath: true, pushFile: true});
 						};
 						tools.log(tools.LogLevels.Info, "Creating folder '~0~'...", [dest]);
 						return files.mkdir(dest, {async: true})
@@ -769,11 +764,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: true });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true, pushFile: true });
 						};
 						tools.log(tools.LogLevels.Info, "Copying folder '~0~' to '~1~'...", [source, dest]);
 						return files.mkdir(dest, {makeParents: true, async: true})
@@ -794,7 +789,7 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: true });
 						};
 						tools.log(tools.LogLevels.Info, "Deleting folder '~0~'...", [source]);
 						return files.rmdir(source, {force: true, async: true})
@@ -811,7 +806,7 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: false });
 						};
 						tools.log(tools.LogLevels.Info, "Deleting file '~0~'...", [source]);
 						return files.rm(source, {async: true})
@@ -829,11 +824,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: false });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true, pushFile: false });
 						};
 						tools.log(tools.LogLevels.Info, "Copying file '~0~' to '~1~'...", [source, dest]);
 						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
@@ -855,7 +850,7 @@ exports.add = function add(modules) {
 						const taskData = this.taskData;
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = taskData.parseVariables(dest, { isPath: true });
+							dest = taskData.parseVariables(dest, { isPath: true, pushFile: false });
 						};
 						let source = item.source;
 						if (types.isArrayLike(source)) {
@@ -887,9 +882,9 @@ exports.add = function add(modules) {
 							if (source.length) {
 								let src = source.shift();
 								if (types.isString(src)) {
-									src = taskData.parseVariables(src, { isPath: true });
+									src = taskData.parseVariables(src, { isPath: true, pushFile: false });
 								};
-								src = src.toString({shell: 'api'});
+								src = src.toApiString();
 
 								tools.log(tools.LogLevels.Info, "    ~0~", [src]);
 
@@ -996,12 +991,12 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: false });
 						};
 
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true, pushFile: false });
 						};
 
 						tools.log(tools.LogLevels.Info, "Minifying file '~0~' to '~1~'...", [source, dest]);
@@ -1059,11 +1054,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: false });
 						};
 						let target = item.target;
 						if (types.isString(target)) {
-							target = this.taskData.parseVariables(target, { isPath: true });
+							target = this.taskData.parseVariables(target, { isPath: true, pushFile: true });
 						};
 						return Promise.create(function nodeJsSpawnPromise(resolve, reject) {
 							const opts = {
@@ -1099,11 +1094,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: false });
 						};
 						let target = item.target;
 						if (types.isString(target)) {
-							target = this.taskData.parseVariables(target, { isPath: true });
+							target = this.taskData.parseVariables(target, { isPath: true, pushFile: true });
 						};
 						return Promise.create(function nodeJsForkPromise(resolve, reject) {
 							const opts = {
@@ -1140,7 +1135,7 @@ exports.add = function add(modules) {
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 					let destination = item.destination;
 					if (types.isString(destination)) {
-						destination = this.taskData.parseVariables(destination, { isPath: true });
+						destination = this.taskData.parseVariables(destination, { isPath: true, pushFile: false });
 					};
 					const self = this;
 					return files.mkdir(destination.set({file: null}), {makeParents: true, async: true})
@@ -1212,7 +1207,7 @@ exports.add = function add(modules) {
 
 					let indexTemplate = types.get(item, 'indexTemplate');
 					if (types.isString(indexTemplate)) {
-						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
+						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true, pushFile: false });
 					};
 					if (!indexTemplate) {
 						indexTemplate = modulePath.combine('res/index.templ.js');
@@ -1220,7 +1215,7 @@ exports.add = function add(modules) {
 
 					let indexTemplateMjs = types.get(item, 'indexTemplateMjs');
 					if (types.isString(indexTemplateMjs)) {
-						indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isPath: true });
+						indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isPath: true, pushFile: false });
 					};
 					if (!indexTemplateMjs) {
 						indexTemplateMjs = modulePath.combine('res/index.templ.mjs');
@@ -1228,7 +1223,7 @@ exports.add = function add(modules) {
 
 					let testTemplate = types.get(item, 'testTemplate');
 					if (types.isString(testTemplate)) {
-						testTemplate = taskData.parseVariables(testTemplate, { isPath: true });
+						testTemplate = taskData.parseVariables(testTemplate, { isPath: true, pushFile: false });
 					};
 					if (!testTemplate) {
 						testTemplate = modulePath.combine('res/test_package.templ.js');
@@ -1317,7 +1312,7 @@ exports.add = function add(modules) {
 									return !mod.test && !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true, pushFile: false }).relative(taskData.packageDir).toString({os: 'linux'}),
 										optional: !!types.get(mod, 'optional', false),
 									});
 								}),
@@ -1325,7 +1320,7 @@ exports.add = function add(modules) {
 									return !mod.test && !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true, pushFile: false }).relative(taskData.packageDir).toString({os: 'linux'}),
 										optional: !!types.get(mod, 'optional', false),
 									});
 								}),
@@ -1361,7 +1356,7 @@ exports.add = function add(modules) {
 										return !mod.test && !mod.exclude;
 									}), function(mod) {
 										return tools.extend({}, mod, {
-											dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest, true) : __Internal__.getBuiltFileName(mod.src, true)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+											dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest, true) : __Internal__.getBuiltFileName(mod.src, true)), { isPath: true, pushFile: false }).relative(taskData.packageDir).toString({os: 'linux'}),
 											optional: !!types.get(mod, 'optional', false),
 										});
 									}),
@@ -1412,7 +1407,7 @@ exports.add = function add(modules) {
 									return mod.test && !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true, pushFile: false }).relative(taskData.packageDir).toString({os: 'linux'}),
 										optional: !!types.get(mod, 'optional', false),
 									});
 								}),
@@ -1460,7 +1455,7 @@ exports.add = function add(modules) {
 									return mod.test && !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(taskData.packageDir).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true, pushFile: false }).relative(taskData.packageDir).toString({os: 'linux'}),
 										optional: !!types.get(mod, 'optional', false),
 									});
 								}),
@@ -1495,7 +1490,7 @@ exports.add = function add(modules) {
 
 					let indexTemplate = types.get(item, 'indexTemplate');
 					if (types.isString(indexTemplate)) {
-						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
+						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true, pushFile: false });
 					};
 					if (!indexTemplate) {
 						indexTemplate = modulePath.combine('res/package.templ.js');
@@ -1503,7 +1498,7 @@ exports.add = function add(modules) {
 
 					let indexTemplateMjs = types.get(item, 'indexTemplateMjs');
 					if (types.isString(indexTemplateMjs)) {
-						indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isPath: true });
+						indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isPath: true, pushFile: false });
 					};
 					if (!indexTemplateMjs) {
 						indexTemplateMjs = modulePath.combine('res/package.templ.mjs');
@@ -1511,7 +1506,7 @@ exports.add = function add(modules) {
 
 					let testTemplate = types.get(item, 'testTemplate');
 					if (types.isString(testTemplate)) {
-						testTemplate = taskData.parseVariables(testTemplate, { isPath: true });
+						testTemplate = taskData.parseVariables(testTemplate, { isPath: true, pushFile: false });
 					};
 					if (!testTemplate) {
 						testTemplate = modulePath.combine('res/test_package.templ.js');
@@ -1975,7 +1970,7 @@ exports.add = function add(modules) {
 
 					let indexTemplate = types.get(item, 'indexTemplate');
 					if (types.isString(indexTemplate)) {
-						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true });
+						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true, pushFile: false });
 					};
 					if (!indexTemplate) {
 						indexTemplate = modulePath.combine('res/browserify.templ.js');
@@ -2046,7 +2041,7 @@ exports.add = function add(modules) {
 						};
 					}));
 
-					const browserifyDest = taskData.parseVariables('%BROWSERIFYDIR%', {isPath: true});
+					const browserifyDest = taskData.parseVariables('%BROWSERIFYDIR%', {isPath: true, pushFile: true});
 
 					// Build main file (build)
 					ops.push(
@@ -2065,7 +2060,7 @@ exports.add = function add(modules) {
 									return !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true, pushFile: false }).relative(browserifyDest).toString({os: 'linux'}),
 									});
 								}),
 							},
@@ -2091,7 +2086,7 @@ exports.add = function add(modules) {
 									return !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isPath: true }).relative(browserifyDest).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isPath: true, pushFile: false }).relative(browserifyDest).toString({os: 'linux'}),
 									});
 								}),
 							},
@@ -2113,13 +2108,13 @@ exports.add = function add(modules) {
 				execute_WEBPACK: doodad.PROTECTED(function execute_WEBPACK(command, item, /*optional*/options) {
 					let configTemplate = types.get(item, 'configTemplate');
 					if (types.isString(configTemplate)) {
-						configTemplate = this.parseVariables(configTemplate, { isPath: true });
+						configTemplate = this.parseVariables(configTemplate, { isPath: true, pushFile: false });
 					};
 					if (!configTemplate) {
 						configTemplate = modulePath.combine('res/webpack.config.templ.js');
 					};
-					const configDest = this.taskData.parseVariables("%PACKAGEDIR%/webpack.config.js", { isPath: true });
-					const entryFile = this.taskData.parseVariables("%BROWSERIFYDIR%/browserify.min.js", { isPath: true });
+					const configDest = this.taskData.parseVariables("%PACKAGEDIR%/webpack.config.js", { isPath: true, pushFile: false });
+					const entryFile = this.taskData.parseVariables("%BROWSERIFYDIR%/browserify.min.js", { isPath: true, pushFile: false });
 					tools.log(tools.LogLevels.Info, "Preparing webpack config file '~0~'...", [configDest]);
 					const ops = [
 						{
@@ -2153,11 +2148,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: false });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true, pushFile: false });
 						};
 						tools.log(tools.LogLevels.Info, "Browserifying '~0~' to '~1~'...", [source, dest]);
 						const taskData = this.taskData;
@@ -2224,11 +2219,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = types.get(item, 'source');
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: false });
 						};
 						let dest = types.get(item, 'destination');
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true, pushFile: false });
 						};
 						tools.log(tools.LogLevels.Info, "Making webpack bundle from '~0~' to '~1~'...", [source, dest]);
 						return Promise.create(function webpackPromise(resolve, reject) {
@@ -2357,7 +2352,7 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = types.get(item, 'source');
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: false });
 						};
 						const pkgName = this.taskData.manifest.name;
 						const pkgVersion = this.taskData.makeManifest.version;
@@ -2431,7 +2426,7 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let dest = types.get(item, 'destination');
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true });
+							dest = this.taskData.parseVariables(dest, { isPath: true, pushFile: false });
 						};
 						if (types.get(item, 'global', false)) {
 							tools.log(tools.LogLevels.Info, "Saving global UUIDs to file '~0~'...", [dest]);
@@ -2493,7 +2488,7 @@ exports.add = function add(modules) {
 
 						let source = types.get(item, 'source');
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true });
+							source = this.taskData.parseVariables(source, { isPath: true, pushFile: true });
 						};
 
 						const target = source.relative(pkgDir);
