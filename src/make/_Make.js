@@ -93,7 +93,7 @@ exports.add = function add(modules) {
 
 				Promise = types.getPromise(),
 
-				cwd = files.parsePath(process.cwd(), {file: ''}),
+				cwd = files.parsePath(process.cwd(), {pushFile: true}),
 				modulePath = files.parsePath(module.filename).set({file: null});
 
 
@@ -433,7 +433,7 @@ exports.add = function add(modules) {
 
 								const source = types.get(item, 'source');
 								if (source) {
-									this.packageDir = files.parsePath(source);
+									this.packageDir = files.parsePath(source, {pushFile: true});
 									modules.addSearchPath(this.packageDir);
 								} else {
 									this.packageDir = cwd;
@@ -467,6 +467,19 @@ exports.add = function add(modules) {
 								this.buildDir = this.combineWithPackageDir(types.get(this.makeManifest, 'buildDir', './build'));
 								this.installDir = this.combineWithPackageDir(types.get(this.makeManifest, 'installDir', './dist'));
 								this.browserifyDir = this.combineWithPackageDir(types.get(this.makeManifest, 'browserifyDir', './browserify'));
+
+								const os = tools.getOS();
+								if (os.type === 'windows') {
+									this.homePath = files.Path.parse(process.env.appdata || process.env.localappdata, {pushFile: true});
+									this.dataPath = files.Path.parse(process.env.programdata, {pushFile: true});
+									this.programsPath = files.Path.parse(process.env.programfiles, {pushFile: true});
+								} else {
+									this.homePath = files.Path.parse(process.env.HOME, {pushFile: true, os: 'linux'});
+									// There is no environment variable for this purpose under Unix-like systems
+									// So I use "package.json"'s "config" section.
+									this.dataPath = files.Path.parse(__options__.unix.dataPath || "/var/lib/", {pushFile: true, os: 'linux'});
+									this.programsPath = files.Path.parse(__options__.unix.libPath || "/usr/local/lib/", {pushFile: true, os: 'linux'});
+								};
 							},
 
 							combineWithPackageDir: function combineWithPackageDir(path, options) {
@@ -478,14 +491,16 @@ exports.add = function add(modules) {
 							},
 
 							parseVariables: function parseVariables(val, /*optional*/options) {
-								function solvePath(path, /*optional*/os) {
+								function solvePath(path, /*optional*/os, /*optional*/pushFile) {
 									return files.parsePath(path, {
 										os: (os || 'linux'),
 										dirChar: null,
+										pushFile,
 									});
 								};
 
-								const isPath = types.get(options, 'isPath', false);
+								const pushFile = types.get(options, 'pushFile', false);
+								const isPath = pushFile || types.get(options, 'isPath', false);
 
 								let path;
 								if (isPath) {
@@ -545,65 +560,63 @@ exports.add = function add(modules) {
 											};
 										} else if (nameLc === '%packagedir%') {
 											if (this.packageDir) {
-												value = solvePath(this.packageDir);
+												value = this.packageDir;
 											} else {
 												throw new types.Error("Package directory not specified.");
 											};
 										} else if (nameLc === '%sourcedir%') {
 											if (this.sourceDir) {
-												value = solvePath(this.sourceDir);
+												value = this.sourceDir;
 											} else {
 												throw new types.Error("Source directory not specified.");
 											};
 										} else if (nameLc === '%builddir%') {
 											if (this.buildDir) {
-												value = solvePath(this.buildDir);
+												value = this.buildDir;
 											} else {
 												throw new types.Error("Build directory not specified.");
 											};
 										} else if (nameLc === '%installdir%') {
 											if (this.installDir) {
-												value = solvePath(this.installDir);
+												value = this.installDir;
 											} else {
 												throw new types.Error("Installation directory not specified.");
 											};
 										} else if (nameLc === '%browserifydir%') {
 											if (this.browserifyDir) {
-												value = solvePath(this.browserifyDir);
+												value = this.browserifyDir;
 											} else {
 												throw new types.Error("Browserify directory not specified.");
 											};
 										} else if (nameLc === '%programdata%') {
-											if (os.type === 'windows') {
-												value = solvePath(process.env.programdata, os.type);
-											} else {
-												// There is no environment variable for this purpose under Unix-like systems
-												// So I use "package.json"'s "config" section.
-												value = solvePath(__options__.unix.dataPath || "/var/lib/", os.type);
-											};
+											value = this.dataPath;
 										} else if (nameLc === '%programfiles%') {
-											if (os.type === 'windows') {
-												value = solvePath(process.env.programfiles, os.type);
-											} else {
-												// There is no environment variable for this purpose under Unix-like systems
-												// So I use "package.json"'s "config" section.
-												value = solvePath(__options__.unix.libPath || "/usr/local/lib/", os.type);
-											};
+											value = this.programsPath;
 										} else if ((nameLc === '%appdata%') || (nameLc === '%localappdata%')) {
-											if (os.type === 'windows') {
-												value = solvePath(process.env.appdata || process.env.localappdata, os.type);
-											} else {
-												value = solvePath(process.env.HOME, os.type);
-											};
+											value = this.homePath;
 											//...
 										} else {
-											const tmp = name.slice(1, -1);
+											let tmp = name.slice(1, -1);
+											const pos = tmp.indexOf(':');
+											let isPathEnv = false;
+											let isFileEnv = false;
+											if (pos >= 0) {
+												tmp = name.slice(0, pos);
+												const spec = name.slice(pos + 1);
+												if (spec === 'path') {
+													isPathEnv = true;
+												} else if (spec === 'file') {
+													isFileEnv = true;
+												} else {
+													throw new types.Error("Invalid specification '~0~' for environment variable '~1~'.", [spec, tmp]);
+												};
+											};
 											if (!types.has(process.env, tmp)) {
 												throw new types.Error("Invalid environment variable name: '~0~'.", [tmp]);
 											};
 											value = process.env[tmp];
-											if (value.indexOf(os.dirChar) >= 0) {
-												value = solvePath(value, os.type);
+											if (isPathEnv || isFileEnv) {
+												value = solvePath(value, os.type, isPathEnv);
 											};
 										};
 
@@ -642,7 +655,12 @@ exports.add = function add(modules) {
 								};
 
 								if (isPath) {
-									return files.parsePath(path);
+									if (pushFile) {
+										return files.parsePath(path);
+									} else {
+										const file = path.pop();
+										return files.parsePath(path, {file});
+									};
 								} else {
 									return path.join('');
 								};
