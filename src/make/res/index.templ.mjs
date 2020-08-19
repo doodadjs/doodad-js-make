@@ -28,7 +28,7 @@ import { createRequire } from 'module';
 
 //! FOR_EACH(VAR("modules"), "mod", "index")
 	//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-		import {add as /*! INJECT("module" + VAR("index")) */} from /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */;
+		import {default as /*! INJECT("module" + VAR("index")) */} from /*! INJECT(TO_SOURCE(VAR("mod.dest"))) */;
 	//! END_IF()
 //! END_FOR()
 
@@ -47,7 +47,7 @@ export function add(modules) {
 
 			//! FOR_EACH(VAR("modules"), "mod", "index")
 				//! IF(!VAR("mod.manual") && !VAR("mod.exclude"))
-					/*! INJECT("module" + VAR("index")) */(pkgModules);
+					/*! INJECT("module" + VAR("index")) */.add(pkgModules);
 				//! END_IF()
 			//! END_FOR()
 
