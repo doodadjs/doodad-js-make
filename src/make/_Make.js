@@ -29,6 +29,7 @@
 	//! INJECT("import {default as nodeFs} from 'fs';")
 	//! INJECT("import {default as nodeCp} from 'child_process';")
 	//! INJECT("import {default as npc} from '@doodad-js/npc';")
+	//! INJECT("import {default as nodeCrypto} from 'crypto';");
 
 	// TODO: Make them optional again.
 	//! INJECT("import {default as nodeBrowserify} from 'browserify';")
@@ -41,6 +42,7 @@
 	const nodeFs = require('fs'),
 		nodeCp = require('child_process'),
 		npc = require('@doodad-js/npc'),
+		nodeCrypto = require('crypto'),
 
 		// TODO: Make them optional again.
 		nodeBrowserify = require('browserify'),
@@ -53,6 +55,7 @@ const nodeFsCreateReadStream = nodeFs.createReadStream,
 	nodeFsReadFileSync = nodeFs.readFileSync,
 	nodeFsStatSync = nodeFs.statSync,
 	nodeCpSpawn = nodeCp.spawn,
+	nodeCryptoCreateHash = nodeCrypto.createHash,
 
 	npcListAsync = npc.listAsync;
 
@@ -388,8 +391,52 @@ exports.add = function add(modules) {
 							return uuid;
 						};
 					},
-					PATH: function PATH(name) {
-						return this.options.taskData.parseVariables(name, {isPath: true, isFolder: true});
+					PATH: function PATH(name, /*optional*/options) {
+						if (types.isNothing(options)) {
+							options = {
+								isFolder: true,
+							};
+						};
+						return this.options.taskData.parseVariables(name, tools.extend({}, options, {isPath: true}));
+					},
+					LOCATE: function LOCATE(pkg, /*optional*/path, /*optional*/options) {
+						return modules.locate(pkg, path, options)
+							.then(function(path) {
+								return modules.resolve(path);
+							});
+					},
+					HASH: function HASH(file, /*optional*/options) {
+						const Promise = types.getPromise();
+						return Promise.create(function integrityPromise(resolve, reject) {
+							if (types.isString(file)) {
+								file = this.options.taskData.parseVariables(file, { isPath: true, isFolder: false });
+							};
+
+							const hashType = types.get(options, 'type', 'sha256');
+
+							const fileStream = nodeFsCreateReadStream(file.toApiString());
+							const hashStream = nodeCryptoCreateHash(hashType);
+
+							const end = function end(err, hash) {
+								if (err) {
+									reject(err);
+								} else {
+									resolve(hashType + '-' + hash);
+								};
+								types.DESTROY(hashStream);
+								types.DESTROY(fileStream);
+							};
+
+							hashStream.once('error', function(err) {
+								end(err, null);
+							});
+
+							hashStream.once('finish', function() {
+								end(null, hashStream.read().toString('base64'));
+							});
+
+							fileStream.pipe(hashStream);
+						}, this);
 					},
 				},
 			}));
