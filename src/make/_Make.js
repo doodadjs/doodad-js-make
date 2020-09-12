@@ -247,15 +247,18 @@ exports.add = function add(modules) {
 
 				__knownDirectives: {
 					VERSION: function VERSION(pkg) {
+						//const state = this.__state;
 						return __Internal__.getVersion(pkg, this.options.taskData.packageDir);
 					},
 					MANIFEST: function MANIFEST(key, /*optional*/pkg) {
+						//const state = this.__state;
 						if (pkg) {
 							return safeEval.eval(key, __Internal__.getManifest(pkg, this.options.taskData.packageDir));
 						};
 						return safeEval.eval(key, this.options.taskData.manifest);
 					},
 					MAKE_MANIFEST: function MAKE_MANIFEST(key, /*optional*/pkg) {
+						//const state = this.__state;
 						if (pkg) {
 							return safeEval.eval(key, __Internal__.getMakeManifest(pkg, this.options.taskData.packageDir));
 						};
@@ -264,24 +267,26 @@ exports.add = function add(modules) {
 					BEGIN_MODULE: function BEGIN_MODULE() {
 						/* eslint no-useless-concat: "off" */
 
+						const state = this.__state;
+
 						this.pushDirective({
 							name: 'MODULE',
 						});
 
-						const mjs = types.get(this.variables, 'mjs', false);
+						const mjs = types.get(state.variables, 'mjs', false);
 						if (mjs) {
-							this.directives.INJECT(
+							state.directives.INJECT(
 								"const exports = {}; " +
 								"export default exports; " +
 								"const global = globalThis;"
 							);
-						} else if (types.get(this.variables, 'serverSide', false) || types.get(this.variables, 'browserify', false)) {
-							this.directives.INJECT(
+						} else if (types.get(state.variables, 'serverSide', false) || types.get(state.variables, 'browserify', false)) {
+							state.directives.INJECT(
 								"(function(/*global*/) {" +
 									"const global = arguments[0];"
 							);
 						} else {
-							this.directives.INJECT(
+							state.directives.INJECT(
 								"(function(/*global,exports*/) {" +
 									"const global = arguments[0], exports = arguments[1];"
 							);
@@ -291,23 +296,25 @@ exports.add = function add(modules) {
 					END_MODULE: function END_MODULE() {
 						/* eslint no-useless-concat: "off" */
 
+						const state = this.__state;
+
 						const block = this.popDirective();
 						if (!block || (block.name !== 'MODULE')) {
 							throw new types.Error("Invalid 'END_MODULE' directive.");
 						};
 
-						const mjs = types.get(this.variables, 'mjs', false);
+						const mjs = types.get(state.variables, 'mjs', false);
 						if (mjs) {
-							this.directives.INJECT(
+							state.directives.INJECT(
 								"global.Object.freeze(exports);"
 							);
-						} else if (types.get(this.variables, 'serverSide', false) || types.get(this.variables, 'browserify', false)) {
-							this.directives.INJECT(
+						} else if (types.get(state.variables, 'serverSide', false) || types.get(state.variables, 'browserify', false)) {
+							state.directives.INJECT(
 								"})((typeof globalThis === 'object') && (globalThis !== null) ? globalThis : global); "
 							);
 						} else {
 							// NOTE: DD_MODULES is declared in "package.templ.js", "package.templ.mjs" and "test_package.templ.js"
-							this.directives.INJECT(
+							state.directives.INJECT(
 								"if ((typeof DD_MODULES === 'object') && (DD_MODULES !== null)) {" +
 									"exports.add(DD_MODULES);" +
 								"};" +
@@ -316,6 +323,7 @@ exports.add = function add(modules) {
 						};
 					},
 					INCLUDE: function INCLUDE(file, /*optional*/encoding, /*optional*/raw) {
+						const state = this.__state;
 						const block = this.getDirective();
 						if (!block.remove) {
 							// TODO: Read file async (if possible !)
@@ -324,15 +332,16 @@ exports.add = function add(modules) {
 							};
 							let content = nodeFsReadFileSync(file.toString(), encoding || this.options.encoding);
 							if ((file.extension === 'json') || (file.extension === 'json5')) {
-								content = this.directives.TO_SOURCE(JSON5.parse(content), Infinity);
+								content = state.directives.TO_SOURCE(JSON5.parse(content), Infinity);
 								raw = true;
 							} else if (raw) {
-								this.directives.INJECT(";", true); // add a separator
+								state.directives.INJECT(";", true); // add a separator
 							};
-							this.directives.INJECT(content, raw);
+							state.directives.INJECT(content, raw);
 						};
 					},
 					UUID: function UUID(/*optional*/key) {
+						//const state = this.__state;
 						if (key) {
 							key = types.toString(key);
 							if (key in __Internal__.pkgUUIDS) {
@@ -392,6 +401,7 @@ exports.add = function add(modules) {
 						};
 					},
 					PATH: function PATH(name, /*optional*/options) {
+						//const state = this.__state;
 						if (types.isNothing(options)) {
 							options = {
 								isFolder: true,
@@ -400,12 +410,14 @@ exports.add = function add(modules) {
 						return this.options.taskData.parseVariables(name, tools.extend({}, options, {isPath: true}));
 					},
 					LOCATE: function LOCATE(pkg, /*optional*/path, /*optional*/options) {
+						//const state = this.__state;
 						return modules.locate(pkg, path, options)
 							.then(function(path) {
 								return modules.resolve(path);
 							});
 					},
 					HASH: function HASH(file, /*optional*/options) {
+						//const state = this.__state;
 						const Promise = types.getPromise();
 						return Promise.create(function integrityPromise(resolve, reject) {
 							if (types.isString(file)) {
