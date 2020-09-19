@@ -241,6 +241,56 @@ exports.add = function add(modules) {
 				return manifest.version + (manifest.stage || 'd');
 			};
 
+			__Internal__.locateClient = function locateClient(pkg, /*optional*/path, min, mjs) {
+				const pathObj = (path ? files.parsePath(path) : null);
+				if (pathObj && !pathObj.isRelative) {
+					return pathObj;
+				};
+				const manifest = __Internal__.getMakeManifest(pkg);
+				const installDir = files.parsePath(types.get(manifest, 'installDir', './dist'));
+				const pkgPath = files.parsePath(pkg);
+				if (pathObj) {
+					return pkgPath.combine(installDir).combine(pkgPath).combine(pathObj);
+				} else {
+					const names = pkg.split('/');
+					const name = names[names.length - 1];
+					return pkgPath.combine(installDir).combine(pkgPath).combine(name + (min ? '.min' : '') + (mjs ? '.mjs' : '.js'));
+				};
+			};
+
+			__Internal__.getFileIntegrity = function getFileIntegrity(file, /*optional*/options) {
+				const Promise = types.getPromise();
+				return Promise.create(function integrityPromise(resolve, reject) {
+					const hashType = types.get(options, 'type', 'sha256');
+
+					const fileStream = nodeFsCreateReadStream(types.isString(file) ? file : file.toApiString());
+					const hashStream = nodeCryptoCreateHash(hashType);
+
+					const end = function end(err, hash) {
+						if (err) {
+							reject(err);
+						} else {
+							resolve(hashType + '-' + hash);
+						};
+						types.DESTROY(hashStream);
+						types.DESTROY(fileStream);
+					};
+
+					fileStream.once('error', function(err) {
+						end(err, null);
+					});
+
+					hashStream.once('error', function(err) {
+						end(err, null);
+					});
+
+					hashStream.once('finish', function() {
+						end(null, hashStream.read().toString('base64'));
+					});
+
+					fileStream.pipe(hashStream);
+				}, this);
+			};
 
 			make.REGISTER(minifiers.Javascript.$extend({
 				$TYPE_NAME: 'JavascriptBuilder',
@@ -416,39 +466,12 @@ exports.add = function add(modules) {
 								return modules.resolve(path);
 							});
 					},
-					HASH: function HASH(file, /*optional*/options) {
+					INTEGRITY: function INTEGRITY(file, /*optional*/options) {
 						//const state = this.__state;
-						const Promise = types.getPromise();
-						return Promise.create(function integrityPromise(resolve, reject) {
-							if (types.isString(file)) {
-								file = this.options.taskData.parseVariables(file, { isPath: true, isFolder: false });
-							};
-
-							const hashType = types.get(options, 'type', 'sha256');
-
-							const fileStream = nodeFsCreateReadStream(file.toApiString());
-							const hashStream = nodeCryptoCreateHash(hashType);
-
-							const end = function end(err, hash) {
-								if (err) {
-									reject(err);
-								} else {
-									resolve(hashType + '-' + hash);
-								};
-								types.DESTROY(hashStream);
-								types.DESTROY(fileStream);
-							};
-
-							hashStream.once('error', function(err) {
-								end(err, null);
-							});
-
-							hashStream.once('finish', function() {
-								end(null, hashStream.read().toString('base64'));
-							});
-
-							fileStream.pipe(hashStream);
-						}, this);
+						if (types.isString(file)) {
+							file = this.options.taskData.parseVariables(file, { isPath: true, isFolder: false });
+						};
+						return __Internal__.getFileIntegrity(file, options);
 					},
 				},
 			}));
@@ -1590,436 +1613,478 @@ exports.add = function add(modules) {
 						return result;
 					};
 					const depsGraph = tools.unique(function(dep1, dep2) {
-						return (dep1.name === dep2.name);
-					}, loopDeps(taskData.makeManifest.dependencies, [], 0));
+						return (dep1.name === dep2.name) && (types.get(dep1, 'path', null) === types.get(dep2, 'path', null));
+					}, tools.prepend(loopDeps(taskData.makeManifest.dependencies, [], 0), [
+						{
+							name: taskData.manifest.name,
+							version: taskData.manifest.version,
+							path: null,
+							test: true,
+							optional: false,
+						},
+						{
+							name: '@doodad-js/test',
+							version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
+							path: null,
+							test: true,
+							optional: false,
+						}
+					]));
 
-					// Get client modules
-					const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
-						return mod.client;
-					});
-
-					// Get client resources
-					const resources = tools.filter(taskData.makeManifest.resources, function(res) {
-						return res.client;
-					});
-
-					// Copy resources
-					tools.append(ops, tools.map(resources, function(res) {
-						return {
-							'class': folder.Copy,
-							source: types.get(res, 'sourceBase', '%SOURCEDIR%/') + '/' + res.source,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.source,
+					return Promise.map(depsGraph, function(dep) {
+						if (dep.test) {
+							return dep;
 						};
-					}));
+						return __Internal__.getFileIntegrity(modules.resolve(__Internal__.locateClient(dep.name, dep.path, false, false)))
+							.then(function(integrity) {
+								dep.integrity = integrity;
+								return __Internal__.getFileIntegrity(modules.resolve(__Internal__.locateClient(dep.name, dep.path, true, false)));
+							})
+							.then(function(integrity) {
+								dep.integrityMin = integrity;
+								return __Internal__.getFileIntegrity(modules.resolve(__Internal__.locateClient(dep.name, dep.path, false, true)))
+									.catch(function(err) {
+										return null;
+									});
+							})
+							.then(function(integrity) {
+								dep.integrityMjs = integrity;
+								if (integrity) {
+									return __Internal__.getFileIntegrity(modules.resolve(__Internal__.locateClient(dep.name, dep.path, true, true)));
+								} else {
+									return null;
+								};
+							})
+							.then(function(integrity) {
+								dep.integrityMjsMin = integrity;
+								return dep;
+							});
+					}, {thisObj: this, concurrency: 1})
+						.then(function(depsGraph) {
+							// Get client modules
+							const modules = tools.filter(taskData.makeManifest.modules, function(mod) {
+								return mod.client;
+							});
 
-					// Build modules (debug, CommonJS)
-					tools.append(ops, tools.map(modules, function(mod) {
-						return {
-							'class': file.Javascript,
-							source: '%SOURCEDIR%/' + mod.src,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src),
-							runDirectives: true,
-							keepComments: true,
-							keepSpaces: true,
-							variables: {
-								debug: true,
-								serverSide: false,
-								mjs: false,
-							},
-						};
-					}));
+							// Get client resources
+							const resources = tools.filter(taskData.makeManifest.resources, function(res) {
+								return res.client;
+							});
 
-					// Build modules (build, CommonJS)
-					tools.append(ops, tools.map(modules, function(mod) {
-						return {
-							'class': file.Javascript,
-							source: '%SOURCEDIR%/' + mod.src,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.dest ? mod.dest : mod.src),
-							runDirectives: true,
-							variables: {
-								debug: false,
-								serverSide: false,
-								mjs: false,
-							},
-						};
-					}));
+							// Copy resources
+							tools.append(ops, tools.map(resources, function(res) {
+								return {
+									'class': folder.Copy,
+									source: types.get(res, 'sourceBase', '%SOURCEDIR%/') + '/' + res.source,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/' + res.source,
+								};
+							}));
 
-					if (taskData.makeManifest.mjs) {
-						// Build modules (debug, mjs)
-						tools.append(ops, tools.map(modules, function(mod) {
-							return {
-								'class': file.Javascript,
-								source: '%SOURCEDIR%/' + mod.src,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "mjs"}).toApiString(),
-								runDirectives: true,
-								keepComments: true,
-								keepSpaces: true,
-								variables: {
-									debug: true,
-									serverSide: false,
-									mjs: true,
-								},
-							};
-						}));
-
-						// Build modules (build, mjs)
-						tools.append(ops, tools.map(modules, function(mod) {
-							return {
-								'class': file.Javascript,
-								source: '%SOURCEDIR%/' + mod.src,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "min.mjs"}).toApiString(),
-								runDirectives: true,
-								variables: {
-									debug: false,
-									serverSide: false,
-									mjs: true,
-								},
-							};
-						}));
-					};
-
-					// Create bundle (debug)
-					// NOTE: Temporary file.
-					ops.push(
-						{
-							'class': file.Merge,
-							source: tools.map(tools.filter(modules, function(mod) {
-								return !mod.test && !mod.exclude;
-							}), function(mod) {
-								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
-							}),
-							destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
-							separator: ';',
-						}
-					);
-
-					// Create bundle (build, CommonJs)
-					// NOTE: Temporary file.
-					ops.push(
-						{
-							'class': file.Merge,
-							source: tools.map(tools.filter(modules, function(mod) {
-								return !mod.test && !mod.exclude;
-							}), function(mod) {
-								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
-							}),
-							destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
-							separator: ';',
-						}
-					);
-
-					if (taskData.makeManifest.mjs) {
-						// Create bundle (debug, mjs)
-						// NOTE: Temporary file.
-						ops.push(
-							{
-								'class': file.Merge,
-								source: tools.map(tools.filter(modules, function(mod) {
-									return !mod.test && !mod.exclude;
-								}), function(mod) {
-									return '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "mjs"}).toApiString();
-								}),
-								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.mjs',
-								separator: ';',
-							}
-						);
-
-						// Create bundle (build, mjs)
-						// NOTE: Temporary file.
-						ops.push(
-							{
-								'class': file.Merge,
-								source: tools.map(tools.filter(modules, function(mod) {
-									return !mod.test && !mod.exclude;
-								}), function(mod) {
-									return '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "min.mjs"}).toApiString();
-								}),
-								destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.mjs',
-								separator: ';',
-							}
-						);
-					};
-
-					// Create package (debug, CommonJs)
-					ops.push(
-						{
-							'class': file.Javascript,
-							source: indexTemplate,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.js',
-							runDirectives: true,
-							variables: {
-								debug: true,
-								serverSide: false,
-								mjs: false,
-								config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-								bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
-								dependencies: tools.map(tools.filter(depsGraph, function(dep) {
-									return !dep.test;
-								}), function(dep) {
-									const baseName = __Internal__.getBaseName(dep.name);
-									return {
-										name: dep.name,
-										version: __Internal__.getVersion(baseName, taskData.packageDir),
-										optional: !!types.get(dep, 'optional', false),
-										path: types.get(dep, 'path', null),
-										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-									};
-								}),
-							},
-						}
-					);
-
-					// Create package (build, CommonJs)
-					ops.push(
-						{
-							'class': file.Javascript,
-							source: indexTemplate,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.min.js',
-							runDirectives: true,
-							variables: {
-								debug: false,
-								serverSide: false,
-								mjs: false,
-								config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-								bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
-								dependencies: tools.map(tools.filter(depsGraph, function(dep) {
-									return !dep.test;
-								}), function(dep) {
-									const baseName = __Internal__.getBaseName(dep.name);
-									return {
-										name: dep.name,
-										version: __Internal__.getVersion(baseName, taskData.packageDir),
-										optional: !!types.get(dep, 'optional', false),
-										path: types.get(dep, 'path', null),
-										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-									};
-								}),
-							},
-						}
-					);
-
-					if (taskData.makeManifest.mjs) {
-						// Create package (debug, mjs)
-						ops.push(
-							{
-								'class': file.Javascript,
-								source: indexTemplateMjs,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.mjs',
-								runDirectives: true,
-								variables: {
-									debug: true,
-									serverSide: false,
-									mjs: true,
-									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.mjs',
-									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
-										return !dep.test;
-									}), function(dep) {
-										const baseName = __Internal__.getBaseName(dep.name);
-										return {
-											name: dep.name,
-											version: __Internal__.getVersion(baseName, taskData.packageDir),
-											optional: !!types.get(dep, 'optional', false),
-											path: types.get(dep, 'path', null),
-											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-										};
-									}),
-								},
-							}
-						);
-
-						// Create package (build, mjs)
-						ops.push(
-							{
-								'class': file.Javascript,
-								source: indexTemplateMjs,
-								destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.min.mjs',
-								runDirectives: true,
-								variables: {
-									debug: false,
-									serverSide: false,
-									mjs: true,
-									config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-									bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.mjs',
-									dependencies: tools.map(tools.filter(depsGraph, function(dep) {
-										return !dep.test;
-									}), function(dep) {
-										const baseName = __Internal__.getBaseName(dep.name);
-										return {
-											name: dep.name,
-											version: __Internal__.getVersion(baseName, taskData.packageDir),
-											optional: !!types.get(dep, 'optional', false),
-											path: types.get(dep, 'path', null),
-											type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-										};
-									}),
-								},
-							}
-						);
-					};
-
-					// Generate config file
-					ops.push(
-						{
-							'class': generate.Configuration,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/config.json',
-						}
-					);
-
-					// Create tests bundle (debug)
-					// NOTE: Temporary file.
-					ops.push(
-						{
-							'class': file.Merge,
-							source: tools.map(tools.filter(modules, function(mod) {
-								return mod.test && !mod.exclude;
-							}), function(mod) {
-								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
-							}),
-							destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
-							separator: ';',
-						}
-					);
-
-					// Create tests bundle (build)
-					// NOTE: Temporary file.
-					ops.push(
-						{
-							'class': file.Merge,
-							source: tools.map(tools.filter(modules, function(mod) {
-								return mod.test && !mod.exclude;
-							}), function(mod) {
-								return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
-							}),
-							destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
-							separator: ';',
-						}
-					);
-
-					// Create tests package (debug)
-					ops.push(
-						{
-							'class': file.Javascript,
-							source: testTemplate,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME:NAME%_test.js',
-							runDirectives: true,
-							keepComments: true,
-							keepSpaces: true,
-							variables: {
-								serverSide: false,
-								debug: true,
-								mjs: false,
-								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
-								dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
-									return dep.test;
-								}), [
-									{
-										name: taskData.manifest.name,
-										version: taskData.manifest.version,
-										optional: false,
-										path: null
-									},
-									{
-										name: '@doodad-js/test',
-										version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
-										optional: false,
-										path: null
-									}
-								]), function(dep) {
-									const baseName = __Internal__.getBaseName(dep.name);
-									return {
-										name: dep.name,
-										version: __Internal__.getVersion(baseName, taskData.packageDir),
-										optional: !!types.get(dep, 'optional', false),
-										path: types.get(dep, 'path', null),
-										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
-									};
+							// Generate config file
+							ops.push(
+								{
+									'class': generate.Configuration,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/config.json',
 								}
-								),
-							},
-						}
-					);
+							);
 
-					// Create tests package (build)
-					ops.push(
-						{
-							'class': file.Javascript,
-							source: testTemplate,
-							destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME:NAME%_test.min.js',
-							runDirectives: true,
-							variables: {
-								debug: false,
-								serverSide: false,
-								mjs: false,
-								bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
-								dependencies: tools.map(tools.prepend(tools.filter(depsGraph, function(dep) {
-									return dep.test;
-								}), [
-									{
-										name: taskData.manifest.name,
-										version: taskData.manifest.version,
-										optional: false,
-										path: null
+							// Build modules (debug, CommonJS)
+							tools.append(ops, tools.map(modules, function(mod) {
+								return {
+									'class': file.Javascript,
+									source: '%SOURCEDIR%/' + mod.src,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src),
+									runDirectives: true,
+									keepComments: true,
+									keepSpaces: true,
+									variables: {
+										debug: true,
+										serverSide: false,
+										mjs: false,
 									},
-									{
-										name: '@doodad-js/test',
-										version: __Internal__.getVersion('@doodad-js/test', taskData.packageDir),
-										optional: false,
-										path: null
-									}
-								]), function(dep) {
-									const baseName = __Internal__.getBaseName(dep.name);
+								};
+							}));
+
+							// Build modules (build, CommonJS)
+							tools.append(ops, tools.map(modules, function(mod) {
+								return {
+									'class': file.Javascript,
+									source: '%SOURCEDIR%/' + mod.src,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/' + __Internal__.getBuiltFileName(mod.dest ? mod.dest : mod.src),
+									runDirectives: true,
+									variables: {
+										debug: false,
+										serverSide: false,
+										mjs: false,
+									},
+								};
+							}));
+
+							if (taskData.makeManifest.mjs) {
+								// Build modules (debug, mjs)
+								tools.append(ops, tools.map(modules, function(mod) {
 									return {
-										name: dep.name,
-										version: __Internal__.getVersion(baseName, taskData.packageDir),
-										optional: !!types.get(dep, 'optional', false),
-										path: types.get(dep, 'path', null),
-										type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+										'class': file.Javascript,
+										source: '%SOURCEDIR%/' + mod.src,
+										destination: '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "mjs"}).toApiString(),
+										runDirectives: true,
+										keepComments: true,
+										keepSpaces: true,
+										variables: {
+											debug: true,
+											serverSide: false,
+											mjs: true,
+										},
 									};
+								}));
+
+								// Build modules (build, mjs)
+								tools.append(ops, tools.map(modules, function(mod) {
+									return {
+										'class': file.Javascript,
+										source: '%SOURCEDIR%/' + mod.src,
+										destination: '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "min.mjs"}).toApiString(),
+										runDirectives: true,
+										variables: {
+											debug: false,
+											serverSide: false,
+											mjs: true,
+										},
+									};
+								}));
+							};
+
+							// Create bundle (debug, CommonJs)
+							// NOTE: Temporary file.
+							ops.push(
+								{
+									'class': file.Merge,
+									source: tools.map(tools.filter(modules, function(mod) {
+										return !mod.test && !mod.exclude;
+									}), function(mod) {
+										return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
+									}),
+									destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+									separator: ';',
 								}
-								),
-							},
-						}
-					);
+							);
 
-					// Copy license file
-					ops.push(
-						{
-							'class': file.Copy,
-							source: '%PACKAGEDIR%/LICENSE',
-							destination: '%INSTALLDIR%/%PACKAGENAME%/LICENSE',
-						}
-					);
+							// Create bundle (build, CommonJs)
+							// NOTE: Temporary file.
+							ops.push(
+								{
+									'class': file.Merge,
+									source: tools.map(tools.filter(modules, function(mod) {
+										return !mod.test && !mod.exclude;
+									}), function(mod) {
+										return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
+									}),
+									destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
+									separator: ';',
+								}
+							);
 
-					// Cleanup
-					ops.push(
-						{
-							'class': file.Delete,
-							source: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
-						},
-						{
-							'class': file.Delete,
-							source: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
-						},
-						{
-							'class': file.Delete,
-							source: '%INSTALLDIR%/%PACKAGENAME%/bundle.mjs',
-						},
-						{
-							'class': file.Delete,
-							source: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.mjs',
-						},
-						{
-							'class': file.Delete,
-							source: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
-						},
-						{
-							'class': file.Delete,
-							source: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
-						}
-					);
+							if (taskData.makeManifest.mjs) {
+								// Create bundle (debug, mjs)
+								// NOTE: Temporary file.
+								ops.push(
+									{
+										'class': file.Merge,
+										source: tools.map(tools.filter(modules, function(mod) {
+											return !mod.test && !mod.exclude;
+										}), function(mod) {
+											return '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "mjs"}).toApiString();
+										}),
+										destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.mjs',
+										separator: ';',
+									}
+								);
 
-					return ops;
+								// Create bundle (build, mjs)
+								// NOTE: Temporary file.
+								ops.push(
+									{
+										'class': file.Merge,
+										source: tools.map(tools.filter(modules, function(mod) {
+											return !mod.test && !mod.exclude;
+										}), function(mod) {
+											return '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "min.mjs"}).toApiString();
+										}),
+										destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.mjs',
+										separator: ';',
+									}
+								);
+							};
+
+							// Create package (debug, CommonJs)
+							ops.push(
+								{
+									'class': file.Javascript,
+									source: indexTemplate,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.js',
+									runDirectives: true,
+									variables: {
+										debug: true,
+										serverSide: false,
+										mjs: false,
+										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+										dependencies: tools.map(tools.filter(depsGraph, function(dep) {
+											return !dep.test;
+										}), function(dep) {
+											const baseName = __Internal__.getBaseName(dep.name);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
+												optional: !!types.get(dep, 'optional', false),
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+												integrity: types.get(dep, 'integrity', null),
+												integrityMin: types.get(dep, 'integrityMin', null),
+												integrityMjs: types.get(dep, 'integrityMjs', null),
+												integrityMjsMin: types.get(dep, 'integrityMjsMin', null),
+											};
+										}),
+									},
+								}
+							);
+
+							// Create package (build, CommonJs)
+							ops.push(
+								{
+									'class': file.Javascript,
+									source: indexTemplate,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.min.js',
+									runDirectives: true,
+									variables: {
+										debug: false,
+										serverSide: false,
+										mjs: false,
+										config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
+										dependencies: tools.map(tools.filter(depsGraph, function(dep) {
+											return !dep.test;
+										}), function(dep) {
+											const baseName = __Internal__.getBaseName(dep.name);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
+												optional: !!types.get(dep, 'optional', false),
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+												integrity: types.get(dep, 'integrity', null),
+												integrityMin: types.get(dep, 'integrityMin', null),
+												integrityMjs: types.get(dep, 'integrityMjs', null),
+												integrityMjsMin: types.get(dep, 'integrityMjsMin', null),
+											};
+										}),
+									},
+								}
+							);
+
+							if (taskData.makeManifest.mjs) {
+								// Create package (debug, mjs)
+								ops.push(
+									{
+										'class': file.Javascript,
+										source: indexTemplateMjs,
+										destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.mjs',
+										runDirectives: true,
+										variables: {
+											debug: true,
+											serverSide: false,
+											mjs: true,
+											config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+											bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.mjs',
+											dependencies: tools.map(tools.filter(depsGraph, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												const baseName = __Internal__.getBaseName(dep.name);
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(baseName, taskData.packageDir),
+													optional: !!types.get(dep, 'optional', false),
+													path: types.get(dep, 'path', null),
+													type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+													integrity: types.get(dep, 'integrity', null),
+													integrityMin: types.get(dep, 'integrityMin', null),
+													integrityMjs: types.get(dep, 'integrityMjs', null),
+													integrityMjsMin: types.get(dep, 'integrityMjsMin', null),
+												};
+											}),
+										},
+									}
+								);
+
+								// Create package (build, mjs)
+								ops.push(
+									{
+										'class': file.Javascript,
+										source: indexTemplateMjs,
+										destination: '%INSTALLDIR%/%PACKAGENAME%/%PACKAGENAME:NAME%.min.mjs',
+										runDirectives: true,
+										variables: {
+											debug: false,
+											serverSide: false,
+											mjs: true,
+											config: '%INSTALLDIR%/%PACKAGENAME%/config.json',
+											bundle: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.mjs',
+											dependencies: tools.map(tools.filter(depsGraph, function(dep) {
+												return !dep.test;
+											}), function(dep) {
+												const baseName = __Internal__.getBaseName(dep.name);
+												return {
+													name: dep.name,
+													version: __Internal__.getVersion(baseName, taskData.packageDir),
+													optional: !!types.get(dep, 'optional', false),
+													path: types.get(dep, 'path', null),
+													type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+													integrity: types.get(dep, 'integrity', null),
+													integrityMin: types.get(dep, 'integrityMin', null),
+													integrityMjs: types.get(dep, 'integrityMjs', null),
+													integrityMjsMin: types.get(dep, 'integrityMjsMin', null),
+												};
+											}),
+										},
+									}
+								);
+							};
+
+							// Create tests bundle (debug)
+							// NOTE: Temporary file.
+							ops.push(
+								{
+									'class': file.Merge,
+									source: tools.map(tools.filter(modules, function(mod) {
+										return mod.test && !mod.exclude;
+									}), function(mod) {
+										return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? mod.dest : mod.src);
+									}),
+									destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
+									separator: ';',
+								}
+							);
+
+							// Create tests bundle (build)
+							// NOTE: Temporary file.
+							ops.push(
+								{
+									'class': file.Merge,
+									source: tools.map(tools.filter(modules, function(mod) {
+										return mod.test && !mod.exclude;
+									}), function(mod) {
+										return '%INSTALLDIR%/%PACKAGENAME%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src));
+									}),
+									destination: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
+									separator: ';',
+								}
+							);
+
+							// Create tests package (debug)
+							ops.push(
+								{
+									'class': file.Javascript,
+									source: testTemplate,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME:NAME%_test.js',
+									runDirectives: true,
+									keepComments: true,
+									keepSpaces: true,
+									variables: {
+										serverSide: false,
+										debug: true,
+										mjs: false,
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
+										dependencies: tools.map(tools.filter(depsGraph, function(dep) {
+											return dep.test;
+										}), function(dep) {
+											const baseName = __Internal__.getBaseName(dep.name);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
+												optional: !!types.get(dep, 'optional', false),
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+												integrity: types.get(dep, 'integrity', null),
+												integrityMin: types.get(dep, 'integrityMin', null),
+												integrityMjs: types.get(dep, 'integrityMjs', null),
+												integrityMjsMin: types.get(dep, 'integrityMjsMin', null),
+											};
+										}),
+									},
+								}
+							);
+
+							// Create tests package (build)
+							ops.push(
+								{
+									'class': file.Javascript,
+									source: testTemplate,
+									destination: '%INSTALLDIR%/%PACKAGENAME%/test/%PACKAGENAME:NAME%_test.min.js',
+									runDirectives: true,
+									variables: {
+										debug: false,
+										serverSide: false,
+										mjs: false,
+										bundle: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
+										dependencies: tools.map(tools.filter(depsGraph, function(dep) {
+											return dep.test;
+										}), function(dep) {
+											const baseName = __Internal__.getBaseName(dep.name);
+											return {
+												name: dep.name,
+												version: __Internal__.getVersion(baseName, taskData.packageDir),
+												optional: !!types.get(dep, 'optional', false),
+												path: types.get(dep, 'path', null),
+												type: __Internal__.getMakeManifest(baseName, taskData.packageDir).type || 'Package',
+												integrity: types.get(dep, 'integrity', null),
+												integrityMin: types.get(dep, 'integrityMin', null),
+												integrityMjs: types.get(dep, 'integrityMjs', null),
+												integrityMjsMin: types.get(dep, 'integrityMjsMin', null),
+											};
+										}),
+									},
+								}
+							);
+
+							// Copy license file
+							ops.push(
+								{
+									'class': file.Copy,
+									source: '%PACKAGEDIR%/LICENSE',
+									destination: '%INSTALLDIR%/%PACKAGENAME%/LICENSE',
+								}
+							);
+
+							// Cleanup
+							ops.push(
+								{
+									'class': file.Delete,
+									source: '%INSTALLDIR%/%PACKAGENAME%/bundle.js',
+								},
+								{
+									'class': file.Delete,
+									source: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.js',
+								},
+								{
+									'class': file.Delete,
+									source: '%INSTALLDIR%/%PACKAGENAME%/bundle.mjs',
+								},
+								{
+									'class': file.Delete,
+									source: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.mjs',
+								},
+								{
+									'class': file.Delete,
+									source: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.js',
+								},
+								{
+									'class': file.Delete,
+									source: '%INSTALLDIR%/%PACKAGENAME%/test/test_bundle.min.js',
+								}
+							);
+
+							return ops;
+						}, null, this);
 				}),
 
 				execute_BROWSERIFY: doodad.PROTECTED(function execute_BROWSERIFY(command, item, /*optional*/options) {
