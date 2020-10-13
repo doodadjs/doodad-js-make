@@ -137,21 +137,23 @@ const startup = function _startup(root, args) {
 	});
 };
 
-const main = function _main(args) {
-	require('@doodad-js/core').createRoot(null, {startup: {fromSource: true}, 'Doodad.Tools': {logLevel: 2, noWatch: true}})
+const main = async function _main(args) {
+	return require('@doodad-js/core')
+		.createRoot(null, {startup: {fromSource: true}, 'Doodad.Tools': {logLevel: 2, noWatch: true}})
 		.then(function(root) {
 			return startup(root, args)
 				.catch(function(err) {
 					root.Doodad.Tools.catchAndExit(err);
-				})
-				.then(function(dummy) {
-					root.Doodad.Tools.abortScript(0);
 				});
 		});
 };
 
 if (require.main === module) {
-	main(process.argv.slice(2));
+	main(process.argv.slice(2))
+		.catch(function(err) {
+			console.error(err);
+			process.exit(1);
+		});
 } else {
 	module.exports = main;
 };
