@@ -181,7 +181,7 @@ exports.add = function add(modules) {
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
-				pkg = files.parsePath(pkg, {isRelative: true}).toApiString();
+				pkg = files.parsePath(pkg, {isRelative: true}).toString();
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
@@ -206,7 +206,7 @@ exports.add = function add(modules) {
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
-				pkg = files.parsePath(pkg, {isRelative: true}).toApiString();
+				pkg = files.parsePath(pkg, {isRelative: true}).toString();
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
@@ -530,8 +530,8 @@ exports.add = function add(modules) {
 								};
 
 								const templ = JSON5.parse(nodeFsReadFileSync(modules.resolve(manifestTemplate).toApiString(), 'utf-8'));
-								this.manifestPath = this.combineWithPackageDir('./_package.json').toString();
-								this.mainManifestPath = this.combineWithPackageDir('./package.json').toString();
+								this.manifestPath = this.combineWithPackageDir('./_package.json');
+								this.mainManifestPath = this.combineWithPackageDir('./package.json');
 								this.manifest = JSON5.parse(nodeFsReadFileSync(modules.resolve(this.manifestPath).toApiString(), 'utf-8'));
 								this.manifest = tools.depthExtend(extendFn, {}, templ, this.manifest);
 								delete this.manifest['//']; // remove faked comments
@@ -573,25 +573,15 @@ exports.add = function add(modules) {
 							},
 
 							parseVariables: function parseVariables(val, /*optional*/options) {
-								function solvePath(path, /*optional*/os, /*optional*/isFolder) {
-									return files.parsePath(path, {
-										os: (os || 'linux'),
-										dirChar: null,
-										isFolder,
-									});
-								};
-
 								const isFolder = types.get(options, 'isFolder', null);
 								const isPath = !types.isNothing(isFolder) || types.get(options, 'isPath', false);
 
 								let path;
 								if (isPath) {
-									path = solvePath(val).toArray();
+									path = files.parsePath(val).toArray();
 								} else {
 									path = [types.toString(val)];
 								};
-
-								const os = tools.getOS();
 
 								if (isPath && path.length && (path[0][0] === '~')) {
 									const scoped = (path[0][1] === '@');
@@ -698,19 +688,19 @@ exports.add = function add(modules) {
 											};
 											value = process.env[tmp];
 											if (isPathEnv || isFileEnv) {
-												value = solvePath(value, os.type, isPathEnv);
+												value = files.parsePath(value, {isFolder: isPathEnv});
 											};
 										};
+
+										if (isPath) {
+											value = files.parsePath(value);
+										}
 
 										if (value instanceof files.Path) {
 											if ((i > 0) && !value.isRelative) {
 												throw types.Error("Path in '~0~' can't be inserted because it is an absolute path.", [name]);
 											};
-											result += value.toString({
-												os: os.type,
-												dirChar: null,
-												shell: 'api',
-											});
+											result += value.toApiString();
 										} else {
 											result += types.toString(value);
 										};
@@ -727,7 +717,7 @@ exports.add = function add(modules) {
 
 									if (changed) {
 										if (isPath) {
-											path.splice.apply(path, tools.append([i, 1], solvePath(result, os.type).toArray()));
+											path.splice.apply(path, tools.append([i, 1], files.parsePath(result).toArray()));
 										} else {
 											path[i] = result;
 										};
@@ -831,7 +821,7 @@ exports.add = function add(modules) {
 							dest = this.taskData.parseVariables(dest, {isPath: true, isFolder: true});
 						};
 						tools.log(tools.LogLevels.Info, "Creating folder '~0~'...", [dest]);
-						return files.mkdir(dest, {async: true})
+						return files.mkdir(dest, tools.extend({}, item.options, {async: true}))
 							.then(function() {
 								// Returns nothing
 							});
@@ -944,7 +934,7 @@ exports.add = function add(modules) {
 						const encoding = types.get(item, 'encoding', 'utf-8');
 						tools.log(tools.LogLevels.Info, "Merging files to '~0~'...", [dest]);
 						const createFile = function() {
-							return nodeFsCreateWriteStream(dest.toString({shell: 'api'}));
+							return nodeFsCreateWriteStream(dest.toApiString());
 						};
 						const writeSeparator = function(outputStream) {
 							if (separator) {
@@ -1097,8 +1087,8 @@ exports.add = function add(modules) {
 									jsStream.define(name, value);
 								});
 
-								const inputStream = nodeFsCreateReadStream(source.toString({shell: 'api'}));
-								const outputStream = nodeFsCreateWriteStream(dest.toString({shell: 'api'}));
+								const inputStream = nodeFsCreateReadStream(source.toApiString());
+								const outputStream = nodeFsCreateWriteStream(dest.toApiString());
 
 								return Promise.create(function pipePromise(resolve, reject) {
 									const jsStreamTransform = jsStream.getInterface(nodejsIOInterfaces.IWritable);
@@ -1252,7 +1242,7 @@ exports.add = function add(modules) {
 									const newConfig = {};
 									prettify('', config, newConfig, newConfig);
 									return Promise.create(function nodeFsWriteFilePromise(resolve, reject) {
-										nodeFs.writeFile(destination.toString({shell: 'api'}), JSON.stringify(newConfig, null, 4), {encoding: 'utf-8'}, function(ex) {
+										nodeFs.writeFile(destination.toApiString(), JSON.stringify(newConfig, null, 4), {encoding: 'utf-8'}, function(ex) {
 											if (ex) {
 												reject(ex);
 											} else {
@@ -1324,6 +1314,13 @@ exports.add = function add(modules) {
 					// Get server resources
 					const resources = tools.filter(taskData.makeManifest.resources, function(res) {
 						return res.server;
+					});
+
+					// Create destination
+					ops.push({
+						'class': folder.Create,
+						destination: '%BUILDDIR%/',
+						options: {makeParents: true},
 					});
 
 					// Copy resources
@@ -1669,6 +1666,13 @@ exports.add = function add(modules) {
 							// Get client resources
 							const resources = tools.filter(taskData.makeManifest.resources, function(res) {
 								return res.client;
+							});
+
+							// Create destination
+							ops.push({
+								'class': folder.Create,
+								destination: '%INSTALLDIR%/%PACKAGENAME%/',
+								options: {makeParents: true},
 							});
 
 							// Copy resources
@@ -2454,7 +2458,7 @@ exports.add = function add(modules) {
 						const content = JSON.stringify(manifest, null, 4);
 
 						return Promise.create(function writeManifestPromise(resolve, reject) {
-							nodeFs.writeFile(taskData.mainManifestPath, content, {encoding: 'utf-8'}, function(err, result) {
+							nodeFs.writeFile(taskData.mainManifestPath.toApiString(), content, {encoding: 'utf-8'}, function(err, result) {
 								if (err) {
 									reject(err);
 								} else {
@@ -2680,7 +2684,8 @@ exports.add = function add(modules) {
 				__Internal__.addSearchPaths();
 
 				const obj = new make.Task();
-				return obj.execute(command, {name: 'start'}, options);
+				return obj.execute(command, {name: 'start'}, options)
+					.then(tools.abortScript);
 			});
 		},
 	};
