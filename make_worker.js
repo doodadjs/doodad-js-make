@@ -144,7 +144,8 @@ const main = async function _main(args) {
 			return startup(root, args)
 				.catch(function(err) {
 					root.Doodad.Tools.catchAndExit(err);
-				});
+				})
+				.catch();
 		});
 };
 
