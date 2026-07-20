@@ -185,15 +185,9 @@ exports.add = function add(modules) {
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
-				const file = pkg + '/package.json';
 				let result = null;
 				if (currentPackageDir) {
-					try {
-						const path = currentPackageDir.combine('../' + file, {allowTraverse: true});
-						result = nodeFsReadFileSync(modules.resolve(path.toString()).toApiString(), 'utf-8');
-					} catch(o) {
-						result = nodeFsReadFileSync(modules.resolve(file).toApiString(), 'utf-8');
-					};
+					result = nodeFsReadFileSync(modules.resolve(pkg).combine('package.json').toApiString(), 'utf-8');
 				} else {
 					result = nodeFsReadFileSync(modules.resolve(file).toApiString(), 'utf-8');
 				};
@@ -586,8 +580,8 @@ exports.add = function add(modules) {
 								if (isPath && path.length && (path[0][0] === '~')) {
 									const scoped = (path[0][1] === '@');
 									const module = (scoped ? path[0].slice(1) + '/' + path[1] : path[0].slice(1));
-									const resolved = modules.resolve(module + '/package.json');
-									path = resolved.set({file: null}).combine(files.Path.parse(path.slice(scoped ? 2 : 1)));
+									const resolved = modules.resolve(module);
+									path = resolved.combine(files.Path.parse(path.slice(scoped ? 2 : 1)));
 									path = path.toArray();
 								};
 
