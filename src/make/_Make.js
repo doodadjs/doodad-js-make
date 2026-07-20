@@ -27,7 +27,6 @@
 
 //! IF_SET("mjs")
 	//! INJECT("import {default as nodeFs} from 'fs';")
-	//! INJECT("import {default as nodeCp} from 'child_process';")
 	//! INJECT("import {default as npc} from '@doodad-js/npc';")
 	//! INJECT("import {default as nodeCrypto} from 'crypto';");
 
@@ -40,7 +39,6 @@
 	"use strict";
 
 	const nodeFs = require('fs'),
-		nodeCp = require('child_process'),
 		npc = require('@doodad-js/npc'),
 		nodeCrypto = require('crypto'),
 
@@ -54,7 +52,6 @@ const nodeFsCreateReadStream = nodeFs.createReadStream,
 	nodeFsCreateWriteStream = nodeFs.createWriteStream,
 	nodeFsReadFileSync = nodeFs.readFileSync,
 	nodeFsStatSync = nodeFs.statSync,
-	nodeCpSpawn = nodeCp.spawn,
 	nodeCryptoCreateHash = nodeCrypto.createHash,
 
 	npcListAsync = npc.listAsync;
@@ -1135,7 +1132,7 @@ exports.add = function add(modules) {
 							} else {
 								opts.cwd = types.toString(this.taskData.packageDir);
 							};
-							const cp = nodeCpSpawn('node', tools.append([types.toString(source)], item.args), opts);
+							const cp = nodejs.spwan('node', tools.append([types.toString(source)], item.args), opts);
 							cp.on('error', function(err) {
 								reject(err);
 							});
@@ -1176,7 +1173,7 @@ exports.add = function add(modules) {
 							} else {
 								opts.cwd = types.toString(this.taskData.packageDir);
 							};
-							const cp = nodeCpSpawn(types.toString(source), item.args, opts);
+							const cp = nodejs.spwan(types.toString(source), item.args, opts);
 							cp.on('error', function(err) {
 								reject(err);
 							});
