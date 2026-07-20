@@ -20,7 +20,7 @@
     "./package": "./package.json",
     "./package.json": "./package.json",
     "./make.json": "./make.json",
-    "./lib/": "./lib/"
+    "./lib/*": "./lib/*"
   },
   "files": [
     "src",
