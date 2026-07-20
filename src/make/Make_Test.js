@@ -26,15 +26,10 @@
 
 
 //! IF_SET("mjs")
-	//! INJECT("import {default as nodeChildProcess} from 'child_process';");
 
 //! ELSE()
 	"use strict";
-
-	const nodeChildProcess = require('child_process');
 //! END_IF()
-
-const nodeChildProcessSpawn = nodeChildProcess.spawn;
 
 exports.add = function add(modules) {
 	modules = (modules || {});
@@ -50,8 +45,8 @@ exports.add = function add(modules) {
 			const doodad = root.Doodad,
 				types = doodad.Types,
 				tools = doodad.Tools,
+				nodejs = doodad.NodeJs,
 				files = tools.Files,
-				//modules = doodad.Modules,
 				make = root.Make,
 				makeTest = make.Test;
 
@@ -94,9 +89,9 @@ exports.add = function add(modules) {
 									cwd: packageDir.toApiString(),
 								};
 
-								const cp = nodeChildProcessSpawn("node", ['-e', "console.log(require.resolve('" + TEST_PKG + "'))"], options);
+								const cp = nodejs.spawn("node", ['-e', "console.log(require.resolve('" + TEST_PKG + "'))"], options);
 
-								cp.on('exit', function cpOnExit(code, signal) {
+								cp.once('exit', function cpOnExit(code, signal) {
 									if (code !== 0) {
 										reject(new types.Error("Failed to locate package '~0~'.", [TEST_PKG]));
 									} else {
@@ -125,11 +120,11 @@ exports.add = function add(modules) {
 									cwd: packageDir.toApiString(),
 								};
 
-								const cp = nodeChildProcessSpawn("npm", ['install', TEST_PKG, '--no-save'], options);
+								const cp = nodejs.spawn("npm", ['install', TEST_PKG, '--no-save'], options);
 
-								cp.on('exit', function cpOnExit(code, signal) {
+								cp.once('exit', function cpOnExit(code, signal) {
 									if (code !== 0) {
-										reject(new types.Error("'NPM' exited with code '~0~'.", [code]));
+										process.exit(code);
 									} else {
 										resolve();
 									};
@@ -151,11 +146,11 @@ exports.add = function add(modules) {
 									cwd: appDir.toApiString(),
 								};
 
-								const cp = nodeChildProcessSpawn("npm", ['run', 'test', '--', ...(_options.args || [])], options);
+								const cp = nodejs.spawn("npm", ['run', 'test', '--', ...(_options.args || [])], options);
 
-								cp.on('exit', function cpOnExit(code, signal) {
+								cp.once('exit', function cpOnExit(code, signal) {
 									if (code !== 0) {
-										reject(new types.Error("'NPM' exited with code '~0~'.", [code]));
+										process.exit(code);
 									} else {
 										resolve();
 									};
