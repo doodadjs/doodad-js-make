@@ -94,7 +94,7 @@ exports.add = function add(modules) {
 				Promise = types.getPromise(),
 
 				cwd = files.parsePath(process.cwd(), {isFolder: true}),
-				modulePath = files.parsePath(module.filename).set({file: null});
+				modulePath = files.parsePath(module.filename).set({file: ''});
 
 
 			tools.complete(_shared.Natives, {
@@ -162,7 +162,7 @@ exports.add = function add(modules) {
 				};
 
 				// Current package's modules (ex: 'uuid')
-				name = cwd.combine('node_modules').toApiString();
+				name = cwd.combine('node_modules/').toApiString();
 				try {
 					nodeFsStatSync(name);
 					modules.addSearchPath(name);
@@ -238,8 +238,8 @@ exports.add = function add(modules) {
 					return pathObj;
 				};
 				const manifest = __Internal__.getMakeManifest(pkg);
-				const installDir = files.parsePath(types.get(manifest, 'installDir', './dist'));
-				const pkgPath = files.parsePath(pkg);
+				const installDir = files.parsePath(types.get(manifest, 'installDir', './dist'), {isFolder: true});
+				const pkgPath = files.parsePath(pkg, {isRelative: true, isFolder: true});
 				if (pathObj) {
 					return pkgPath.combine(installDir).combine(pkgPath).combine(pathObj);
 				} else {
@@ -369,7 +369,7 @@ exports.add = function add(modules) {
 						if (!block.remove) {
 							// TODO: Read file async (if possible !)
 							if (types.isString(file)) {
-								file = this.options.taskData.parseVariables(file, { isPath: true, isFolder: false });
+								file = this.options.taskData.parseVariables(file, { isFolder: false });
 							};
 							let content = nodeFsReadFileSync(file.toString(), encoding || this.options.encoding);
 							if ((file.extension === 'json') || (file.extension === 'json5')) {
@@ -460,7 +460,7 @@ exports.add = function add(modules) {
 					INTEGRITY: function INTEGRITY(file, /*optional*/options) {
 						//const state = this.__state;
 						if (types.isString(file)) {
-							file = this.options.taskData.parseVariables(file, { isPath: true, isFolder: false });
+							file = this.options.taskData.parseVariables(file, { isFolder: false });
 						};
 						return __Internal__.getFileIntegrity(file, options);
 					},
@@ -514,7 +514,7 @@ exports.add = function add(modules) {
 
 								let manifestTemplate = types.get(item, 'manifestTemplate');
 								if (types.isString(manifestTemplate)) {
-									manifestTemplate = this.parseVariables(manifestTemplate, { isPath: true, isFolder: false });
+									manifestTemplate = this.parseVariables(manifestTemplate, { isFolder: false });
 								};
 								if (!manifestTemplate) {
 									manifestTemplate = modulePath.combine('res/package.templ.json');
@@ -543,15 +543,15 @@ exports.add = function add(modules) {
 
 								const os = tools.getOS();
 								if (os.type === 'windows') {
-									this.homePath = files.Path.parse(process.env.appdata || process.env.localappdata, {isFolder: true});
-									this.dataPath = files.Path.parse(process.env.programdata, {isFolder: true});
-									this.programsPath = files.Path.parse(process.env.programfiles, {isFolder: true});
+									this.homePath = files.parsePath(process.env.appdata || process.env.localappdata, {isFolder: true});
+									this.dataPath = files.parsePath(process.env.programdata, {isFolder: true});
+									this.programsPath = files.parsePath(process.env.programfiles, {isFolder: true});
 								} else {
-									this.homePath = files.Path.parse(process.env.HOME, {isFolder: true, os: 'linux'});
+									this.homePath = files.parsePath(process.env.HOME, {isFolder: true});
 									// There is no environment variable for this purpose under Unix-like systems
 									// So I use "package.json"'s "config" section.
-									this.dataPath = files.Path.parse(__options__.unix.dataPath || "/var/lib/", {isFolder: true, os: 'linux'});
-									this.programsPath = files.Path.parse(__options__.unix.libPath || "/usr/local/lib/", {isFolder: true, os: 'linux'});
+									this.dataPath = files.parsePath(__options__.unix.dataPath || "/var/lib/", {isFolder: true});
+									this.programsPath = files.parsePath(__options__.unix.libPath || "/usr/local/lib/", {isFolder: true});
 								};
 							},
 
@@ -564,12 +564,16 @@ exports.add = function add(modules) {
 							},
 
 							parseVariables: function parseVariables(val, /*optional*/options) {
-								const isFolder = types.get(options, 'isFolder', null);
-								const isPath = !types.isNothing(isFolder) || types.get(options, 'isPath', false);
+								const isFolder = types.get(options, 'isFolder', null),
+									isPath = !types.isNothing(isFolder) || types.get(options, 'isPath', false);
+
+								let isRelative = true;
 
 								let path;
 								if (isPath) {
-									path = files.parsePath(val).toArray();
+									path = files.parsePath(val, {os: 'linux', isFolder});
+									isRelative = path.isRelative;
+									path = path.toArray({trim: true});
 								} else {
 									path = [types.toString(val)];
 								};
@@ -578,8 +582,11 @@ exports.add = function add(modules) {
 									const scoped = (path[0][1] === '@');
 									const module = (scoped ? path[0].slice(1) + '/' + path[1] : path[0].slice(1));
 									const resolved = modules.resolve(module);
-									path = resolved.combine(files.Path.parse(path.slice(scoped ? 2 : 1)));
-									path = path.toArray();
+									path = resolved.combine(path.slice(scoped ? 2 : 1));
+									if (!path.isRelative) {
+										isRelative = false;
+									};
+									path = path.toArray({trim: true});
 								};
 
 								for (let i = 0; i < path.length; ) {
@@ -661,15 +668,14 @@ exports.add = function add(modules) {
 										} else {
 											let tmp = name.slice(1, -1);
 											const pos = tmp.indexOf(':');
-											let isPathEnv = false;
-											let isFileEnv = false;
+											let isFolder2 = null;
 											if (pos >= 0) {
 												tmp = name.slice(0, pos);
 												const spec = name.slice(pos + 1);
 												if (spec === 'path') {
-													isPathEnv = true;
+													isFolder2 = true;
 												} else if (spec === 'file') {
-													isFileEnv = true;
+													isFolder2 = false;
 												} else {
 													throw new types.Error("Invalid specification '~0~' for environment variable '~1~'.", [spec, tmp]);
 												};
@@ -678,16 +684,14 @@ exports.add = function add(modules) {
 												throw new types.Error("Invalid environment variable name: '~0~'.", [tmp]);
 											};
 											value = process.env[tmp];
-											if (isPathEnv || isFileEnv) {
-												value = files.parsePath(value, {isFolder: isPathEnv});
-											};
+											value = files.parsePath(value, {isFolder: isFolder2});
 										};
 
-										if (isPath) {
+										if (isPath && !types._instanceof(value, files.Path)) {
 											value = files.parsePath(value);
 										}
 
-										if (value instanceof files.Path) {
+										if (types._instanceof(value, files.Path)) {
 											if ((i > 0) && !value.isRelative) {
 												throw types.Error("Path in '~0~' can't be inserted because it is an absolute path.", [name]);
 											};
@@ -708,7 +712,11 @@ exports.add = function add(modules) {
 
 									if (changed) {
 										if (isPath) {
-											path.splice.apply(path, tools.append([i, 1], files.parsePath(result).toArray()));
+											const tmp = files.parsePath(result);
+											if (!tmp.isRelative) {
+												isRelative = false;
+											};
+											path.splice.apply(path, tools.append([i, 1], tmp.toArray({trim: true})));
 										} else {
 											path[i] = result;
 										};
@@ -718,7 +726,7 @@ exports.add = function add(modules) {
 								};
 
 								if (isPath) {
-									return files.parsePath(path, {isFolder});
+									return files.parsePath(path, {isRelative, isFolder});
 								} else {
 									return path.join('');
 								};
@@ -809,7 +817,7 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, {isPath: true, isFolder: true});
+							dest = this.taskData.parseVariables(dest, {isFolder: true});
 						};
 						tools.log(tools.LogLevels.Info, "Creating folder '~0~'...", [dest]);
 						return files.mkdir(dest, tools.extend({}, item.options, {async: true}))
@@ -827,11 +835,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: true });
+							source = this.taskData.parseVariables(source, { isFolder: true });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true, isFolder: true });
+							dest = this.taskData.parseVariables(dest, { isFolder: true });
 						};
 						tools.log(tools.LogLevels.Info, "Copying folder '~0~' to '~1~'...", [source, dest]);
 						return files.mkdir(dest, {makeParents: true, async: true})
@@ -852,7 +860,7 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: true });
+							source = this.taskData.parseVariables(source, { isFolder: true });
 						};
 						tools.log(tools.LogLevels.Info, "Deleting folder '~0~'...", [source]);
 						return files.rmdir(source, {force: true, async: true})
@@ -869,7 +877,7 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: false });
+							source = this.taskData.parseVariables(source, { isFolder: false });
 						};
 						tools.log(tools.LogLevels.Info, "Deleting file '~0~'...", [source]);
 						return files.rm(source, {async: true})
@@ -887,14 +895,14 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: false });
+							source = this.taskData.parseVariables(source, { isFolder: false });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true, isFolder: false });
+							dest = this.taskData.parseVariables(dest, { isFolder: false });
 						};
 						tools.log(tools.LogLevels.Info, "Copying file '~0~' to '~1~'...", [source, dest]);
-						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
+						return files.mkdir(dest.set({file: ''}), {makeParents: true, async: true})
 							.then(function() {
 								return files.copy(source, dest, {override: true, async: true});
 							})
@@ -913,7 +921,7 @@ exports.add = function add(modules) {
 						const taskData = this.taskData;
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = taskData.parseVariables(dest, { isPath: true, isFolder: false });
+							dest = taskData.parseVariables(dest, { isFolder: false });
 						};
 						let source = item.source;
 						if (types.isArrayLike(source)) {
@@ -945,7 +953,7 @@ exports.add = function add(modules) {
 							if (source.length) {
 								let src = source.shift();
 								if (types.isString(src)) {
-									src = taskData.parseVariables(src, { isPath: true, isFolder: false });
+									src = taskData.parseVariables(src, { isFolder: false });
 								};
 								src = src.toApiString();
 
@@ -1039,7 +1047,7 @@ exports.add = function add(modules) {
 								return null;
 							};
 						};
-						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
+						return files.mkdir(dest.set({file: ''}), {makeParents: true, async: true})
 							.then(createFile)
 							.then(loopMerge)
 							.nodeify(closeFile);
@@ -1054,12 +1062,12 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: false });
+							source = this.taskData.parseVariables(source, { isFolder: false });
 						};
 
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true, isFolder: false });
+							dest = this.taskData.parseVariables(dest, { isFolder: false });
 						};
 
 						tools.log(tools.LogLevels.Info, "Minifying file '~0~' to '~1~'...", [source, dest]);
@@ -1070,9 +1078,9 @@ exports.add = function add(modules) {
 
 						const taskData = this.taskData;
 
-						return files.mkdir(dest.set({file: null}), {makeParents: true, async: true})
+						return files.mkdir(dest.set({file: ''}), {makeParents: true, async: true})
 							.then(function() {
-								const jsStream = new make.JavascriptBuilder({taskData: taskData, runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
+								const jsStream = new make.JavascriptBuilder({taskData, runDirectives: types.get(item, 'runDirectives'), keepComments: types.get(item, 'keepComments'), keepSpaces: types.get(item, 'keepSpaces')});
 
 								tools.forEach(variables, function(value, name) {
 									jsStream.define(name, value);
@@ -1117,11 +1125,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: false });
+							source = this.taskData.parseVariables(source, { isFolder: false });
 						};
 						let target = item.target;
 						if (types.isString(target)) {
-							target = this.taskData.parseVariables(target, { isPath: true, isFolder: true });
+							target = this.taskData.parseVariables(target, { isFolder: true });
 						};
 						return Promise.create(function nodeJsSpawnPromise(resolve, reject) {
 							const opts = {
@@ -1157,11 +1165,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: false });
+							source = this.taskData.parseVariables(source, { isFolder: false });
 						};
 						let target = item.target;
 						if (types.isString(target)) {
-							target = this.taskData.parseVariables(target, { isPath: true, isFolder: true });
+							target = this.taskData.parseVariables(target, { isFolder: true });
 						};
 						return Promise.create(function nodeJsForkPromise(resolve, reject) {
 							const opts = {
@@ -1198,10 +1206,10 @@ exports.add = function add(modules) {
 				execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 					let destination = item.destination;
 					if (types.isString(destination)) {
-						destination = this.taskData.parseVariables(destination, { isPath: true, isFolder: false });
+						destination = this.taskData.parseVariables(destination, { isFolder: false });
 					};
 					const self = this;
-					return files.mkdir(destination.set({file: null}), {makeParents: true, async: true})
+					return files.mkdir(destination.set({file: ''}), {makeParents: true, async: true})
 						.then(function() {
 							tools.log(tools.LogLevels.Info, "Saving configuration to '~0~'...", [destination]);
 							//return npcListAsync(self.taskData.manifest.name, {beautify: true, Promise: Promise, module: modules.getLocator()})
@@ -1270,7 +1278,7 @@ exports.add = function add(modules) {
 
 					let indexTemplate = types.get(item, 'indexTemplate');
 					if (types.isString(indexTemplate)) {
-						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true, isFolder: false });
+						indexTemplate = taskData.parseVariables(indexTemplate, { isFolder: false });
 					};
 					if (!indexTemplate) {
 						indexTemplate = modulePath.combine('res/index.templ.js');
@@ -1278,7 +1286,7 @@ exports.add = function add(modules) {
 
 					let indexTemplateMjs = types.get(item, 'indexTemplateMjs');
 					if (types.isString(indexTemplateMjs)) {
-						indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isPath: true, isFolder: false });
+						indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isFolder: false });
 					};
 					if (!indexTemplateMjs) {
 						indexTemplateMjs = modulePath.combine('res/index.templ.mjs');
@@ -1286,7 +1294,7 @@ exports.add = function add(modules) {
 
 					let testTemplate = types.get(item, 'testTemplate');
 					if (types.isString(testTemplate)) {
-						testTemplate = taskData.parseVariables(testTemplate, { isPath: true, isFolder: false });
+						testTemplate = taskData.parseVariables(testTemplate, { isFolder: false });
 					};
 					if (!testTemplate) {
 						testTemplate = modulePath.combine('res/test_package.templ.js');
@@ -1382,7 +1390,7 @@ exports.add = function add(modules) {
 									return !mod.test && !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true, isFolder: false }).relative(taskData.packageDir).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isFolder: false }).relative(taskData.packageDir).toString({os: 'linux'}),
 										optional: !!types.get(mod, 'optional', false),
 									});
 								}),
@@ -1390,7 +1398,7 @@ exports.add = function add(modules) {
 									return !mod.test && !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true, isFolder: false }).relative(taskData.packageDir).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isFolder: false }).relative(taskData.packageDir).toString({os: 'linux'}),
 										optional: !!types.get(mod, 'optional', false),
 									});
 								}),
@@ -1426,7 +1434,7 @@ exports.add = function add(modules) {
 										return !mod.test && !mod.exclude;
 									}), function(mod) {
 										return tools.extend({}, mod, {
-											dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest, true) : __Internal__.getBuiltFileName(mod.src, true)), { isPath: true, isFolder: false }).relative(taskData.packageDir).toString({os: 'linux'}),
+											dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest, true) : __Internal__.getBuiltFileName(mod.src, true)), { isFolder: false }).relative(taskData.packageDir).toString({os: 'linux'}),
 											optional: !!types.get(mod, 'optional', false),
 										});
 									}),
@@ -1477,7 +1485,7 @@ exports.add = function add(modules) {
 									return mod.test && !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isPath: true, isFolder: false }).relative(taskData.packageDir).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%SOURCEDIR%/' + mod.src, { isFolder: false }).relative(taskData.packageDir).toString({os: 'linux'}),
 										optional: !!types.get(mod, 'optional', false),
 									});
 								}),
@@ -1525,7 +1533,7 @@ exports.add = function add(modules) {
 									return mod.test && !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true, isFolder: false }).relative(taskData.packageDir).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%BUILDDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isFolder: false }).relative(taskData.packageDir).toString({os: 'linux'}),
 										optional: !!types.get(mod, 'optional', false),
 									});
 								}),
@@ -1560,7 +1568,7 @@ exports.add = function add(modules) {
 
 					let indexTemplate = types.get(item, 'indexTemplate');
 					if (types.isString(indexTemplate)) {
-						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true, isFolder: false });
+						indexTemplate = taskData.parseVariables(indexTemplate, { isFolder: false });
 					};
 					if (!indexTemplate) {
 						indexTemplate = modulePath.combine('res/package.templ.js');
@@ -1568,7 +1576,7 @@ exports.add = function add(modules) {
 
 					let indexTemplateMjs = types.get(item, 'indexTemplateMjs');
 					if (types.isString(indexTemplateMjs)) {
-						indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isPath: true, isFolder: false });
+						indexTemplateMjs = taskData.parseVariables(indexTemplateMjs, { isFolder: false });
 					};
 					if (!indexTemplateMjs) {
 						indexTemplateMjs = modulePath.combine('res/package.templ.mjs');
@@ -1576,7 +1584,7 @@ exports.add = function add(modules) {
 
 					let testTemplate = types.get(item, 'testTemplate');
 					if (types.isString(testTemplate)) {
-						testTemplate = taskData.parseVariables(testTemplate, { isPath: true, isFolder: false });
+						testTemplate = taskData.parseVariables(testTemplate, { isFolder: false });
 					};
 					if (!testTemplate) {
 						testTemplate = modulePath.combine('res/test_package.templ.js');
@@ -1721,7 +1729,7 @@ exports.add = function add(modules) {
 									return {
 										'class': file.Javascript,
 										source: '%SOURCEDIR%/' + mod.src,
-										destination: '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "mjs"}).toApiString(),
+										destination: '%INSTALLDIR%/%PACKAGENAME%/' + files.parsePath(mod.dest ? mod.dest : mod.src).set({extension: "mjs"}).toApiString(),
 										runDirectives: true,
 										keepComments: true,
 										keepSpaces: true,
@@ -1738,7 +1746,7 @@ exports.add = function add(modules) {
 									return {
 										'class': file.Javascript,
 										source: '%SOURCEDIR%/' + mod.src,
-										destination: '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "min.mjs"}).toApiString(),
+										destination: '%INSTALLDIR%/%PACKAGENAME%/' + files.parsePath(mod.dest ? mod.dest : mod.src).set({extension: "min.mjs"}).toApiString(),
 										runDirectives: true,
 										variables: {
 											debug: false,
@@ -1788,7 +1796,7 @@ exports.add = function add(modules) {
 										source: tools.map(tools.filter(modules, function(mod) {
 											return !mod.test && !mod.exclude;
 										}), function(mod) {
-											return '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "mjs"}).toApiString();
+											return '%INSTALLDIR%/%PACKAGENAME%/' + files.parsePath(mod.dest ? mod.dest : mod.src).set({extension: "mjs"}).toApiString();
 										}),
 										destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.mjs',
 										separator: ';',
@@ -1803,7 +1811,7 @@ exports.add = function add(modules) {
 										source: tools.map(tools.filter(modules, function(mod) {
 											return !mod.test && !mod.exclude;
 										}), function(mod) {
-											return '%INSTALLDIR%/%PACKAGENAME%/' + files.Path.parse(mod.dest ? mod.dest : mod.src).set({extension: "min.mjs"}).toApiString();
+											return '%INSTALLDIR%/%PACKAGENAME%/' + files.parsePath(mod.dest ? mod.dest : mod.src).set({extension: "min.mjs"}).toApiString();
 										}),
 										destination: '%INSTALLDIR%/%PACKAGENAME%/bundle.min.mjs',
 										separator: ';',
@@ -2089,7 +2097,7 @@ exports.add = function add(modules) {
 
 					let indexTemplate = types.get(item, 'indexTemplate');
 					if (types.isString(indexTemplate)) {
-						indexTemplate = taskData.parseVariables(indexTemplate, { isPath: true, isFolder: false });
+						indexTemplate = taskData.parseVariables(indexTemplate, { isFolder: false });
 					};
 					if (!indexTemplate) {
 						indexTemplate = modulePath.combine('res/browserify.templ.js');
@@ -2160,7 +2168,7 @@ exports.add = function add(modules) {
 						};
 					}));
 
-					const browserifyDest = taskData.parseVariables('%BROWSERIFYDIR%', {isPath: true, isFolder: true});
+					const browserifyDest = taskData.parseVariables('%BROWSERIFYDIR%', {isFolder: true});
 
 					// Build main file (build)
 					ops.push(
@@ -2179,7 +2187,7 @@ exports.add = function add(modules) {
 									return !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isPath: true, isFolder: false }).relative(browserifyDest).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? __Internal__.getBuiltFileName(mod.dest) : __Internal__.getBuiltFileName(mod.src)), { isFolder: false }).relative(browserifyDest).toString({os: 'linux'}),
 									});
 								}),
 							},
@@ -2205,7 +2213,7 @@ exports.add = function add(modules) {
 									return !mod.exclude;
 								}), function(mod) {
 									return tools.extend({}, mod, {
-										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isPath: true, isFolder: false }).relative(browserifyDest).toString({os: 'linux'}),
+										dest: taskData.parseVariables('%BROWSERIFYDIR%/' + (mod.dest ? mod.dest : mod.src), { isFolder: false }).relative(browserifyDest).toString({os: 'linux'}),
 									});
 								}),
 							},
@@ -2227,13 +2235,13 @@ exports.add = function add(modules) {
 				execute_WEBPACK: doodad.PROTECTED(function execute_WEBPACK(command, item, /*optional*/options) {
 					let configTemplate = types.get(item, 'configTemplate');
 					if (types.isString(configTemplate)) {
-						configTemplate = this.parseVariables(configTemplate, { isPath: true, isFolder: false });
+						configTemplate = this.parseVariables(configTemplate, { isFolder: false });
 					};
 					if (!configTemplate) {
 						configTemplate = modulePath.combine('res/webpack.config.templ.js');
 					};
-					const configDest = this.taskData.parseVariables("%PACKAGEDIR%/webpack.config.js", { isPath: true, isFolder: false });
-					const entryFile = this.taskData.parseVariables("%BROWSERIFYDIR%/browserify.min.js", { isPath: true, isFolder: false });
+					const configDest = this.taskData.parseVariables("%PACKAGEDIR%/webpack.config.js", { isFolder: false });
+					const entryFile = this.taskData.parseVariables("%BROWSERIFYDIR%/browserify.min.js", { isFolder: false });
 					tools.log(tools.LogLevels.Info, "Preparing webpack config file '~0~'...", [configDest]);
 					const ops = [
 						{
@@ -2267,11 +2275,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = item.source;
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: false });
+							source = this.taskData.parseVariables(source, { isFolder: false });
 						};
 						let dest = item.destination;
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true, isFolder: false });
+							dest = this.taskData.parseVariables(dest, { isFolder: false });
 						};
 						tools.log(tools.LogLevels.Info, "Browserifying '~0~' to '~1~'...", [source, dest]);
 						const taskData = this.taskData;
@@ -2338,11 +2346,11 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = types.get(item, 'source');
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: false });
+							source = this.taskData.parseVariables(source, { isFolder: false });
 						};
 						let dest = types.get(item, 'destination');
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true, isFolder: false });
+							dest = this.taskData.parseVariables(dest, { isFolder: false });
 						};
 						tools.log(tools.LogLevels.Info, "Making webpack bundle from '~0~' to '~1~'...", [source, dest]);
 						return Promise.create(function webpackPromise(resolve, reject) {
@@ -2351,7 +2359,7 @@ exports.add = function add(modules) {
 									target: 'web',
 									entry: source.toString(),
 									output: {
-										path: dest.set({file: null}).toString(),
+										path: dest.set({file: ''}).toString(),
 										filename: dest.file,
 									},
 								};
@@ -2426,10 +2434,10 @@ exports.add = function add(modules) {
 						manifest.version = getNodeVersion(manifest.name);
 
 						manifest.files = tools.unique(manifest.files || [],
-							(taskData.makeManifest.sourceDir.isRelative ? [taskData.makeManifest.sourceDir.toString()] : undefined),
-							(taskData.makeManifest.buildDir.isRelative ? [taskData.makeManifest.buildDir.toString()] : undefined),
-							(taskData.makeManifest.browserifyDir.isRelative ? [taskData.makeManifest.browserifyDir.toString()] : undefined),
-							(taskData.makeManifest.installDir.isRelative ? [taskData.makeManifest.installDir.toString()] : undefined)
+							(taskData.makeManifest.sourceDir.isRelative ? [taskData.makeManifest.sourceDir.toString({os: 'linux'})] : undefined),
+							(taskData.makeManifest.buildDir.isRelative ? [taskData.makeManifest.buildDir.toString({os: 'linux'})] : undefined),
+							(taskData.makeManifest.browserifyDir.isRelative ? [taskData.makeManifest.browserifyDir.toString({os: 'linux'})] : undefined),
+							(taskData.makeManifest.installDir.isRelative ? [taskData.makeManifest.installDir.toString({os: 'linux'})] : undefined)
 						);
 
 						for (let i = 0; i < this.DEPS_KEYS.length; i++) {
@@ -2471,7 +2479,7 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let source = types.get(item, 'source');
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: false });
+							source = this.taskData.parseVariables(source, { isFolder: false });
 						};
 						const pkgName = this.taskData.manifest.name;
 						const pkgVersion = this.taskData.makeManifest.version;
@@ -2545,7 +2553,7 @@ exports.add = function add(modules) {
 					execute: doodad.OVERRIDE(function execute(command, item, /*optional*/options) {
 						let dest = types.get(item, 'destination');
 						if (types.isString(dest)) {
-							dest = this.taskData.parseVariables(dest, { isPath: true, isFolder: false });
+							dest = this.taskData.parseVariables(dest, { isFolder: false });
 						};
 						if (types.get(item, 'global', false)) {
 							tools.log(tools.LogLevels.Info, "Saving global UUIDs to file '~0~'...", [dest]);
@@ -2601,16 +2609,10 @@ exports.add = function add(modules) {
 							throw new types.Error("Can't lint the code because the 'eslint' package is not installed.");
 						};
 
-						const taskData = this.taskData;
-
-						const pkgDir = taskData.packageDir;
-
 						let source = types.get(item, 'source');
 						if (types.isString(source)) {
-							source = this.taskData.parseVariables(source, { isPath: true, isFolder: true });
+							source = this.taskData.parseVariables(source, { isFolder: true });
 						};
-
-						const target = source.relative(pkgDir);
 
 						tools.log(tools.LogLevels.Info, "Running ESLINT on '~0~'...", [source]);
 
@@ -2618,12 +2620,11 @@ exports.add = function add(modules) {
 
 						const cli = new nodeESLint.ESLint({
 							reportUnusedDisableDirectives: "warn",
-							cwd: pkgDir.toApiString(),
 							//fix: fix,
 						});
 
 						return cli.lintFiles([
-							target.toApiString()
+							source.toApiString()
 						])
 							.then(function(report) {
 								return cli.loadFormatter("stylish")
