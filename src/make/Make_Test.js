@@ -136,8 +136,8 @@ exports.add = function add(modules) {
 							return Promise.create(function launchPromise(resolve, reject) {
 								tools.log(tools.LogLevels.Info, "Launching the test application...");
 
-								//const appDir = files.Path.parse(modules.resolve(TEST_PKG)).set({file: ''});
-								const appDir = files.Path.parse(pkgLocation).set({file: ''});
+								//const appDir = files.parsePath(modules.resolve(TEST_PKG)).set({file: ''});
+								const appDir = files.parsePath(pkgLocation).set({file: ''});
 
 								const options = {
 									shell: true,
