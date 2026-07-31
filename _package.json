@@ -23,7 +23,7 @@
   ],
   "dependencies": {
     "browserify": "^17.0.1",
-    "eslint": "^10.8.0",
+    "eslint": "^8.2.0",
     "webpack": "^5.109.2",
     "@doodad-js/npc": "^0.10.0"
   },
