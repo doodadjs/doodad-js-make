@@ -30,6 +30,11 @@
 	//! INJECT("import {default as npc} from '@doodad-js/npc';")
 	//! INJECT("import {default as nodeCrypto} from 'crypto';");
 
+	// Workarround for browserify
+	//! INJECT("import {default as nodeAcornNode} from 'acorn-node';")
+	//! INJECT("import {default as nodeAcorn} from 'acorn';")
+	//! INJECT("import {default as nodeAcornLogicalAssign} from 'acorn-logical-assignment';")
+
 	// TODO: Make them optional again.
 	//! INJECT("import {default as nodeBrowserify} from 'browserify';")
 	//! INJECT("import {default as nodeWebpack} from 'webpack';")
@@ -42,11 +47,34 @@
 		npc = require('@doodad-js/npc'),
 		nodeCrypto = require('crypto'),
 
+		// Workarround for browserify
+		nodeAcornNode = require('acorn-node'),
+		nodeAcorn = require('acorn'),
+		nodeAcornLogicalAssign = require('acorn-logical-assignment'),
+
 		// TODO: Make them optional again.
 		nodeBrowserify = require('browserify'),
 		nodeWebpack = require('webpack'),
 		nodeESLint = require('eslint');
 //! END_IF()
+
+// Workarround for browserify
+const MyAcornParser = nodeAcorn.Parser.extend(nodeAcornLogicalAssign);
+const getMyAcronParser = (src, opts) => new MyAcornParser(Object.assign({}, opts, {ecmaVersion: 99}), src);
+Object.assign(nodeAcornNode, Object.assign(nodeAcorn, {
+	parse: (src, opts) => {
+		const parser = getMyAcronParser(src, opts);
+		return parser.parse();
+	},
+	parseExpressionAt: function parseExpressionAt (src, offset, opts) {
+		const parser = getMyAcronParser(null, opts);
+		return parser.parseExpressionAt(src, offset, opts);
+	},
+	tokenizer: function tokenizer (src, opts) {
+		const parser = getMyAcronParser(null, opts);
+		return parser.tokenizer(src, opts);
+	}
+}));
 
 const nodeFsCreateReadStream = nodeFs.createReadStream,
 	nodeFsCreateWriteStream = nodeFs.createWriteStream,
