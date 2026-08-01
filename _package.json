@@ -30,7 +30,7 @@
     "acorn-node": "^2.0.1",
     "acorn-logical-assignment": "^0.1.4",
     "browserify": "^17.0.1",
-    "eslint": "^8.2.0",
+    "eslint": "^10.8.0",
     "webpack": "^5.109.2",
     "@doodad-js/npc": "^0.10.0"
   },
