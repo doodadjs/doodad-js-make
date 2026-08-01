@@ -22,7 +22,7 @@
     "make"
   ],
   "peerDependencies": {
-    "acorn": "^7",
+    "acorn": "^8",
     "acorn-node": "^2.0.1"
   },
   "dependencies": {
