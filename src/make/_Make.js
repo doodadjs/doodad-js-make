@@ -210,7 +210,7 @@ exports.add = function add(modules) {
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
-				let result = null;
+				let result;
 				if (currentPackageDir) {
 					result = nodeFsReadFileSync(modules.resolve(pkg).combine('package.json').toApiString(), 'utf-8');
 				} else {
@@ -230,12 +230,12 @@ exports.add = function add(modules) {
 					throw new types.Error("Package name is missing.");
 				};
 				const file = pkg + '/make.json';
-				let result = null;
+				let result;
 				if (currentPackageDir) {
 					try {
 						const path = currentPackageDir.combine('../' + file, {allowTraverse: true});
 						result = nodeFsReadFileSync(modules.resolve(path).toApiString(), 'utf-8');
-					} catch(o) {
+					} catch {
 						result = nodeFsReadFileSync(modules.resolve(file).toApiString(), 'utf-8');
 					};
 				} else {
@@ -251,10 +251,10 @@ exports.add = function add(modules) {
 				if (!pkg) {
 					throw new types.Error("Package name is missing.");
 				};
-				let manifest = null;
+				let manifest;
 				try {
 					manifest = __Internal__.getMakeManifest(pkg, currentPackageDir);
-				} catch(ex) {
+				} catch {
 					manifest = __Internal__.getManifest(pkg, currentPackageDir);
 				};
 				return manifest.version + (manifest.stage || 'd');
@@ -334,8 +334,6 @@ exports.add = function add(modules) {
 						return safeEval.eval(key, this.options.taskData.makeManifest);
 					},
 					BEGIN_MODULE: function BEGIN_MODULE() {
-						/* eslint no-useless-concat: "off" */
-
 						const state = this.__state;
 
 						this.pushDirective({
@@ -363,8 +361,6 @@ exports.add = function add(modules) {
 						};
 					},
 					END_MODULE: function END_MODULE() {
-						/* eslint no-useless-concat: "off" */
-
 						const state = this.__state;
 
 						const block = this.popDirective();
@@ -1000,7 +996,7 @@ exports.add = function add(modules) {
 												inputStream.removeListener('error', errorCb);
 												inputStream.removeListener('end', dataCb);
 												inputStream.removeListener('data', dataCb);
-											} catch(ex) {
+											} catch {
 												// Do nothing
 											};
 										};
@@ -2437,10 +2433,10 @@ exports.add = function add(modules) {
 						});
 
 						const getNodeVersion = function getVersion(pkg) {
-							let manifest = null;
+							let manifest;
 							try {
 								manifest = __Internal__.getMakeManifest(pkg, taskData.packageDir);
-							} catch(ex) {
+							} catch {
 								manifest = __Internal__.getManifest(pkg, taskData.packageDir);
 							};
 							let version = manifest.version;
@@ -2647,7 +2643,11 @@ exports.add = function add(modules) {
 						//const fix = types.toBoolean(types.get(options, 'fix', types.get(item, 'fix', false)));
 
 						const cli = new nodeESLint.ESLint({
-							reportUnusedDisableDirectives: "warn",
+							overrideConfig: {
+								linterOptions: {
+									reportUnusedDisableDirectives: "warn",
+								},
+							},
 							//fix: fix,
 						});
 
